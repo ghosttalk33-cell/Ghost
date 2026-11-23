@@ -520,6 +520,10 @@ function handle(event, d) {
     case 'link': S.links.push(d); break;
     case 'done':
       S.summary = d;
+      if (!d.cancelled && d.done === 1 && S.results[0] && isPage(S.results[0])) {
+        S.phase = `Maar 1 pagina gevonden: de startpagina heeft geen links naar andere pagina's op dezelfde site (${S.results[0].externalCount || 0} externe links). Mogelijk een site van één pagina of met links via JavaScript.`;
+        finish(); break;
+      }
       S.phase = d.cancelled ? `Scan gestopt na ${d.done} pagina's` : `Scan voltooid: ${d.done} pagina's${d.remaining ? ` (limiet bereikt, nog ${d.remaining} gevonden)` : ''}`;
       finish(); break;
     case 'failure': S.phase = 'Fout: ' + d.error; finish(); break;

@@ -13,6 +13,7 @@ const FILE_EXT = /\.(jpe?g|png|gif|svg|webp|avif|ico|bmp|pdf|docx?|xlsx?|pptx?|c
 
 // ---------- Hulpfuncties ----------
 
+const bareHost = h => h.replace(/^www\./i, '').toLowerCase();
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 function decodeEntities(str) {
@@ -98,7 +99,7 @@ function parsePage(html, pageUrl) {
       const u = new URL(href.trim(), base);
       if (!/^https?:$/.test(u.protocol)) continue;
       u.hash = '';
-      (u.host === page.host ? internal : external).add(u.href);
+      (bareHost(u.host) === bareHost(page.host) ? internal : external).add(u.href);
     } catch {}
   }
 
@@ -244,7 +245,13 @@ async function siteChecks(start, robots) {
 // ---------- Crawler ----------
 
 async function crawl(opts, emit, isCancelled) {
-  const start = new URL(opts.url);
+  let start = new URL(opts.url);
+  // Volg een doorverwijzing van de startpagina (bijv. naar www. of https)
+  try {
+    const r = await get(start.href, { timeout: 15000 });
+    await r.arrayBuffer().catch(() => {});
+    if (r.url && bareHost(new URL(r.url).host) === bareHost(start.host)) start = new URL(r.url);
+  } catch {}
   const num = (v, d, min, max) => { const n = parseInt(v); return Math.min(Math.max(Number.isNaN(n) ? d : n, min), max); };
   const maxPages = num(opts.maxPages, 100, 1, 5000);
   const maxDepth = num(opts.maxDepth, 5, 0, 50);
@@ -271,11 +278,11 @@ async function crawl(opts, emit, isCancelled) {
   const shouldVisit = u => {
     let parsed;
     try { parsed = new URL(u); } catch { return false; }
-    if (sameHost && parsed.host !== start.host) return false;
+    if (sameHost && bareHost(parsed.host) !== bareHost(start.host)) return false;
     if (FILE_EXT.test(parsed.pathname)) return false;
     if (include && !include.test(u)) return false;
     if (exclude && exclude.test(u)) return false;
-    if (respectRobots && parsed.origin === start.origin && !robotsAllowed(robots.rules, u)) { skippedRobots++; return false; }
+    if (respectRobots && bareHost(parsed.host) === bareHost(start.host) && !robotsAllowed(robots.rules, u)) { skippedRobots++; return false; }
     return true;
   };
 
@@ -371,7 +378,7 @@ async function crawl(opts, emit, isCancelled) {
       while (i < targets.length && !isCancelled()) {
         const [url, from] = targets[i++];
         const t0 = Date.now();
-        const out = { url, from, external: new URL(url).host !== start.host };
+        const out = { url, from, external: bareHost(new URL(url).host) !== bareHost(start.host) };
         try {
           let res = await get(url, { method: 'HEAD', timeout: 10000 });
           if ([403, 405, 501, 400].includes(res.status)) {
