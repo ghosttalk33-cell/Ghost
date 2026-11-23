@@ -3,280 +3,690 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0f1117">
 <title>Ghost Crawler</title>
 <style>
   :root {
-    --bg: #0f1117; --panel: #171a23; --border: #262a36; --text: #e6e8ee; --muted: #8b90a0;
-    --accent: #8b7bff; --ok: #3ecf8e; --warn: #f5a524; --err: #f2555a;
+    --bg: #0f1117; --panel: #171a23; --panel2: #1d2130; --border: #2a2f3d; --text: #e6e8ee; --muted: #8b90a0;
+    --accent: #8b7bff; --ok: #3ecf8e; --warn: #f5a524; --err: #f2555a; --info: #5aa9f2;
   }
-  * { box-sizing: border-box; }
-  body { margin: 0; font: 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); color: var(--text); }
-  header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+  header { padding: 16px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
   header h1 { margin: 0; font-size: 20px; }
-  header span { color: var(--muted); }
-  main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
-  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
-  .row { display: flex; gap: 10px; flex-wrap: wrap; }
-  input[type=text], input[type=number] {
-    background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px; font: inherit;
+  header span { color: var(--muted); font-size: 13px; }
+  main { padding: 0 16px 40px; max-width: 1100px; margin: 0 auto; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  input[type=text], input[type=number], select {
+    background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 9px; padding: 11px 12px; font: inherit; width: 100%; min-width: 0;
   }
-  input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
-  #url { flex: 1; min-width: 240px; font-size: 15px; }
-  button { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 9px 18px; font: inherit; font-weight: 600; cursor: pointer; }
-  button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); font-weight: 500; }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  #url { flex: 1 1 220px; font-size: 16px; }
+  button { background: var(--accent); color: #fff; border: 0; border-radius: 9px; padding: 11px 18px; font: inherit; font-weight: 600; cursor: pointer; }
+  button.secondary { background: var(--panel2); border: 1px solid var(--border); color: var(--text); font-weight: 500; }
+  button.small { padding: 7px 12px; font-size: 13px; }
   button:disabled { opacity: .45; cursor: default; }
-  details { margin-top: 12px; }
-  summary { cursor: pointer; color: var(--muted); }
-  .opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 12px; }
-  .opts label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: 12px; }
-  .opts label.check { flex-direction: row; align-items: center; gap: 8px; font-size: 13px; color: var(--text); }
-  .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-  .stat { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
-  .stat b { display: block; font-size: 22px; }
-  .stat small { color: var(--muted); }
-  .progress { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin: 14px 0 0; }
-  .progress div { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
-  .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
-  .toolbar input { flex: 1; min-width: 180px; }
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
-  th { color: var(--muted); font-weight: 500; cursor: pointer; user-select: none; white-space: nowrap; }
-  tr.item:hover { background: #1d2130; cursor: pointer; }
-  td.url { max-width: 420px; word-break: break-all; }
-  td.url a { color: var(--text); text-decoration: none; }
-  td.title { max-width: 320px; }
-  .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .btns { display: flex; gap: 8px; flex: 1 1 220px; }
+  .btns button { flex: 1; }
+  .field { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: 12px; margin-top: 10px; }
+  details { margin-top: 10px; }
+  summary { cursor: pointer; color: var(--muted); padding: 4px 0; }
+  .opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0 10px; }
+  .check { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text); margin-top: 12px; }
+  .check input { width: 18px; height: 18px; accent-color: var(--accent); }
+  .status { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 13px; margin-top: 12px; }
+  .progress { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+  .progress div { height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+  .progress.busy div { background: linear-gradient(90deg, var(--accent), #c2b8ff, var(--accent)); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+
+  nav.tabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 14px; padding-bottom: 2px; scrollbar-width: none; position: sticky; top: 0; background: var(--bg); z-index: 5; padding-top: 6px; }
+  nav.tabs::-webkit-scrollbar { display: none; }
+  nav.tabs button { background: var(--panel); border: 1px solid var(--border); color: var(--muted); font-weight: 500; white-space: nowrap; padding: 8px 14px; border-radius: 999px; }
+  nav.tabs button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  nav.tabs .count { opacity: .75; font-size: 12px; margin-left: 4px; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .score-wrap { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .score { width: 110px; height: 110px; border-radius: 50%; display: grid; place-items: center; flex: none; }
+  .score div { width: 88px; height: 88px; border-radius: 50%; background: var(--panel); display: grid; place-items: center; text-align: center; }
+  .score b { font-size: 30px; line-height: 1; display: block; }
+  .score small { color: var(--muted); font-size: 11px; }
+  .score-text h2 { margin: 0 0 4px; font-size: 18px; }
+  .score-text p { margin: 0; color: var(--muted); font-size: 14px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 14px; }
+  .stat { background: var(--panel2); border-radius: 10px; padding: 10px 12px; }
+  .stat b { display: block; font-size: 20px; }
+  .stat small { color: var(--muted); font-size: 12px; }
+  h3 { margin: 0 0 10px; font-size: 16px; }
+
+  .issue { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+  .issue > .head { display: flex; align-items: center; gap: 10px; padding: 11px 12px; cursor: pointer; }
+  .issue > .head .lbl { flex: 1; }
+  .issue > .head .lbl small { display: block; color: var(--muted); font-size: 12px; }
+  .issue .body { display: none; border-top: 1px solid var(--border); padding: 8px 12px; background: var(--panel2); font-size: 13px; }
+  .issue.open .body { display: block; }
+  .issue .body ul { margin: 0; padding-left: 0; list-style: none; max-height: 320px; overflow: auto; }
+  .issue .body li { padding: 5px 0; border-bottom: 1px solid var(--border); word-break: break-all; }
+  .issue .body li:last-child { border: 0; }
+  .issue .tip { color: var(--muted); margin: 2px 0 8px; word-break: normal; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .dot.error { background: var(--err); } .dot.warn { background: var(--warn); } .dot.info { background: var(--info); } .dot.ok { background: var(--ok); }
+  .num { font-weight: 700; font-size: 14px; min-width: 28px; text-align: right; }
+
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; flex: none; }
   .s2 { background: #3ecf8e22; color: var(--ok); }
   .s3 { background: #8b7bff22; color: var(--accent); }
   .s4, .s0 { background: #f2555a22; color: var(--err); }
   .s5 { background: #f5a52422; color: var(--warn); }
+
+  .item { border-bottom: 1px solid var(--border); padding: 11px 2px; cursor: pointer; }
+  .item:last-child { border-bottom: 0; }
+  .item .top { display: flex; gap: 8px; align-items: center; }
+  .item .t { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+  .item .u { color: var(--muted); font-size: 12px; word-break: break-all; margin-top: 2px; }
+  .item .m { color: var(--muted); font-size: 12px; margin-top: 3px; }
+  .item .m .e { color: var(--err); } .item .m .w { color: var(--warn); }
+  .details { margin-top: 10px; background: var(--panel2); border-radius: 10px; padding: 10px 12px; font-size: 13px; cursor: auto; }
+  .details div { margin: 3px 0; word-break: break-word; }
+  .details a { color: var(--accent); }
+  .details .iss { margin: 6px 0 0; padding-left: 18px; }
   .muted { color: var(--muted); }
-  tr.detail td { background: #13161e; }
-  .detail-grid { display: grid; gap: 6px; font-size: 13px; }
-  .detail-grid ul { margin: 4px 0 0; padding-left: 18px; max-height: 160px; overflow: auto; }
-  .empty { text-align: center; color: var(--muted); padding: 40px; }
-  @media (max-width: 600px) { main, header { padding-left: 16px; padding-right: 16px; } }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .toolbar input { flex: 2 1 180px; width: auto; }
+  .toolbar select { flex: 1 1 140px; width: auto; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .chips button { padding: 6px 12px; font-size: 13px; background: var(--panel2); border: 1px solid var(--border); color: var(--muted); font-weight: 500; border-radius: 999px; }
+  .chips button.active { color: #fff; border-color: var(--accent); background: #8b7bff33; }
+  .check-row { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .check-row:last-child { border: 0; }
+  .check-row .ic { font-size: 18px; line-height: 1.2; }
+  .check-row small { display: block; color: var(--muted); }
+  .empty { text-align: center; color: var(--muted); padding: 30px 10px; }
+  .exports { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+  .snip { color: var(--muted); font-size: 12px; margin-top: 3px; }
+  mark { background: #f5a52455; color: var(--text); border-radius: 3px; padding: 0 2px; }
+  a.plain { color: inherit; text-decoration: none; }
 </style>
 </head>
 <body>
 <header>
   <h1>👻 Ghost Crawler</h1>
-  <span>Crawl een website en bekijk alle pagina's, titels, links en fouten</span>
+  <span>Volledige websitescan: SEO, kapotte links, snelheid en beveiliging</span>
 </header>
 
 <main>
-  <form class="card" id="form">
+  <form class="card" id="form" autocomplete="off">
     <div class="row">
-      <input type="text" id="url" placeholder="https://voorbeeld.nl" required autofocus>
-      <button type="submit" id="startBtn">Start crawl</button>
-      <button type="button" id="stopBtn" class="secondary" disabled>Stop</button>
-    </div>
-    <details>
-      <summary>Instellingen</summary>
-      <div class="opts">
-        <label>Max. pagina's<input type="number" id="maxPages" value="50" min="1" max="2000"></label>
-        <label>Max. diepte<input type="number" id="maxDepth" value="3" min="0" max="20"></label>
-        <label>Gelijktijdige verzoeken<input type="number" id="concurrency" value="3" min="1" max="10"></label>
-        <label>Pauze tussen verzoeken (ms)<input type="number" id="delay" value="200" min="0"></label>
-        <label>Alleen URL's met (regex)<input type="text" id="include" placeholder="bijv. /blog/"></label>
-        <label>URL's uitsluiten (regex)<input type="text" id="exclude" placeholder="bijv. \?page=|/tag/"></label>
-        <label class="check"><input type="checkbox" id="sameHost" checked> Alleen hetzelfde domein</label>
-        <label class="check"><input type="checkbox" id="respectRobots" checked> robots.txt respecteren</label>
+      <input type="text" id="url" placeholder="Website, bijv. voorbeeld.nl" inputmode="url" autocapitalize="off" spellcheck="false" required>
+      <div class="btns">
+        <button type="submit" id="startBtn">Scan starten</button>
+        <button type="button" id="stopBtn" class="secondary" disabled>Stop</button>
       </div>
+    </div>
+    <label class="field">Zoekwoorden (optioneel, gescheiden door komma's)
+      <input type="text" id="keywords" placeholder="bijv. korting, contact, prijs">
+    </label>
+    <details>
+      <summary>⚙️ Instellingen</summary>
+      <div class="opts">
+        <label class="field">Max. pagina's<input type="number" id="maxPages" value="100" min="1" max="5000"></label>
+        <label class="field">Max. diepte<input type="number" id="maxDepth" value="5" min="0" max="50"></label>
+        <label class="field">Tegelijk<input type="number" id="concurrency" value="4" min="1" max="10"></label>
+        <label class="field">Pauze (ms)<input type="number" id="delay" value="100" min="0"></label>
+        <label class="field">Alleen URL's met<input type="text" id="include" placeholder="bijv. /blog/"></label>
+        <label class="field">URL's overslaan<input type="text" id="exclude" placeholder="bijv. /tag/|\?page="></label>
+      </div>
+      <label class="check"><input type="checkbox" id="checkLinks" checked> Externe links en bestanden controleren</label>
+      <label class="check"><input type="checkbox" id="useSitemap" checked> Ook pagina's uit sitemap.xml scannen</label>
+      <label class="check"><input type="checkbox" id="sameHost" checked> Alleen hetzelfde domein</label>
+      <label class="check"><input type="checkbox" id="respectRobots" checked> robots.txt respecteren</label>
     </details>
-    <div class="progress"><div id="bar"></div></div>
+    <div class="status"><span id="phase">Klaar om te scannen</span><span id="counter"></span></div>
+    <div class="progress" id="progress"><div id="bar"></div></div>
   </form>
 
-  <div class="stats" style="margin-bottom:16px">
-    <div class="stat"><b id="stPages">0</b><small>Pagina's gecrawld</small></div>
-    <div class="stat"><b id="stOk" style="color:var(--ok)">0</b><small>OK (2xx)</small></div>
-    <div class="stat"><b id="stErr" style="color:var(--err)">0</b><small>Fouten (4xx/5xx/netwerk)</small></div>
-    <div class="stat"><b id="stQueue">0</b><small>In wachtrij</small></div>
-    <div class="stat"><b id="stEmails">0</b><small>E-mailadressen</small></div>
-    <div class="stat"><b id="stTime">0 ms</b><small>Gem. laadtijd</small></div>
-  </div>
+  <nav class="tabs" id="tabs">
+    <button data-tab="overview" class="active">Overzicht</button>
+    <button data-tab="issues">Problemen<span class="count" id="cIssues"></span></button>
+    <button data-tab="pages">Pagina's<span class="count" id="cPages"></span></button>
+    <button data-tab="links">Links<span class="count" id="cLinks"></span></button>
+    <button data-tab="search">Zoeken<span class="count" id="cSearch"></span></button>
+    <button data-tab="site">Website</button>
+  </nav>
 
-  <div class="card">
-    <div class="toolbar">
-      <input type="text" id="filter" placeholder="Filter op URL of titel…">
-      <button type="button" class="secondary" id="csvBtn">⬇ CSV</button>
-      <button type="button" class="secondary" id="jsonBtn">⬇ JSON</button>
-      <button type="button" class="secondary" id="emailBtn">⬇ E-mails</button>
+  <section class="panel active" id="p-overview"></section>
+  <section class="panel" id="p-issues"></section>
+  <section class="panel" id="p-pages">
+    <div class="card">
+      <div class="toolbar">
+        <input type="text" id="pageFilter" placeholder="Zoek op URL of titel…">
+        <select id="pageSort">
+          <option value="">Volgorde van scannen</option>
+          <option value="issues">Meeste problemen</option>
+          <option value="slow">Traagste eerst</option>
+          <option value="words">Minste woorden</option>
+          <option value="depth">Diepte</option>
+          <option value="url">URL (A-Z)</option>
+        </select>
+      </div>
+      <div class="chips" id="pageChips">
+        <button data-f="all" class="active">Alle</button>
+        <button data-f="error">Met fouten</button>
+        <button data-f="warn">Met waarschuwingen</button>
+        <button data-f="ok">Zonder problemen</button>
+      </div>
+      <div id="pageList"></div>
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th data-k="status">Status</th>
-            <th data-k="url">URL</th>
-            <th data-k="title">Titel</th>
-            <th data-k="depth">Diepte</th>
-            <th data-k="linkCount">Links</th>
-            <th data-k="wordCount">Woorden</th>
-            <th data-k="timeMs">Tijd</th>
-          </tr>
-        </thead>
-        <tbody id="rows"><tr><td colspan="7" class="empty">Voer een URL in en klik op <b>Start crawl</b>.</td></tr></tbody>
-      </table>
-    </div>
-  </div>
+  </section>
+  <section class="panel" id="p-links"></section>
+  <section class="panel" id="p-search"></section>
+  <section class="panel" id="p-site"></section>
 </main>
 
 <script>
 const $ = id => document.getElementById(id);
-let results = [];
-let source = null;
-let sortKey = null, sortDir = 1;
-let openUrl = null;
-let maxPages = 50;
-
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } },
+  del(k) { try { localStorage.removeItem(k); } catch {} },
+};
 
-function statusBadge(s) {
-  const cls = 's' + String(s || 0)[0];
-  return `<span class="badge ${cls}">${s || 'ERR'}</span>`;
+// ---------- Status ----------
+let S = freshState();
+function freshState() {
+  return { results: [], links: [], site: null, sitemap: null, keywords: [], maxPages: 100, startUrl: '', running: false, finished: false, summary: null, phase: '' };
+}
+let es = null, jobId = null;
+let tab = 'overview', openPage = null, pageFilter = 'all', pageLimit = 150;
+const openIssues = new Set();
+
+// ---------- Regels voor problemen ----------
+const isPage = r => r.status >= 200 && r.status < 300 && (r.contentType || '').includes('html');
+const RULES = [
+  { id: 'http', sev: 'error', label: 'Pagina geeft een fout', tip: 'Deze pagina\'s zijn niet bereikbaar (404, 500, time-out…). Herstel ze of pas de links ernaartoe aan.',
+    test: r => !r.status || r.status >= 400, detail: r => r.error || 'HTTP ' + r.status },
+  { id: 'mixed', sev: 'error', label: 'Onveilige inhoud (http op https-pagina)', tip: 'Afbeeldingen of scripts worden via http geladen. Browsers blokkeren dit of tonen een waarschuwing.',
+    test: r => isPage(r) && r.mixedContent > 0, detail: r => r.mixedContent + ' onveilige bronnen' },
+  { id: 'notitle', sev: 'error', label: 'Geen paginatitel', tip: 'De titel is wat Google als blauwe link toont. Elke pagina heeft er één nodig.',
+    test: r => isPage(r) && !r.title },
+  { id: 'noviewport', sev: 'warn', label: 'Niet geschikt voor mobiel (geen viewport)', tip: 'Zonder <meta name="viewport"> ziet de pagina er op telefoons klein en onleesbaar uit.',
+    test: r => isPage(r) && !r.viewport },
+  { id: 'dupTitle', sev: 'warn', label: 'Dubbele titel', tip: 'Meerdere pagina\'s hebben dezelfde titel. Geef elke pagina een unieke titel.', dup: 'title' },
+  { id: 'nodesc', sev: 'warn', label: 'Geen meta description', tip: 'De omschrijving die Google onder de titel toont. Ontbreekt deze, dan kiest Google zelf een stuk tekst.',
+    test: r => isPage(r) && !r.description },
+  { id: 'noh1', sev: 'warn', label: 'Geen H1-kop', tip: 'Elke pagina hoort één hoofdkop (H1) te hebben die zegt waar de pagina over gaat.',
+    test: r => isPage(r) && !(r.h1 || []).length },
+  { id: 'alt', sev: 'warn', label: 'Afbeeldingen zonder alt-tekst', tip: 'Alt-tekst helpt blinden/slechtzienden en Google begrijpen wat er op een afbeelding staat.',
+    test: r => isPage(r) && r.imagesNoAlt > 0, detail: r => `${r.imagesNoAlt} van ${r.images} afbeeldingen` },
+  { id: 'slow', sev: 'warn', label: 'Trage pagina (meer dan 2 seconden)', tip: 'Trage pagina\'s zorgen dat bezoekers afhaken en scoren lager in Google.',
+    test: r => isPage(r) && r.timeMs > 2000, detail: r => (r.timeMs / 1000).toFixed(1) + ' s' },
+  { id: 'thin', sev: 'warn', label: 'Weinig tekst (minder dan 200 woorden)', tip: 'Pagina\'s met weinig inhoud worden door Google vaak als minder waardevol gezien.',
+    test: r => isPage(r) && r.wordCount < 200, detail: r => r.wordCount + ' woorden' },
+  { id: 'dupContent', sev: 'warn', label: 'Dubbele inhoud', tip: 'Deze pagina\'s hebben precies dezelfde tekst. Gebruik een canonical-tag of voeg ze samen.', dup: 'contentHash' },
+  { id: 'noindex', sev: 'warn', label: 'Verborgen voor Google (noindex)', tip: 'Deze pagina\'s vragen Google om ze niet te tonen. Controleer of dat de bedoeling is.',
+    test: r => isPage(r) && /noindex/.test(r.robotsMeta || '') },
+  { id: 'titlelong', sev: 'info', label: 'Titel te lang (meer dan 60 tekens)', tip: 'Google kapt lange titels af met "…".',
+    test: r => isPage(r) && r.title && r.title.length > 60, detail: r => r.title.length + ' tekens' },
+  { id: 'titleshort', sev: 'info', label: 'Titel erg kort (minder dan 15 tekens)', tip: 'Een korte titel zegt weinig. Gebruik 30–60 tekens met je belangrijkste zoekwoord.',
+    test: r => isPage(r) && r.title && r.title.length < 15, detail: r => `"${r.title}"` },
+  { id: 'desclong', sev: 'info', label: 'Omschrijving te lang (meer dan 160 tekens)', tip: 'Google kapt lange omschrijvingen af.',
+    test: r => isPage(r) && r.description && r.description.length > 160, detail: r => r.description.length + ' tekens' },
+  { id: 'dupDesc', sev: 'info', label: 'Dubbele omschrijving', tip: 'Meerdere pagina\'s hebben dezelfde meta description.', dup: 'description' },
+  { id: 'multih1', sev: 'info', label: 'Meerdere H1-koppen', tip: 'Gebruik bij voorkeur één H1 per pagina en H2/H3 voor tussenkoppen.',
+    test: r => isPage(r) && (r.h1 || []).length > 1, detail: r => r.h1.length + ' H1-koppen' },
+  { id: 'nolang', sev: 'info', label: 'Taal niet ingesteld', tip: 'Voeg lang="nl" toe aan de <html>-tag zodat browsers en Google de taal kennen.',
+    test: r => isPage(r) && !r.lang },
+  { id: 'redirect', sev: 'info', label: 'Doorverwijzing', tip: 'Deze links sturen door naar een ander adres. Link liever direct naar het eindadres.',
+    test: r => !!r.finalUrl, detail: r => '→ ' + r.finalUrl },
+  { id: 'canonical', sev: 'info', label: 'Canonical wijst naar andere pagina', tip: 'Google zal waarschijnlijk de andere pagina tonen in plaats van deze.',
+    test: r => isPage(r) && r.canonical && r.canonical !== (r.finalUrl || r.url), detail: r => '→ ' + r.canonical },
+  { id: 'noog', sev: 'info', label: 'Geen social-media voorbeeld (Open Graph)', tip: 'Zonder og:title en og:image ziet een gedeelde link op Facebook/WhatsApp er kaal uit.',
+    test: r => isPage(r) && (!r.ogTitle || !r.ogImage) },
+  { id: 'nostruct', sev: 'info', label: 'Geen gestructureerde data', tip: 'Schema.org-gegevens (JSON-LD) kunnen sterren, prijzen of FAQ\'s in Google tonen.',
+    test: r => isPage(r) && !r.structuredData },
+  { id: 'heavy', sev: 'info', label: 'Grote HTML (meer dan 500 KB)', tip: 'Grote pagina\'s laden trager, vooral op mobiel.',
+    test: r => isPage(r) && r.size > 500 * 1024, detail: r => Math.round(r.size / 1024) + ' KB' },
+  { id: 'deep', sev: 'info', label: 'Diep verstopt (meer dan 3 klikken)', tip: 'Pagina\'s die veel klikken diep zitten, worden minder vaak gevonden door bezoekers en Google.',
+    test: r => r.depth > 3, detail: r => r.depth + ' klikken' },
+  { id: 'orphan', sev: 'info', label: 'Alleen via sitemap te vinden', tip: 'Geen enkele pagina linkt hiernaartoe. Voeg interne links toe.', orphan: true },
+];
+const BLOCKED = [401, 403, 429, 999];
+const isBroken = l => !l.status || (l.status >= 400 && !BLOCKED.includes(l.status));
+const SEV_W = { error: 30, warn: 10, info: 2 };
+const SEV_NL = { error: 'fout', warn: 'waarschuwing', info: 'tip' };
+
+function analyze() {
+  const pages = S.results;
+  const byRule = new Map(RULES.map(r => [r.id, []]));
+  const pageIssues = new Map(pages.map(p => [p.url, []]));
+  const inlinks = new Map();
+  for (const p of pages) for (const l of p.links || []) {
+    if (l === p.url) continue;
+    let a = inlinks.get(l); if (!a) { a = []; inlinks.set(l, a); }
+    if (a.length < 50) a.push(p.url);
+  }
+  const add = (rule, p, detail) => { byRule.get(rule.id).push({ page: p, detail }); pageIssues.get(p.url)?.push(rule); };
+  for (const rule of RULES) {
+    if (rule.test) for (const p of pages) { if (rule.test(p)) add(rule, p, rule.detail ? rule.detail(p) : ''); }
+    else if (rule.dup) {
+      const groups = new Map();
+      for (const p of pages) { const v = isPage(p) && p[rule.dup]; if (v) { const g = groups.get(v) || []; g.push(p); groups.set(v, g); } }
+      for (const [v, g] of groups) if (g.length > 1) for (const p of g) add(rule, p, `${g.length}× ${rule.dup === 'contentHash' ? 'zelfde tekst' : '"' + String(v).slice(0, 70) + '"'}`);
+    } else if (rule.orphan) {
+      for (const p of pages) if (p.viaSitemap && !inlinks.has(p.url) && !inlinks.has(p.finalUrl)) add(rule, p, '');
+    }
+  }
+  const broken = S.links.filter(isBroken);
+  const htmlCount = Math.max(1, pages.length);
+  let penalty = 0;
+  for (const rule of RULES) penalty += (byRule.get(rule.id).length / htmlCount) * SEV_W[rule.sev];
+  if (S.links.length) penalty += (broken.length / S.links.length) * 25;
+  const sc = siteCheckList();
+  for (const c of sc) if (c.ok === false) penalty += c.w;
+  const score = pages.length ? Math.max(0, Math.min(100, Math.round(100 - penalty))) : null;
+  const counts = { error: 0, warn: 0, info: 0 };
+  for (const rule of RULES) counts[rule.sev] += byRule.get(rule.id).length;
+  counts.error += broken.length;
+  return { byRule, pageIssues, inlinks, broken, score, counts };
+}
+
+function siteCheckList() {
+  const s = S.site;
+  if (!s) return [];
+  const h = s.headers || {};
+  return [
+    { ok: s.https, w: 15, label: 'Beveiligde verbinding (HTTPS)', tip: s.https ? 'De site gebruikt https.' : 'De site gebruikt geen https. Bezoekers krijgen een "Niet veilig"-melding.' },
+    { ok: s.httpRedirect, w: 4, label: 'http:// stuurt door naar https://', tip: s.httpRedirect === null ? 'Kon niet gecontroleerd worden.' : s.httpRedirect ? 'Goed ingesteld.' : 'Bezoekers op http:// worden niet automatisch naar de veilige versie gestuurd.' },
+    { ok: s.robots, w: 2, label: 'robots.txt aanwezig', tip: s.robots ? 'Gevonden.' : 'Geen robots.txt gevonden. Niet verplicht, maar wel aan te raden.' },
+    { ok: (s.sitemaps || []).length > 0, w: 4, label: 'sitemap.xml aanwezig', tip: (s.sitemaps || []).length ? s.sitemaps.join(', ') + (S.sitemap ? ` (${S.sitemap.count} URL's)` : '') : 'Geen sitemap gevonden. Een sitemap helpt Google alle pagina\'s te vinden. Je kunt er hieronder een downloaden.' },
+    { ok: h.hsts, w: 2, label: 'HSTS-beveiliging', tip: h.hsts ? 'Ingesteld.' : 'Strict-Transport-Security ontbreekt. Dit dwingt browsers altijd https te gebruiken.' },
+    { ok: h.csp, w: 1, label: 'Content-Security-Policy', tip: h.csp ? 'Ingesteld.' : 'Ontbreekt. Beschermt tegen het injecteren van kwaadaardige scripts.' },
+    { ok: h.xfo, w: 1, label: 'Bescherming tegen clickjacking', tip: h.xfo ? 'Ingesteld.' : 'X-Frame-Options ontbreekt. Andere sites kunnen jouw site in een frame laden.' },
+    { ok: h.xcto, w: 1, label: 'X-Content-Type-Options', tip: h.xcto ? 'Ingesteld.' : 'Ontbreekt (nosniff).' },
+    { ok: h.referrer, w: 1, label: 'Referrer-Policy', tip: h.referrer ? 'Ingesteld.' : 'Ontbreekt. Bepaalt welke info naar andere sites wordt gestuurd.' },
+    { ok: !!s.compression, w: 2, label: 'Compressie (gzip/brotli)', tip: s.compression ? 'Ingeschakeld: ' + s.compression : 'Niet ingeschakeld. Compressie maakt pagina\'s tot 70% kleiner en sneller.' },
+  ];
+}
+
+// ---------- Weergave ----------
+let A = analyze();
+let renderQueued = false;
+function scheduleRender() {
+  if (renderQueued) return;
+  renderQueued = true;
+  setTimeout(() => { renderQueued = false; A = analyze(); render(); }, S.running ? 400 : 0);
 }
 
 function render() {
-  const q = $('filter').value.toLowerCase();
-  let list = results.filter(r => !q || r.url.toLowerCase().includes(q) || (r.title || '').toLowerCase().includes(q));
-  if (sortKey) {
-    list = [...list].sort((a, b) => {
-      const x = a[sortKey] ?? '', y = b[sortKey] ?? '';
-      return (typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y))) * sortDir;
-    });
-  }
-  if (!list.length) {
-    $('rows').innerHTML = `<tr><td colspan="7" class="empty">${results.length ? 'Geen resultaten voor dit filter.' : 'Nog geen resultaten.'}</td></tr>`;
+  const n = S.results.length;
+  $('counter').textContent = n ? `${n} pagina's${S.links.length ? ' · ' + S.links.length + ' links' : ''}` : '';
+  $('phase').textContent = S.phase || (S.finished ? 'Scan voltooid' : 'Klaar om te scannen');
+  $('bar').style.width = (S.finished ? 100 : Math.min(98, n / S.maxPages * 100)) + '%';
+  $('progress').classList.toggle('busy', S.running);
+  $('startBtn').disabled = S.running; $('stopBtn').disabled = !S.running;
+  $('startBtn').textContent = S.running ? 'Bezig…' : 'Scan starten';
+  $('cIssues').textContent = n ? A.counts.error + A.counts.warn : '';
+  $('cPages').textContent = n || '';
+  $('cLinks').textContent = A.broken.length ? '⚠ ' + A.broken.length : (S.links.length || '');
+  const kwHits = S.keywords.length ? S.results.filter(r => r.matches && Object.keys(r.matches).length).length : 0;
+  $('cSearch').textContent = kwHits || '';
+  ({ overview: renderOverview, issues: renderIssues, pages: renderPages, links: renderLinks, search: renderSearch, site: renderSite })[tab]();
+}
+
+function scoreColor(s) { return s >= 80 ? 'var(--ok)' : s >= 55 ? 'var(--warn)' : 'var(--err)'; }
+
+function renderOverview() {
+  const el = $('p-overview');
+  if (!S.results.length) {
+    el.innerHTML = `<div class="card empty">${S.running ? 'Scan is bezig, de eerste resultaten komen zo…' : 'Vul een website in en tik op <b>Scan starten</b>.<br><br>Je krijgt een score, een lijst met problemen en tips om ze op te lossen.'}</div>`;
     return;
   }
-  $('rows').innerHTML = list.map(r => {
-    let html = `<tr class="item" data-url="${esc(r.url)}">
-      <td>${statusBadge(r.status)}</td>
-      <td class="url"><a href="${esc(r.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(r.url)}</a></td>
-      <td class="title">${esc(r.title) || `<span class="muted">${esc(r.error || '—')}</span>`}</td>
-      <td>${r.depth}</td>
-      <td>${r.linkCount ?? '—'}</td>
-      <td>${r.wordCount ?? '—'}</td>
-      <td>${r.timeMs} ms</td>
-    </tr>`;
-    if (openUrl === r.url) {
-      html += `<tr class="detail"><td colspan="7"><div class="detail-grid">
-        ${r.finalUrl && r.finalUrl !== r.url ? `<div><b>Doorgestuurd naar:</b> ${esc(r.finalUrl)}</div>` : ''}
-        <div><b>Gevonden via:</b> ${r.from ? esc(r.from) : '<span class="muted">startpagina</span>'}</div>
-        <div><b>Content-Type:</b> ${esc(r.contentType || '—')} · <b>Grootte:</b> ${r.size ? (r.size / 1024).toFixed(1) + ' KB' : '—'}</div>
-        <div><b>Meta description:</b> ${esc(r.description) || '<span class="muted">ontbreekt</span>'}</div>
-        <div><b>H1:</b> ${r.h1?.length ? esc(r.h1.join(' | ')) : '<span class="muted">ontbreekt</span>'}</div>
-        <div><b>Afbeeldingen:</b> ${r.imageCount ?? 0}</div>
-        ${r.emails?.length ? `<div><b>E-mailadressen:</b><ul>${r.emails.map(e => `<li>${esc(e)}</li>`).join('')}</ul></div>` : ''}
+  const s = A.score;
+  const ok = S.results.filter(r => r.status >= 200 && r.status < 300).length;
+  const avg = Math.round(S.results.reduce((a, r) => a + (r.timeMs || 0), 0) / S.results.length);
+  const words = S.results.reduce((a, r) => a + (r.wordCount || 0), 0);
+  const emails = new Set(S.results.flatMap(r => r.emails || []));
+  const verdict = s >= 90 ? 'Uitstekend!' : s >= 80 ? 'Goed' : s >= 65 ? 'Redelijk' : s >= 45 ? 'Kan beter' : 'Veel verbeterpunten';
+  const top = RULES.filter(r => A.byRule.get(r.id).length).sort((a, b) => SEV_W[b.sev] * A.byRule.get(b.id).length - SEV_W[a.sev] * A.byRule.get(a.id).length).slice(0, 6);
+  el.innerHTML = `
+    <div class="card">
+      <div class="score-wrap">
+        <div class="score" style="background: conic-gradient(${scoreColor(s)} ${s * 3.6}deg, var(--border) 0)"><div><span><b>${s}</b><small>van 100</small></span></div></div>
+        <div class="score-text">
+          <h2>${verdict}</h2>
+          <p>${esc(S.startUrl)}</p>
+          <p style="margin-top:6px"><span style="color:var(--err)">● ${A.counts.error} fouten</span> &nbsp; <span style="color:var(--warn)">● ${A.counts.warn} waarschuwingen</span> &nbsp; <span style="color:var(--info)">● ${A.counts.info} tips</span></p>
+          ${S.running ? '<p style="margin-top:4px">⏳ Scan loopt nog, de score kan veranderen.</p>' : ''}
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><b>${S.results.length}</b><small>Pagina's gescand</small></div>
+        <div class="stat"><b style="color:var(--ok)">${ok}</b><small>Werkende pagina's</small></div>
+        <div class="stat"><b style="color:${A.broken.length ? 'var(--err)' : 'inherit'}">${A.broken.length}</b><small>Kapotte links</small></div>
+        <div class="stat"><b>${avg < 1000 ? avg + ' ms' : (avg / 1000).toFixed(1) + ' s'}</b><small>Gem. laadtijd</small></div>
+        <div class="stat"><b>${words.toLocaleString('nl')}</b><small>Woorden totaal</small></div>
+        <div class="stat"><b>${emails.size}</b><small>E-mailadressen</small></div>
+      </div>
+    </div>
+    ${top.length || A.broken.length ? `<div class="card"><h3>Belangrijkste verbeterpunten</h3>
+      ${A.broken.length ? `<div class="issue"><div class="head" data-goto="links"><span class="dot error"></span><span class="lbl">Kapotte links<small>Bekijk in het tabblad Links</small></span><span class="num">${A.broken.length}</span></div></div>` : ''}
+      ${top.map(r => `<div class="issue"><div class="head" data-goto="issues" data-issue="${r.id}"><span class="dot ${r.sev}"></span><span class="lbl">${esc(r.label)}<small>${SEV_NL[r.sev]}</small></span><span class="num">${A.byRule.get(r.id).length}</span></div></div>`).join('')}
+    </div>` : ''}
+    <div class="card"><h3>Downloaden</h3>
+      <div class="exports">
+        <button class="secondary small" data-exp="pages">📄 Pagina's (CSV)</button>
+        <button class="secondary small" data-exp="issues">⚠️ Problemen (CSV)</button>
+        <button class="secondary small" data-exp="links">🔗 Links (CSV)</button>
+        <button class="secondary small" data-exp="sitemap">🗺️ sitemap.xml</button>
+        <button class="secondary small" data-exp="emails">✉️ E-mails (${emails.size})</button>
+        <button class="secondary small" data-exp="json">💾 Alles (JSON)</button>
+      </div>
+      <p class="muted" style="font-size:12px;margin:10px 0 0">CSV-bestanden openen in Excel of Google Spreadsheets.</p>
+    </div>`;
+}
+
+function renderIssues() {
+  const el = $('p-issues');
+  if (!S.results.length) { el.innerHTML = '<div class="card empty">Nog geen scan uitgevoerd.</div>'; return; }
+  const groups = ['error', 'warn', 'info'].map(sev => {
+    const rules = RULES.filter(r => r.sev === sev && A.byRule.get(r.id).length);
+    const extra = sev === 'error' && A.broken.length;
+    if (!rules.length && !extra) return '';
+    const title = { error: '🔴 Fouten: los deze eerst op', warn: '🟠 Waarschuwingen', info: '🔵 Tips' }[sev];
+    return `<div class="card"><h3>${title}</h3>
+      ${extra ? `<div class="issue"><div class="head" data-goto="links"><span class="dot error"></span><span class="lbl">Kapotte links<small>Bekijk in het tabblad Links</small></span><span class="num">${A.broken.length}</span></div></div>` : ''}
+      ${rules.map(r => {
+        const list = A.byRule.get(r.id);
+        return `<div class="issue ${openIssues.has(r.id) ? 'open' : ''}" id="issue-${r.id}">
+          <div class="head" data-toggle="${r.id}"><span class="dot ${r.sev}"></span><span class="lbl">${esc(r.label)}</span><span class="num">${list.length}</span></div>
+          <div class="body"><p class="tip">💡 ${esc(r.tip)}</p><ul>${list.slice(0, 300).map(x => `<li><a class="plain" href="${esc(x.page.url)}" target="_blank" rel="noopener">${esc(x.page.url)}</a>${x.detail ? `<div class="muted">${esc(x.detail)}</div>` : ''}${r.id === 'http' && A.inlinks.get(x.page.url) ? `<div class="muted">Gelinkt vanaf: ${esc(A.inlinks.get(x.page.url)[0])}${A.inlinks.get(x.page.url).length > 1 ? ' (+' + (A.inlinks.get(x.page.url).length - 1) + ')' : ''}</div>` : ''}</li>`).join('')}${list.length > 300 ? `<li class="muted">…en nog ${list.length - 300}</li>` : ''}</ul></div>
+        </div>`;
+      }).join('')}</div>`;
+  }).join('');
+  el.innerHTML = groups || '<div class="card empty">🎉 Geen problemen gevonden!</div>';
+}
+
+function renderPages() {
+  const q = $('pageFilter').value.toLowerCase();
+  let list = S.results.filter(r => !q || r.url.toLowerCase().includes(q) || (r.title || '').toLowerCase().includes(q));
+  const iss = r => A.pageIssues.get(r.url) || [];
+  if (pageFilter === 'error') list = list.filter(r => iss(r).some(i => i.sev === 'error'));
+  if (pageFilter === 'warn') list = list.filter(r => iss(r).some(i => i.sev === 'warn'));
+  if (pageFilter === 'ok') list = list.filter(r => !iss(r).some(i => i.sev !== 'info'));
+  const sort = $('pageSort').value;
+  const sorters = {
+    issues: (a, b) => iss(b).reduce((s, i) => s + SEV_W[i.sev], 0) - iss(a).reduce((s, i) => s + SEV_W[i.sev], 0),
+    slow: (a, b) => (b.timeMs || 0) - (a.timeMs || 0),
+    words: (a, b) => (a.wordCount ?? 1e9) - (b.wordCount ?? 1e9),
+    depth: (a, b) => a.depth - b.depth,
+    url: (a, b) => a.url.localeCompare(b.url),
+  };
+  if (sorters[sort]) list = [...list].sort(sorters[sort]);
+  if (!list.length) { $('pageList').innerHTML = `<div class="empty">${S.results.length ? 'Geen pagina\'s voor dit filter.' : 'Nog geen resultaten.'}</div>`; return; }
+  $('pageList').innerHTML = list.slice(0, pageLimit).map(r => {
+    const is = iss(r);
+    const e = is.filter(i => i.sev === 'error').length, w = is.filter(i => i.sev === 'warn').length;
+    const path = (() => { try { const u = new URL(r.url); return u.pathname + u.search; } catch { return r.url; } })();
+    let html = `<div class="item" data-page="${esc(r.url)}">
+      <div class="top"><span class="badge s${String(r.status || 0)[0]}">${r.status || 'FOUT'}</span><span class="t">${esc(r.title || path)}</span></div>
+      <div class="u">${esc(r.url)}</div>
+      <div class="m">${r.wordCount != null ? r.wordCount + ' woorden · ' : ''}${r.timeMs} ms${e ? ` · <span class="e">${e} fout${e > 1 ? 'en' : ''}</span>` : ''}${w ? ` · <span class="w">${w} waarschuwing${w > 1 ? 'en' : ''}</span>` : ''}${!e && !w && isPage(r) ? ' · ✅' : ''}</div>`;
+    if (openPage === r.url) {
+      const inl = A.inlinks.get(r.url) || [];
+      html += `<div class="details" data-stop>
+        <div><a href="${esc(r.url)}" target="_blank" rel="noopener">Pagina openen ↗</a></div>
+        ${r.finalUrl ? `<div><b>Doorgestuurd naar:</b> ${esc(r.finalUrl)}</div>` : ''}
         ${r.error ? `<div style="color:var(--err)"><b>Fout:</b> ${esc(r.error)}</div>` : ''}
-      </div></td></tr>`;
+        <div><b>Titel:</b> ${esc(r.title) || '<span class="muted">ontbreekt</span>'} ${r.title ? `<span class="muted">(${r.title.length} tekens)</span>` : ''}</div>
+        <div><b>Omschrijving:</b> ${esc(r.description) || '<span class="muted">ontbreekt</span>'} ${r.description ? `<span class="muted">(${r.description.length} tekens)</span>` : ''}</div>
+        <div><b>H1:</b> ${r.h1?.length ? esc(r.h1.join(' | ')) : '<span class="muted">ontbreekt</span>'} · <b>H2's:</b> ${r.h2Count ?? 0}</div>
+        <div><b>Links:</b> ${r.linkCount ?? 0} (${r.externalCount ?? 0} extern) · <b>Inkomende links:</b> ${inl.length}${r.viaSitemap ? ' · gevonden via sitemap' : ''}</div>
+        <div><b>Afbeeldingen:</b> ${r.images ?? 0}${r.imagesNoAlt ? ` (${r.imagesNoAlt} zonder alt)` : ''} · <b>Grootte:</b> ${r.size ? (r.size / 1024).toFixed(0) + ' KB' : '—'} · <b>Diepte:</b> ${r.depth}</div>
+        <div><b>Taal:</b> ${esc(r.lang) || '—'} · <b>Mobiel:</b> ${r.viewport ? 'ja' : 'nee'} · <b>Robots:</b> ${esc(r.robotsMeta) || 'standaard'}</div>
+        ${r.canonical ? `<div><b>Canonical:</b> ${esc(r.canonical)}</div>` : ''}
+        ${r.from ? `<div><b>Gevonden via:</b> ${esc(r.from)}</div>` : ''}
+        ${r.emails?.length ? `<div><b>E-mail:</b> ${r.emails.map(esc).join(', ')}</div>` : ''}
+        ${is.length ? `<div style="margin-top:6px"><b>Problemen:</b><ul class="iss">${is.map(i => `<li><span style="color:var(--${i.sev === 'warn' ? 'warn' : i.sev === 'error' ? 'err' : 'info'})">●</span> ${esc(i.label)}</li>`).join('')}</ul></div>` : '<div style="margin-top:6px">✅ Geen problemen op deze pagina.</div>'}
+      </div>`;
     }
-    return html;
+    return html + '</div>';
+  }).join('') + (list.length > pageLimit ? `<div style="text-align:center;padding-top:12px"><button class="secondary small" id="moreBtn">Meer tonen (${list.length - pageLimit} over)</button></div>` : '');
+}
+
+function renderLinks() {
+  const el = $('p-links');
+  const internalBroken = S.results.filter(r => !r.status || r.status >= 400);
+  if (!S.links.length && !internalBroken.length) {
+    el.innerHTML = `<div class="card empty">${S.running ? 'Externe links worden gecontroleerd nadat alle pagina\'s gescand zijn.' : 'Nog geen links gecontroleerd.'}</div>`;
+    return;
+  }
+  const broken = [...A.broken].sort((a, b) => (a.status || 0) - (b.status || 0));
+  const blocked = S.links.filter(l => BLOCKED.includes(l.status));
+  const okCount = S.links.length - broken.length - blocked.length;
+  const linkRow = l => `<li><span class="badge s${String(l.status || 0)[0]}">${l.status || 'FOUT'}</span> <a class="plain" href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.url)}</a>
+      ${l.error ? `<div class="muted">${esc(l.error)}</div>` : ''}
+      <div class="muted">Staat op: ${(l.from || []).slice(0, 3).map(esc).join(', ')}${(l.from || []).length > 3 ? ' …' : ''}</div></li>`;
+  el.innerHTML = `
+    <div class="card"><h3>${broken.length || internalBroken.length ? '🔴 Kapotte links' : '✅ Geen kapotte links gevonden'}</h3>
+      <p class="muted" style="margin:0 0 8px;font-size:13px">${S.links.length} externe links en bestanden gecontroleerd, ${okCount} werken${blocked.length ? `, ${blocked.length} konden niet gecontroleerd worden` : ''}.</p>
+      ${internalBroken.length ? `<p style="margin:10px 0 4px"><b>Interne pagina's</b></p><div class="issue open"><div class="body"><ul>${internalBroken.map(r => `<li><span class="badge s${String(r.status || 0)[0]}">${r.status || 'FOUT'}</span> ${esc(r.url)}<div class="muted">Staat op: ${(A.inlinks.get(r.url) || [r.from]).filter(Boolean).slice(0, 3).map(esc).join(', ') || '—'}</div></li>`).join('')}</ul></div></div>` : ''}
+      ${broken.length ? `<p style="margin:10px 0 4px"><b>Externe links en bestanden</b></p><div class="issue open"><div class="body"><ul>${broken.map(linkRow).join('')}</ul></div></div>` : ''}
+    </div>
+    ${blocked.length ? `<div class="card"><div class="issue ${openIssues.has('blocked') ? 'open' : ''}"><div class="head" data-toggle="blocked"><span class="dot warn"></span><span class="lbl">Kon niet gecontroleerd worden<small>Deze sites weigeren bots (code 401/403/429/999). Controleer ze eventueel zelf.</small></span><span class="num">${blocked.length}</span></div>
+      <div class="body"><ul>${blocked.slice(0, 400).map(linkRow).join('')}</ul></div></div></div>` : ''}
+    ${okCount ? `<div class="card"><div class="issue ${openIssues.has('oklinks') ? 'open' : ''}"><div class="head" data-toggle="oklinks"><span class="dot ok"></span><span class="lbl">Werkende links</span><span class="num">${okCount}</span></div>
+      <div class="body"><ul>${S.links.filter(l => l.status && l.status < 400).slice(0, 400).map(linkRow).join('')}</ul></div></div></div>` : ''}`;
+}
+
+function renderSearch() {
+  const el = $('p-search');
+  if (!S.keywords.length) {
+    el.innerHTML = '<div class="card empty">Vul bovenaan bij <b>Zoekwoorden</b> een of meer woorden in (bijv. <i>korting, contact</i>) en start de scan.<br><br>Je ziet dan op welke pagina\'s die woorden staan.</div>';
+    return;
+  }
+  const hl = (t, k) => esc(t).replace(new RegExp(esc(k).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), m => `<mark>${m}</mark>`);
+  el.innerHTML = S.keywords.map(k => {
+    const hits = S.results.filter(r => r.matches && r.matches[k]).sort((a, b) => b.matches[k].count - a.matches[k].count);
+    const total = hits.reduce((s, r) => s + r.matches[k].count, 0);
+    return `<div class="card"><h3>"${esc(k)}"</h3><p class="muted" style="margin:-4px 0 8px;font-size:13px">${hits.length ? `${total}× gevonden op ${hits.length} pagina's` : 'Niet gevonden'}</p>
+      ${hits.slice(0, 200).map(r => `<div class="item" style="cursor:auto"><div class="top"><span class="badge s3">${r.matches[k].count}×</span><a class="t plain" href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title || r.url)}</a></div><div class="u">${esc(r.url)}</div><div class="snip">${hl(r.matches[k].snippet, k)}</div></div>`).join('')}
+    </div>`;
   }).join('');
 }
 
-function updateStats(queued = 0) {
-  const ok = results.filter(r => r.status >= 200 && r.status < 300).length;
-  const err = results.filter(r => !r.status || r.status >= 400).length;
-  const emails = new Set(results.flatMap(r => r.emails || []));
-  const avg = results.length ? Math.round(results.reduce((s, r) => s + r.timeMs, 0) / results.length) : 0;
-  $('stPages').textContent = results.length;
-  $('stOk').textContent = ok;
-  $('stErr').textContent = err;
-  $('stQueue').textContent = queued;
-  $('stEmails').textContent = emails.size;
-  $('stTime').textContent = avg + ' ms';
-  $('bar').style.width = Math.min(100, results.length / maxPages * 100) + '%';
+function renderSite() {
+  const el = $('p-site');
+  if (!S.site) { el.innerHTML = `<div class="card empty">${S.running ? 'Bezig met controleren…' : 'Nog geen scan uitgevoerd.'}</div>`; return; }
+  const list = siteCheckList();
+  el.innerHTML = `<div class="card"><h3>Website-instellingen en beveiliging</h3>
+    ${S.site.error ? `<p style="color:var(--err)">⚠️ Startpagina niet bereikbaar: ${esc(S.site.error)}</p>` : ''}
+    ${list.map(c => `<div class="check-row"><span class="ic">${c.ok ? '✅' : c.ok === null || c.ok === undefined ? '➖' : '❌'}</span><div>${esc(c.label)}<small>${esc(c.tip)}</small></div></div>`).join('')}
+    ${S.site.server ? `<div class="check-row"><span class="ic">🖥️</span><div>Server<small>${esc(S.site.server)}</small></div></div>` : ''}
+  </div>`;
 }
 
-function setRunning(on) {
-  $('startBtn').disabled = on;
-  $('stopBtn').disabled = !on;
-  $('startBtn').textContent = on ? 'Bezig met crawlen…' : 'Start crawl';
+// ---------- Scan starten / volgen ----------
+function handle(event, d) {
+  switch (event) {
+    case 'phase': S.phase = d.text; break;
+    case 'site': S.site = d; break;
+    case 'sitemap': S.sitemap = d; break;
+    case 'start': S.keywords = d.keywords || []; S.maxPages = d.maxPages; S.startUrl = d.url; break;
+    case 'page': S.results.push(d); S.phase = `Pagina's scannen… (${d.queued} in de wachtrij)`; break;
+    case 'link': S.links.push(d); break;
+    case 'done':
+      S.summary = d;
+      S.phase = d.cancelled ? `Scan gestopt na ${d.done} pagina's` : `Scan voltooid: ${d.done} pagina's${d.remaining ? ` (limiet bereikt, nog ${d.remaining} gevonden)` : ''}`;
+      finish(); break;
+    case 'failure': S.phase = 'Fout: ' + d.error; finish(); break;
+    case 'closed': if (!S.finished) finish(); break;
+  }
+  scheduleRender();
 }
 
-function stop() {
-  if (source) { source.close(); source = null; }
-  setRunning(false);
+function finish() {
+  S.running = false; S.finished = true;
+  if (es) { es.close(); es = null; }
+  store.del('ghost-job');
+  if (!store.set('ghost-last', S)) {
+    // Te groot voor de opslag: zonder linklijsten proberen
+    store.set('ghost-last', { ...S, results: S.results.map(({ links, ...r }) => r) });
+  }
 }
 
-let renderPending = false;
-function scheduleRender() {
-  if (renderPending) return;
-  renderPending = true;
-  requestAnimationFrame(() => { renderPending = false; render(); });
+function connect(id) {
+  jobId = id;
+  if (es) es.close();
+  es = new EventSource('/api/events?id=' + id);
+  ['phase', 'site', 'sitemap', 'start', 'page', 'link', 'done', 'failure', 'closed'].forEach(ev =>
+    es.addEventListener(ev, e => handle(ev, JSON.parse(e.data))));
+  es.onerror = async () => {
+    if (!es || es.readyState !== EventSource.CLOSED || S.finished) return; // browser probeert zelf opnieuw
+    es = null;
+    let exists = null;
+    try { exists = (await fetch('/api/job?id=' + id)).ok; } catch {}
+    if (exists === null) {
+      // Server (even) niet bereikbaar: later opnieuw proberen
+      S.phase = 'Geen verbinding met de server. Draait Termux/node nog? Opnieuw proberen…';
+      scheduleRender();
+      setTimeout(() => { if (!es && !S.finished && store.get('ghost-job') === id) { S = freshState(); S.running = true; connect(id); } }, 4000);
+    } else if (exists) {
+      S = freshState(); S.running = true; connect(id);
+    } else {
+      // Scan bestaat niet meer (server herstart)
+      S.running = false; store.del('ghost-job');
+      const last = store.get('ghost-last');
+      if (!S.results.length && last) S = last; else S.phase = 'De scan is verloren gegaan doordat de server herstartte. Start opnieuw.';
+      scheduleRender();
+    }
+  };
 }
 
-$('form').addEventListener('submit', e => {
+$('form').addEventListener('submit', async e => {
   e.preventDefault();
-  stop();
-  results = []; openUrl = null;
-  maxPages = +$('maxPages').value || 50;
-  updateStats(); render();
-  const p = new URLSearchParams({
-    url: $('url').value.trim(),
-    maxPages, maxDepth: $('maxDepth').value, concurrency: $('concurrency').value, delay: $('delay').value,
+  const opts = {
+    url: $('url').value.trim(), keywords: $('keywords').value,
+    maxPages: $('maxPages').value, maxDepth: $('maxDepth').value, concurrency: $('concurrency').value, delay: $('delay').value,
     include: $('include').value, exclude: $('exclude').value,
     sameHost: $('sameHost').checked, respectRobots: $('respectRobots').checked,
-  });
-  setRunning(true);
-  source = new EventSource('/api/crawl?' + p);
-  source.addEventListener('page', ev => {
-    const d = JSON.parse(ev.data);
-    results.push(d);
-    updateStats(d.queued);
-    scheduleRender();
-  });
-  source.addEventListener('done', ev => {
-    const d = JSON.parse(ev.data);
-    updateStats(d.remaining);
-    $('bar').style.width = '100%';
-    stop();
-  });
-  source.addEventListener('failure', ev => { alert('Fout: ' + JSON.parse(ev.data).error); stop(); });
-  source.onerror = () => {
-    if (source && !results.length) alert('Kon de crawl niet starten. Controleer de URL en of de server draait.');
-    stop();
+    useSitemap: $('useSitemap').checked, checkLinks: $('checkLinks').checked,
   };
+  store.set('ghost-opts', opts);
+  if (es) { es.close(); es = null; }
+  S = freshState(); S.running = true; S.phase = 'Scan starten…'; S.maxPages = +opts.maxPages || 100;
+  openPage = null; pageLimit = 150; openIssues.clear();
+  setTab('overview');
+  try {
+    const res = await fetch('/api/scan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(opts) });
+    const d = await res.json();
+    if (!res.ok) throw new Error(d.error);
+    store.set('ghost-job', d.id);
+    connect(d.id);
+  } catch (err) {
+    S.running = false; S.phase = 'Kon scan niet starten: ' + err.message;
+    render();
+  }
 });
 
-$('stopBtn').addEventListener('click', stop);
-$('filter').addEventListener('input', render);
-$('rows').addEventListener('click', e => {
-  const tr = e.target.closest('tr.item');
-  if (!tr) return;
-  openUrl = openUrl === tr.dataset.url ? null : tr.dataset.url;
+$('stopBtn').addEventListener('click', () => {
+  if (jobId) fetch('/api/stop?id=' + jobId, { method: 'POST' }).catch(() => {});
+  S.phase = 'Stoppen…'; render();
+});
+
+// ---------- Interactie ----------
+function setTab(t) {
+  tab = t;
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'p-' + t));
+  render();
+}
+$('tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.tab); });
+
+document.addEventListener('click', e => {
+  const go = e.target.closest('[data-goto]');
+  if (go) {
+    if (go.dataset.issue) openIssues.add(go.dataset.issue);
+    setTab(go.dataset.goto);
+    if (go.dataset.issue) $('issue-' + go.dataset.issue)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+  const tg = e.target.closest('[data-toggle]');
+  if (tg) { const id = tg.dataset.toggle; openIssues.has(id) ? openIssues.delete(id) : openIssues.add(id); tg.parentElement.classList.toggle('open'); return; }
+  const exp = e.target.closest('[data-exp]');
+  if (exp) { doExport(exp.dataset.exp); return; }
+  if (e.target.id === 'moreBtn') { pageLimit += 150; render(); return; }
+  if (e.target.closest('[data-stop]') || e.target.closest('a')) return;
+  const item = e.target.closest('[data-page]');
+  if (item) { openPage = openPage === item.dataset.page ? null : item.dataset.page; render(); }
+});
+$('pageFilter').addEventListener('input', () => { pageLimit = 150; render(); });
+$('pageSort').addEventListener('change', render);
+$('pageChips').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  pageFilter = b.dataset.f;
+  $('pageChips').querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
   render();
 });
-document.querySelectorAll('th[data-k]').forEach(th => th.addEventListener('click', () => {
-  const k = th.dataset.k;
-  sortDir = sortKey === k ? -sortDir : 1;
-  sortKey = k;
-  render();
-}));
 
+// ---------- Exporteren ----------
 function download(name, content, type) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([content], { type }));
   a.download = name;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
-const stamp = () => new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+const host = () => { try { return new URL(S.startUrl).host.replace(/^www\./, ''); } catch { return 'site'; } };
+const stamp = () => new Date().toISOString().slice(0, 10);
+const csv = (cols, rows) => '﻿' + [cols.map(c => c[0]).join(';'), ...rows.map(r => cols.map(c => {
+  const v = c[1](r); return '"' + String(Array.isArray(v) ? v.join(' | ') : v ?? '').replace(/"/g, '""') + '"';
+}).join(';'))].join('\r\n');
 
-$('csvBtn').addEventListener('click', () => {
-  const cols = ['status', 'url', 'finalUrl', 'title', 'description', 'h1', 'depth', 'linkCount', 'imageCount', 'wordCount', 'timeMs', 'from', 'error'];
-  const cell = v => '"' + String(Array.isArray(v) ? v.join(' | ') : v ?? '').replace(/"/g, '""') + '"';
-  const csv = [cols.join(','), ...results.map(r => cols.map(c => cell(r[c])).join(','))].join('\n');
-  download(`crawl-${stamp()}.csv`, '﻿' + csv, 'text/csv');
-});
-$('jsonBtn').addEventListener('click', () => download(`crawl-${stamp()}.json`, JSON.stringify(results, null, 2), 'application/json'));
-$('emailBtn').addEventListener('click', () => {
-  const emails = [...new Set(results.flatMap(r => r.emails || []))].sort();
-  download(`emails-${stamp()}.txt`, emails.join('\n'), 'text/plain');
-});
+function doExport(kind) {
+  const base = `${host()}-${stamp()}`;
+  if (kind === 'pages') {
+    download(`${base}-paginas.csv`, csv([
+      ['Status', r => r.status], ['URL', r => r.url], ['Titel', r => r.title], ['Titel lengte', r => r.title?.length], ['Omschrijving', r => r.description],
+      ['H1', r => r.h1], ['Woorden', r => r.wordCount], ['Laadtijd ms', r => r.timeMs], ['Grootte KB', r => r.size && Math.round(r.size / 1024)],
+      ['Diepte', r => r.depth], ['Links', r => r.linkCount], ['Inkomende links', r => (A.inlinks.get(r.url) || []).length],
+      ['Afbeeldingen', r => r.images], ['Zonder alt', r => r.imagesNoAlt], ['Mobiel', r => r.viewport ? 'ja' : 'nee'],
+      ['Canonical', r => r.canonical], ['Robots', r => r.robotsMeta], ['Doorgestuurd naar', r => r.finalUrl], ['Fout', r => r.error],
+      ['Problemen', r => (A.pageIssues.get(r.url) || []).map(i => i.label)],
+    ], S.results), 'text/csv');
+  } else if (kind === 'issues') {
+    const rows = [];
+    for (const rule of RULES) for (const x of A.byRule.get(rule.id)) rows.push({ sev: SEV_NL[rule.sev], label: rule.label, url: x.page.url, detail: x.detail, tip: rule.tip });
+    for (const l of A.broken) rows.push({ sev: 'fout', label: 'Kapotte link', url: l.url, detail: (l.error || 'HTTP ' + l.status) + ' · staat op ' + (l.from || []).join(' | '), tip: 'Verwijder of vervang deze link.' });
+    download(`${base}-problemen.csv`, csv([['Ernst', r => r.sev], ['Probleem', r => r.label], ['URL', r => r.url], ['Details', r => r.detail], ['Oplossing', r => r.tip]], rows), 'text/csv');
+  } else if (kind === 'links') {
+    download(`${base}-links.csv`, csv([['Status', l => l.status], ['URL', l => l.url], ['Extern', l => l.external ? 'ja' : 'nee'], ['Fout', l => l.error], ['Staat op', l => l.from]], S.links), 'text/csv');
+  } else if (kind === 'sitemap') {
+    const urls = S.results.filter(r => isPage(r) && !/noindex/.test(r.robotsMeta || '') && !r.finalUrl && (!r.canonical || r.canonical === r.url)).map(r => r.url);
+    const xe = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    download('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(u => `  <url><loc>${xe(u)}</loc><lastmod>${stamp()}</lastmod></url>`).join('\n')}\n</urlset>\n`, 'application/xml');
+  } else if (kind === 'emails') {
+    download(`${base}-emails.txt`, [...new Set(S.results.flatMap(r => r.emails || []))].sort().join('\n'), 'text/plain');
+  } else if (kind === 'json') {
+    download(`${base}-scan.json`, JSON.stringify({ ...S, analyse: { score: A.score, counts: A.counts } }, null, 2), 'application/json');
+  }
+}
+
+// ---------- Opstarten ----------
+(function init() {
+  const opts = store.get('ghost-opts');
+  if (opts) for (const [k, v] of Object.entries(opts)) {
+    const el = $(k); if (!el) continue;
+    if (el.type === 'checkbox') el.checked = !!v; else el.value = v;
+  }
+  const running = store.get('ghost-job');
+  if (running) { S.running = true; S.phase = 'Verbinding herstellen…'; connect(running); }
+  else { const last = store.get('ghost-last'); if (last) { S = last; S.running = false; } }
+  A = analyze(); render();
+})();
 </script>
 </body>
 </html>
