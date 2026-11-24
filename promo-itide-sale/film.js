@@ -104,13 +104,13 @@ function sBrandHook(ctx, u) {         // wordmark builds, then RESEARCH-GRADE
 function sHeroPhoto(ctx, u, IMG) {    // the site's hero photo: ITide sign + four vials, slow push
   bg(ctx);
   const k = springU(u, -0.4, SPRING.gentle);
-  const w = P ? W - 2 * 50 : W * 0.62, h = P ? w * 1.09 : H * 0.8;
-  const x = (W - w) / 2 + (P ? 0 : -W * 0.14), y = P ? H * 0.3 : (H - h) / 2;
+  const w = P ? W - 2 * 50 : W * 0.5, h = P ? w * 1.09 : H * 0.86;
+  const x = P ? (W - w) / 2 : W * 0.05, y = P ? H * 0.3 : (H - h) / 2;
   ctx.save(); ctx.translate(0, (1 - k) * H * 0.6);
-  card(ctx, IMG.hero, x, y, w, h, { zoom: 1.0 * 1.15 ** prog(u, 0, 4), fy: P ? 0.55 : 0.2 });
+  card(ctx, IMG.hero, x, y, w, h, { zoom: 1.0 * 1.04 ** prog(u, 0, 4), fy: P ? 0.55 : 0.3 });
   ctx.restore();
-  const tx = P ? S.x + 10 : W * 0.69, ty = P ? S.y + 100 : H * 0.42;
-  const hs = P ? 130 : Math.min(110, fitSize(ctx, DARK ? 'RESEARCH-GRADE' : 'ALL PEPTIDES', 700, DISPLAY, W * 0.27, 110, 0.02));
+  const tx = P ? S.x + 10 : W * 0.6, ty = P ? S.y + 100 : H * 0.42;
+  const hs = P ? 130 : Math.min(110, fitSize(ctx, DARK ? 'RESEARCH-GRADE' : 'ALL PEPTIDES', 700, DISPLAY, W * 0.36, 130, 0.02));
   rows(ctx, [[DARK ? 'RESEARCH-GRADE' : 'ALL PEPTIDES', FG], [DARK ? 'PEPTIDES.' : '25% OFF.', DARK ? C.blueHi : C.red]], tx, ty, hs, hs * 1.02,
     (i) => springU(u, 0.4 + i * 0.4, SPRING.snappy), 'left', 2);
   const sk = E.outQuint(prog(u, 1.4, 2));
@@ -122,7 +122,7 @@ const VIALS = [['v_bpc', 'BPC-157', '10MG', 0.9], ['v_tb500', 'TB-500', '10MG', 
 function sLineup(ctx, u, IMG) {       // three vials pop in one per beat (sale)
   bg(ctx);
   const n = VIALS.length, gap = P ? 28 : 40;
-  const cw = P ? (W - 2 * S.x - gap * (n - 1)) / n : 330, ch = cw * 1.9;
+  const cw = P ? (W - 2 * S.x - gap * (n - 1)) / n : 290, ch = cw * 1.9;
   const x0 = (W - (cw * n + gap * (n - 1))) / 2, y0 = P ? H * 0.3 : H * 0.24;
   VIALS.forEach(([img, name, mg, fx], i) => {
     const k = springU(u, -0.2 + i * 0.6, SPRING.bouncy); if (k <= 0) return;
@@ -138,8 +138,8 @@ function sLineup(ctx, u, IMG) {       // three vials pop in one per beat (sale)
 function sPrice(ctx, u, IMG) {        // Big R 20mg: $125.00 -> $85.00 (the site's product page)
   bg(ctx);
   const k = springU(u, -0.3, SPRING.gentle);
-  const vw = P ? 560 : 390, vh = vw * 2.35;
-  const vx = P ? W / 2 - vw / 2 : W * 0.2, vy = P ? S.y + 40 : (H - vh) / 2 + 60;
+  const vw = P ? 330 : 330, vh = vw * 2.35;
+  const vx = P ? W / 2 - vw / 2 : W * 0.26, vy = P ? S.y + 60 : (H - vh) / 2;
   ctx.save(); ctx.translate(0, (1 - k) * H * 0.5);
   ctx.save(); ctx.shadowColor = 'rgba(15,27,45,0.35)'; ctx.shadowBlur = 60; ctx.shadowOffsetY = 24;
   rrect(ctx, vx, vy, vw, vh, 34); ctx.fillStyle = C.navy; ctx.fill(); ctx.restore();
@@ -196,6 +196,42 @@ function sKlow(ctx, u, IMG) {
   text(ctx, '99% PURITY · NOT FOR HUMAN OR VETERINARY USE', tx, ty + (P ? 300 : 270), font(P ? 30 : 26, 500, UI), '#93c5fd', 'left', 4);
   ctx.restore();
 }
+const CARDS = {
+  ipa: ['c_ipamorelin', 'IPAMORELIN', '10MG'], glow: ['c_glow', 'GLOW', '70MG'], cagri: ['c_cagri', 'CAGRILINTIDE', '10MG'],
+  bigt: ['c_bigt', 'BIG T', '50MG'], klow: ['c_klow', 'KLOW', '80MG'],
+};
+function sCard(ctx, u, IMG, key, side = 1) {
+  bg(ctx);
+  const [img, name, mg] = CARDS[key], im = IMG[img];
+  const k = springU(u, -0.5, SPRING.gentle);
+  const w = P ? Math.min(im.width * 1.04, W - 80) : 820, h = w * im.height / im.width;
+  const x = P ? (W - w) / 2 : (side > 0 ? W * 0.06 : W * 0.94 - w), y = P ? S.y + 10 : (H - h) / 2;
+  ctx.save(); ctx.translate((1 - k) * side * (P ? 0 : -W * 0.5), (1 - k) * (P ? H * 0.4 : 0));
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 70; ctx.shadowOffsetY = 26;
+  rrect(ctx, x, y, w, h, 30); ctx.fillStyle = C.navy; ctx.fill(); ctx.restore();
+  cover(ctx, im, x, y, w, h, { radius: 30, zoom: 1.0 * 1.03 ** prog(u, 0, 4) });
+  ctx.restore();
+  const tx = P ? S.x + 10 : (side > 0 ? W * 0.56 : W * 0.08), ty = P ? y + h + 170 : H * 0.42;
+  const ns = Math.min(P ? 150 : 140, fitSize(ctx, name, 700, DISPLAY, P ? S.w : W * 0.38, 160, 0.02));
+  rows(ctx, [[name, FG], [mg + ' · 99%', DARK ? C.blueHi : C.blue]], tx, ty, ns, ns * 0.95, (i) => springU(u, 0.2 + i * 0.35, SPRING.snappy), 'left', 2);
+  const ck = springU(u, 1.2, SPRING.snappy);
+  if (ck > 0) chip(ctx, 'CERTIFICATE OF ANALYSIS', tx, ty + ns + (P ? 40 : 40), P ? 38 : 34,
+    { stroke: DARK ? '#93c5fd' : C.blue, ink: DARK ? '#93c5fd' : C.blue, scale: ck, f: UI, w8: 700, track: 4, padX: 28 });
+}
+function cardGrid(ctx, u, IMG, alpha) {
+  const keys = ['ipa', 'glow', 'cagri', 'bigt', 'klow', 'ipa'];
+  const cs = P ? 470 : 440, gap = 30, cols = P ? 2 : 4;
+  const rowsN = P ? 4 : 2;
+  const gw = cols * cs + (cols - 1) * gap, x0 = (W - gw) / 2 - (u * 20) % (cs + gap) + (cs + gap) / 2;
+  ctx.save(); ctx.globalAlpha = alpha;
+  for (let r = 0; r < rowsN + 1; r++) for (let c = -1; c < cols + 1; c++) {
+    const im = IMG[CARDS[keys[(r * 3 + c + 12) % keys.length]][0]];
+    const x = x0 + c * (cs + gap), y = (P ? 200 : 40) + r * (cs + gap) - (u * 30) % (cs + gap);
+    rrect(ctx, x, y, cs, cs, 24); ctx.fillStyle = C.navy; ctx.fill();
+    cover(ctx, im, x, y, cs, cs, { radius: 24 });
+  }
+  ctx.restore();
+}
 function sCode(ctx, u) {              // sale: code + tap to copy
   bg(ctx);
   band(ctx, P ? S.y - 60 : 0, P ? 90 : 80, u);
@@ -213,10 +249,8 @@ function sCode(ctx, u) {              // sale: code + tap to copy
 function sCatalogue(ctx, u, IMG) {    // brand: research-use band + SHOP FULL CATALOGUE
   bg(ctx);
   const hk = springU(u, -0.3, SPRING.gentle);
-  ctx.save(); ctx.globalAlpha = 0.35 * hk;
-  cover(ctx, IMG.hero, 0, 0, W, H, { zoom: 1.1 + 0.05 * prog(u, 0, 4) });
-  ctx.restore();
-  ctx.fillStyle = 'rgba(15,27,45,0.72)'; ctx.fillRect(0, 0, W, H);
+  cardGrid(ctx, u, IMG, 0.5 * hk);
+  ctx.fillStyle = 'rgba(15,27,45,0.62)'; ctx.fillRect(0, 0, W, H);
   band(ctx, H * 0.3, P ? 110 : 100, u, C.navy2, 'rgba(255,255,255,0.85)', 160);
   band(ctx, H * 0.3 + (P ? 130 : 120), P ? 110 : 100, -u, C.blue, 'rgba(255,255,255,0.9)', 160);
   rows(ctx, [['SHOP FULL', C.white], ['CATALOGUE', C.blueHi]], W / 2, H * (P ? 0.58 : 0.7), P ? 150 : 130, P ? 150 : 130, (i) => springU(u, 0.6 + i * 0.4, SPRING.snappy), 'center', 4);
@@ -253,16 +287,16 @@ const EDITS = {
     [28, sEnd, [[-0.2, 'logo', 'impact'], [0.6, 'url', 'bell', { pitch: 'A5' }], [1.4, 'chip', 'pop', { pitch: 'E6' }]]]],
   brand: [[0, sBrandHook, [[-0.3, 'logo', 'impact'], [1.4, 'grade', 'tick']]],
     [4, sHeroPhoto, [[0.4, 'r1', 'tick'], [0.8, 'r2', 'tick']]],
-    [8, (c, u, I) => sVial(c, u, I, VIALS[0], 1), [[0, 'v', 'thud']]],
-    [12, (c, u, I) => sVial(c, u, I, VIALS[1], -1), [[0, 'v', 'thud']]],
-    [16, (c, u, I) => sVial(c, u, I, VIALS[2], 1), [[0, 'v', 'thud']]],
-    [20, sKlow, [[0.3, 'r1', 'tick'], [0.6, 'r2', 'tick'], [0.9, 'r3', 'tick']]],
+    [8, (c, u, I) => sCard(c, u, I, 'ipa', 1), [[0, 'v', 'thud'], [1.2, 'coa', 'pop', { pitch: 'A5' }]]],
+    [12, (c, u, I) => sCard(c, u, I, 'glow', -1), [[0, 'v', 'thud'], [1.2, 'coa', 'pop', { pitch: 'C6' }]]],
+    [16, (c, u, I) => sCard(c, u, I, 'cagri', 1), [[0, 'v', 'thud'], [1.2, 'coa', 'pop', { pitch: 'E6' }]]],
+    [20, (c, u, I) => sCard(c, u, I, 'klow', -1), [[0, 'v', 'thud'], [1.2, 'coa', 'pop', { pitch: 'A5' }]]],
     [24, sCatalogue, [[0.6, 'shop', 'tick'], [1.0, 'cat', 'tick']]],
     [28, sEnd, [[-0.2, 'logo', 'impact'], [0.6, 'url', 'bell', { pitch: 'A5' }], [1.4, 'chip', 'pop', { pitch: 'E6' }]]]],
 };
 function sCatalogueLight(ctx, u, IMG) { sCatalogue(ctx, u, IMG); }
 // sale: the second lineup slot (20-24) shows the hero photo again with the band instead, for variety
-EDITS.sale[5] = [20, (c, u, I) => { bg(c); band(c, 0, H, u, C.navy, 'rgba(255,255,255,0.08)', 60); sLineupDark(c, u, I); }, [[0, 'wall', 'thud']]];
+EDITS.sale[5] = [20, (c, u, I) => sCard(c, u, I, 'klow', -1), [[0, 'card', 'thud'], [1.2, 'coa', 'pop', { pitch: 'A5' }]]];
 function sLineupDark(ctx, u, IMG) {
   // the four-vial hero photo, full bleed with a slow pan, + "RESEARCH USE ONLY" band
   const k = springU(u, -0.4, SPRING.gentle);
@@ -284,7 +318,7 @@ const drawScene = (i, ctx, u, IMG) => SCENES[i][1](ctx, u - SCENES[i][0], IMG);
 
 M.film({
   fonts: [font(100, 700, DISPLAY), font(40, 500, UI), font(40, 700, UI)],
-  images: Object.fromEntries(['hero', 'v_bpc', 'v_tb500', 'v_nad', 'v_big', 'klow_card'].map((k) => [k, `assets/products/${k}.png`])),
+  images: Object.fromEntries(['hero', 'v_bpc', 'v_tb500', 'v_nad', 'v_big', 'c_ipamorelin', 'c_glow', 'c_cagri', 'c_bigt', 'c_klow'].map((k) => [k, `assets/products/${k}.png`])),
   hits: HITS,
   draw(ctx, u, t, IMG) {
     for (const [b, [dx, dy]] of Object.entries(WHIPS).map(([b, v]) => [Number(b), v])) {
