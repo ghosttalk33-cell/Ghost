@@ -229,6 +229,12 @@ const T = {
     scanning: '🔄 Bezig: ', task: 'taak {a} van {b}',
     disclaimer: '⚠️ COA\'s kunnen vervalst of van een andere batch zijn. Een Janoshik-COA kun je verifiëren op janoshik.com. Prijzen in euro zijn omgerekend met de actuele wisselkoers; verzendkosten zijn niet meegerekend. Controleer zelf of een shop betrouwbaar is en wat er in jouw land wettelijk mag.',
     statShops: 'Shops', statOffers: 'Prijzen', statPeptides: 'Peptiden', statCoa: 'Met COA',
+    expTitle: '📤 Downloaden en delen', expIntro: 'Alle aanbiedingen van alle shops in één bestand, om te bewaren of door te sturen.',
+    expExcel: '📊 Excel (alle aanbiedingen)', expReport: '📑 Rapport (beste deals)', expShare: '📤 Delen…', expOnlyStock: 'Alleen op voorraad', expOnlyCoa: 'Alleen met COA',
+    expShareHow: 'Wat wil je delen?', expNoShare: 'Delen wordt hier niet ondersteund; het bestand is gedownload. Je kunt het nu zelf versturen vanuit je Downloads.',
+    expRows: '{n} aanbiedingen', repTitle: 'Peptideprijzen', repIntro: 'Overzicht van {s} shops en {n} aanbiedingen, per peptide gesorteerd van goedkoop naar duur (prijs per mg).',
+    repTop: 'Goedkoopste per peptide', repAll: 'Alle aanbiedingen per peptide', repPrint: '🖨️ Opslaan als PDF / afdrukken', repMade: 'Gemaakt met Ghost Prijsvolger',
+    colShop: 'Shop', colProduct: 'Product', colDose: 'Dosering', colPrice: 'Prijs', colPerMg: 'Per mg', colStock: 'Voorraad', colLink: 'Link', yes: 'ja', no: 'nee', best: 'Beste deal',
     updated: 'Bijgewerkt', autoEvery: 'Prijzen worden elke 6 uur automatisch bijgewerkt door GitHub. Eén keer per week wordt er gezocht naar nieuwe shops.',
     addViaGithub: 'Shop toevoegen? Zet het adres in <a href="{u}" target="_blank" rel="noopener">shops-nl.txt</a> op GitHub (✏️ potloodje → regel toevoegen → <i>Commit changes</i>). Binnen ± 15 minuten staat hij erin.',
     staticFind: 'Het zoeken naar shops gebeurt automatisch, één keer per week. Hieronder zie je wat er gevonden is.', alertsLocal: 'Alarmen worden op dit apparaat bewaard en na elke update gecontroleerd.',
@@ -265,6 +271,12 @@ const T = {
     scanning: '🔄 Working: ', task: 'task {a} of {b}',
     disclaimer: '⚠️ COAs can be fake or from a different batch. A Janoshik COA can be verified on janoshik.com. Prices exclude shipping; foreign prices are converted at the current exchange rate. Check vendor reputation yourself and what is legal where you live.',
     statShops: 'Shops', statOffers: 'Prices', statPeptides: 'Peptides', statCoa: 'With COA',
+    expTitle: '📤 Download and share', expIntro: 'All offers from all shops in one file, to keep or send to someone.',
+    expExcel: '📊 Excel (all offers)', expReport: '📑 Report (best deals)', expShare: '📤 Share…', expOnlyStock: 'In stock only', expOnlyCoa: 'With COA only',
+    expShareHow: 'What do you want to share?', expNoShare: "Sharing isn't supported here, so the file was downloaded. You can send it from your Downloads.",
+    expRows: '{n} offers', repTitle: 'Peptide prices', repIntro: 'Overview of {s} shops and {n} offers, sorted per peptide from cheapest to most expensive (price per mg).',
+    repTop: 'Cheapest per peptide', repAll: 'All offers per peptide', repPrint: '🖨️ Save as PDF / print', repMade: 'Made with Ghost Price Tracker',
+    colShop: 'Shop', colProduct: 'Product', colDose: 'Dose', colPrice: 'Price', colPerMg: 'Per mg', colStock: 'In stock', colLink: 'Link', yes: 'yes', no: 'no', best: 'Best deal',
     updated: 'Updated', autoEvery: 'Prices are updated automatically every 6 hours by GitHub. New shops are searched for once a week.',
     addViaGithub: 'Missing a shop? Ask the owner of this page to add it, or add it to <a href="{u}" target="_blank" rel="noopener">shops-us.txt</a> on GitHub.',
     staticFind: 'Shop discovery runs automatically once a week. Here is what was found.', alertsLocal: 'Alerts are stored on this device and checked after every update.',
@@ -348,6 +360,10 @@ function renderDeals() {
     <div class="stat"><b>${new Set(real.map(o => o.peptide)).size}</b><small>${T.statPeptides}</small></div>
     <div class="stat"><b>${real.filter(o => coaLevel(o) > 0).length}</b><small>${T.statCoa}</small></div></div>`;
   if (!D.offers.length) { el.innerHTML = `<div class="card">${stats}</div><div class="card empty">${T.noData}</div>`; return; }
+  const expCard = `<div class="card"><h3>${T.expTitle}</h3><p class="note" style="margin:-4px 0 8px">${T.expIntro}</p>
+    <div class="row" style="margin-bottom:8px"><label class="check"><input type="checkbox" id="expStock" ${expOpts.stock ? 'checked' : ''}> ${T.expOnlyStock}</label><label class="check"><input type="checkbox" id="expCoa" ${expOpts.coa ? 'checked' : ''}> ${T.expOnlyCoa}</label></div>
+    <div class="grid2"><button class="secondary small" data-exp="csv">${T.expExcel}</button><button class="secondary small" data-exp="report">${T.expReport}</button><button class="small" data-exp="share">${T.expShare}</button></div>
+    <p class="note" style="margin:8px 0 0" id="expCount">${t('expRows', { n: exportRows().length })}</p></div>`;
   const by = new Map();
   for (const o of real) {
     if (!o.inStock || o.perMg == null) continue;
@@ -356,11 +372,73 @@ function renderDeals() {
     else { cur.n++; cur.shops.add(o.shopId); }
   }
   const rows = [...by.entries()].sort((a, b) => b[1].shops.size - a[1].shops.size || a[0].localeCompare(b[0]));
-  el.innerHTML = `<div class="card">${stats}</div>
+  el.innerHTML = `<div class="card">${stats}</div>${expCard}
     <div class="card"><h3>${T.dealsTitle}</h3><p class="note" style="margin:-4px 0 6px">${T.dealsIntro}</p>
     <table class="deals">${rows.map(([p, r]) => `<tr data-pep="${esc(p)}">
       <td><b>${esc(p)}</b><div class="muted" style="font-size:12px">${esc(r.best.shop)} · ${esc(r.best.dose)}</div><div class="badges">${coaBadge(r.best)}</div></td>
       <td class="r"><b>${money(r.best.perMg)}</b><div class="muted" style="font-size:12px">${T.perMg}</div><div class="muted" style="font-size:12px">${pl(r.shops.size, 'shop', 'shops')}</div></td></tr>`).join('')}</table></div>`;
+}
+
+// ---------- Downloaden en delen ----------
+let expOpts = store.get('pw-exp') || { stock: true, coa: false };
+function exportRows() {
+  return D.offers.filter(o => o.peptide && !isWater(o) && (!expOpts.stock || o.inStock) && (!expOpts.coa || coaLevel(o) > 0))
+    .sort((a, b) => a.peptide.localeCompare(b.peptide) || (a.perMg ?? 1e9) - (b.perMg ?? 1e9) || (a.priceBase ?? 1e9) - (b.priceBase ?? 1e9));
+}
+const stampDate = () => new Date().toISOString().slice(0, 10);
+const coaText = o => { const c = o.coa || {}, l = coaLevel(o); return l === 3 ? T.coaVerif + (c.labs?.[0] ? ' (' + c.labs[0] + ')' : '') : l ? 'COA' + (c.labs?.[0] ? ' (' + c.labs[0] + ')' : '') : c.mentions ? T.coaNamed : T.noCoa; };
+function makeCsv(rows) {
+  const best = new Map(); for (const o of rows) if (o.perMg != null && !best.has(o.peptide)) best.set(o.peptide, o.key);
+  const cols = [[T.peptide, o => o.peptide], [T.colShop, o => o.shop], [T.colProduct, o => o.name + (o.variant ? ' · ' + o.variant : '')], [T.colDose, o => o.dose],
+    [T.colPrice + ' ' + BASE, o => o.priceBase], [T.colPerMg + ' ' + BASE, o => o.perMg], [T.colPrice + ' (shop)', o => o.price + ' ' + o.currency], [T.colStock, o => o.inStock ? T.yes : T.no],
+    ['COA', coaText], [T.purity[0].toUpperCase() + T.purity.slice(1), o => o.coa?.purity ? o.coa.purity + '%' : ''], ['COA link', o => (o.coa?.links || [])[0]?.url || ''], [T.best, o => best.get(o.peptide) === o.key ? '★' : ''], [T.colLink, o => o.url]];
+  const sep = REGION === 'nl' ? ';' : ',';
+  const num = v => typeof v === 'number' && REGION === 'nl' ? String(v).replace('.', ',') : v;
+  return '\ufeff' + [cols.map(c => c[0]).join(sep), ...rows.map(o => cols.map(c => '"' + String(num(c[1](o)) ?? '').replace(/"/g, '""') + '"').join(sep))].join('\r\n');
+}
+function makeReport(rows) {
+  const groups = new Map(); for (const o of rows) { if (!groups.has(o.peptide)) groups.set(o.peptide, []); groups.get(o.peptide).push(o); }
+  const shopsN = new Set(rows.map(o => o.shopId)).size;
+  const when = new Date(D.generated || Date.now()).toLocaleString(LOCALE);
+  const row = (o, i) => `<tr><td>${i + 1}</td><td><b>${esc(o.shop)}</b><br><span class="m">${esc(o.name)}${o.variant ? ' · ' + esc(o.variant) : ''}</span></td><td>${esc(o.dose)}</td><td class="r"><b>${money(o.priceBase)}</b></td><td class="r">${o.perMg != null ? money(o.perMg) : '—'}</td><td>${esc(coaText(o))}${o.coa?.purity ? '<br><span class="m">' + o.coa.purity + '%</span>' : ''}</td><td><a href="${esc(o.url)}">↗</a></td></tr>`;
+  const head = `<tr><th>#</th><th>${T.colShop}</th><th>${T.colDose}</th><th class="r">${T.colPrice}</th><th class="r">${T.colPerMg}</th><th>COA</th><th></th></tr>`;
+  return `<!doctype html><html lang="${REGION === 'us' ? 'en' : 'nl'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${T.repTitle} ${stampDate()}</title>
+<style>body{font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#1a1d26;max-width:900px;margin:0 auto;padding:16px}h1{margin:0 0 4px;font-size:22px}h2{margin:26px 0 8px;font-size:18px;border-bottom:2px solid #eee;padding-bottom:4px}
+.m{color:#666;font-size:12px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:6px 5px;border-bottom:1px solid #eee;vertical-align:top}th{color:#666;font-weight:600}.r{text-align:right;white-space:nowrap}a{color:#6a5cff}
+.top td:first-child{font-weight:600}button{background:#8b7bff;color:#fff;border:0;border-radius:8px;padding:10px 16px;font-size:15px;margin-bottom:14px}.note{color:#777;font-size:12px;margin-top:24px}
+@media print{button{display:none}h2{break-after:avoid}tr{break-inside:avoid}}</style></head><body>
+<button onclick="print()">${T.repPrint}</button><h1>💰 ${T.repTitle} ${REGION === 'us' ? '🇺🇸' : '🇳🇱'}</h1><div class="m">${when} · ${t('repIntro', { s: shopsN, n: rows.length })}</div>
+<h2>🏆 ${T.repTop}</h2><table class="top"><tr><th>${T.peptide}</th><th>${T.colShop}</th><th>${T.colDose}</th><th class="r">${T.colPerMg}</th><th>COA</th></tr>
+${[...groups.entries()].map(([p, l]) => { const b = l.find(o => o.perMg != null) || l[0]; return `<tr><td>${esc(p)}</td><td>${esc(b.shop)}</td><td>${esc(b.dose)}</td><td class="r"><b>${b.perMg != null ? money(b.perMg) : money(b.priceBase)}</b></td><td>${esc(coaText(b))}</td></tr>`; }).join('')}</table>
+<h2>📋 ${T.repAll}</h2>${[...groups.entries()].map(([p, l]) => `<h3 style="margin:18px 0 6px">${esc(p)} <span class="m">(${l.length})</span></h3><table>${head}${l.map(row).join('')}</table>`).join('')}
+<p class="note">⚠️ ${T.disclaimer}<br>${T.repMade}</p></body></html>`;
+}
+function saveFile(name, content, type) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([content], { type })); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+}
+async function shareFile(name, content, type) {
+  const file = new File([content], name, { type });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: name }); return; } catch (e) { if (e.name === 'AbortError') return; }
+  }
+  saveFile(name, content, type); alert(T.expNoShare);
+}
+async function doExport(kind) {
+  const rows = exportRows();
+  const base = `${REGION === 'us' ? 'peptide-prices' : 'peptideprijzen'}-${stampDate()}`;
+  if (kind === 'csv') return saveFile(base + '.csv', makeCsv(rows), 'text/csv');
+  if (kind === 'report') {
+    const html = makeReport(rows);
+    const w = window.open('', '_blank');
+    if (w) { w.document.write(html); w.document.close(); } else saveFile(base + '.html', html, 'text/html');
+    return;
+  }
+  if (kind === 'share') {
+    const choice = prompt(`${T.expShareHow}\n1 = ${T.expExcel}\n2 = ${T.expReport}`, '2');
+    if (choice === '1') return shareFile(base + '.csv', makeCsv(rows), 'text/csv');
+    if (choice === '2') return shareFile(base + '.html', makeReport(rows), 'text/html');
+  }
 }
 
 // ---------- Vergelijken ----------
@@ -586,7 +664,13 @@ function setTab(x) {
   render();
 }
 $('tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.tab); });
-$('p-deals').addEventListener('click', e => { const r = e.target.closest('[data-pep]'); if (!r) return; pep = r.dataset.pep; dose = null; $('search').value = ''; store.set('pw-pep-' + REGION, pep); setTab('compare'); });
+$('p-deals').addEventListener('change', e => {
+  if (e.target.id === 'expStock' || e.target.id === 'expCoa') {
+    expOpts = { stock: $('expStock').checked, coa: $('expCoa').checked }; store.set('pw-exp', expOpts);
+    $('expCount').textContent = t('expRows', { n: exportRows().length });
+  }
+});
+$('p-deals').addEventListener('click', e => { const x = e.target.closest('[data-exp]'); if (x) { doExport(x.dataset.exp); return; } const r = e.target.closest('[data-pep]'); if (!r) return; pep = r.dataset.pep; dose = null; $('search').value = ''; store.set('pw-pep-' + REGION, pep); setTab('compare'); });
 $('pepChips').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; pep = b.dataset.pep; dose = null; openKey = null; store.set('pw-pep-' + REGION, pep); renderCompare(); });
 $('doseChips').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; dose = b.dataset.dose || null; renderCompare(); });
 ['onlyStock', 'onlyCoa', 'sort'].forEach(id => $(id).addEventListener('change', renderCompare));
