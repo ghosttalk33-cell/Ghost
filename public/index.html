@@ -567,6 +567,7 @@ function renderOverview() {
     <div class="card"><h3>Downloaden en delen</h3>
       <div class="exports">
         <button class="small" data-exp="report">📑 Rapport (PDF)</button>
+        <button class="small" data-exp="share">📤 Rapport delen</button>
         <button class="secondary small" data-exp="issues">⚠️ Problemen (CSV)</button>
         <button class="secondary small" data-exp="pages">📄 Pagina's (CSV)</button>
         <button class="secondary small" data-exp="links">🔗 Links (CSV)</button>
@@ -996,6 +997,7 @@ const csv = (cols, rows) => '﻿' + [cols.map(c => c[0]).join(';'), ...rows.map(
 function doExport(kind) {
   const base = `${hostOf(S.startUrl) || 'site'}-${stamp()}`;
   if (kind === 'report') return openReport();
+  if (kind === 'share') return shareReport();
   if (kind === 'pages') {
     download(`${base}-paginas.csv`, csv([
       ['Status', r => r.status], ['URL', r => r.url], ['Titel', r => r.title], ['Titel lengte', r => r.title?.length], ['Omschrijving', r => r.description],
@@ -1032,7 +1034,7 @@ function doExport(kind) {
   }
 }
 
-function openReport() {
+function buildReport() {
   const probs = allProblems();
   const date = new Date(S.fromHistory || Date.now()).toLocaleString('nl');
   const ruleSection = sev => RULES.filter(r => r.sev === sev && A.byRule.get(r.id).length).map(r => {
@@ -1060,9 +1062,23 @@ function openReport() {
   ${['error', 'warn', 'info'].map(sev => { const s = ruleSection(sev); return s ? `<h2>${{ error: 'Fouten', warn: 'Waarschuwingen', info: 'Tips' }[sev]}</h2>${s}` : ''; }).join('')}
   <h2>Technologie</h2><p>${allTech().map(esc).join(', ') || '—'}</p>
   <p class="muted" style="margin-top:30px;font-size:12px">Gemaakt met Ghost Crawler</p></body></html>`;
+  return html;
+}
+function openReport() {
+  const html = buildReport();
   const w = window.open('', '_blank');
   if (!w) { download(`${hostOf(S.startUrl)}-rapport.html`, html, 'text/html'); return; }
   w.document.write(html); w.document.close();
+}
+async function shareReport() {
+  const html = buildReport();
+  const name = `${hostOf(S.startUrl) || 'website'}-audit-${new Date().toISOString().slice(0, 10)}.html`;
+  const file = new File([html], name, { type: 'text/html' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: 'Website-audit ' + hostOf(S.startUrl) }); return; } catch (e) { if (e.name === 'AbortError') return; }
+  }
+  download(name, html, 'text/html');
+  alert('Delen wordt hier niet ondersteund; het rapport is gedownload. Je kunt het nu zelf doorsturen vanuit je Downloads.');
 }
 
 // ---------- Opstarten ----------
