@@ -130,34 +130,44 @@ function sHeroPhoto(ctx, u, IMG) {    // the site's hero photo: ITide sign + fou
   ctx.restore();
 }
 const VIALS = [['v_bpc', 'BPC-157', '10MG', 0.9], ['v_tb500', 'TB-500', '10MG', 0.5], ['v_nad', 'NAD+', '500MG', 0.5]];
-function sLineup(ctx, u, IMG) {       // the site's own vial row (whole vials, nothing cut out of it), labels under each
-  bg(ctx);
-  const im = IMG.v_row;
-  const w = P ? W - 2 * 40 : 1100, h = w * im.height / im.width;
-  const x = (W - w) / 2, y = P ? H * 0.3 : H * 0.2;
-  const k = springU(u, -0.4, SPRING.gentle);
-  ctx.save(); ctx.translate(0, (1 - k) * H * 0.5);
-  card(ctx, im, x, y, w, h, { zoom: 1.0 * 1.03 ** prog(u, 0, 4) });
+// a cut-out vial standing on the floor line, with a soft shadow and a faint reflection
+function vialOn(ctx, im, cx, floor, h, alpha = 1) {
+  const w = h * im.width / im.height;
+  ctx.save(); ctx.globalAlpha = alpha;
+  const g = ctx.createRadialGradient(cx, floor, 0, cx, floor, w * 0.7);
+  g.addColorStop(0, DARK ? 'rgba(0,0,0,0.55)' : 'rgba(15,27,45,0.28)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = g; ctx.save(); ctx.translate(cx, floor); ctx.scale(1, 0.18); ctx.beginPath(); ctx.arc(0, 0, w * 0.7, 0, TAU); ctx.fill(); ctx.restore();
+  ctx.drawImage(im, cx - w / 2, floor - h, w, h);
   ctx.restore();
-  [['BPC-157', '10MG', 0.09], ['TB-500', '10MG', 0.35], ['NAD+', '500MG', 0.68]].forEach(([name, mg, fx], i) => {
-    const lk = springU(u, 0.2 + i * 0.5, SPRING.bouncy); if (lk <= 0) return;
-    const cx = x + w * fx, ly = y + h + (P ? 95 : 85);
-    ctx.save(); ctx.translate(cx, ly); ctx.scale(lk, lk);
-    text(ctx, name, 0, 0, font(P ? 62 : 58, 700, DISPLAY), FG, 'center', 1);
-    text(ctx, mg + ' · 99%', 0, P ? 50 : 46, font(P ? 32 : 28, 500, UI), C.mute, 'center', 3);
+}
+const LINE = [['tb500', 'TB-500', '10MG'], ['nad', 'NAD+', '500MG'], ['glow', 'GLOW', '70MG'], ['klow', 'KLOW', '80MG']];
+function sLineup(ctx, u, IMG) {
+  bg(ctx);
+  const n = LINE.length, slot = P ? (W - 2 * 40) / n : 360;
+  const x0 = W / 2 - (slot * (n - 1)) / 2, floor0 = H * 0.72, vh = P ? 470 : 600;
+  LINE.forEach(([img, name, mg], i) => {
+    const k = springU(u, -0.3 + i * 0.4, SPRING.bouncy); if (k <= 0) return;
+    const cx = P ? W / 2 + (i % 2 ? 1 : -1) * W * 0.23 : x0 + i * slot, im = IMG['cut_' + img];
+    const floor = P ? (i < 2 ? H * 0.44 : H * 0.8) : floor0;
+    const q = 0.05 * wobble(u + 0.3 - i * 0.4 - 0.2, 2.2, 5);
+    ctx.save(); ctx.translate(cx, floor); ctx.scale(1 + q, 1 - q); ctx.translate(-cx, -floor);
+    vialOn(ctx, im, cx, floor - (1 - k) * 260, vh, clamp(k * 1.5));
+    ctx.restore();
+    const lk = springU(u, 0.3 + i * 0.4, SPRING.snappy); if (lk <= 0) return;
+    ctx.save(); ctx.globalAlpha = clamp(lk);
+    text(ctx, name, cx, floor + (P ? 110 : 100) + (1 - lk) * 30, font(P ? 54 : 56, 700, DISPLAY), FG, 'center', 1);
+    text(ctx, mg + ' · 99%', cx, floor + (P ? 158 : 146) + (1 - lk) * 30, font(P ? 28 : 28, 500, UI), C.mute, 'center', 3);
     ctx.restore();
   });
-  rows(ctx, [['THE CATALOGUE', FG]], W / 2, P ? S.y + 120 : 130, P ? 120 : 100, 0, () => springU(u, -0.3, SPRING.snappy), 'center', 4);
+  rows(ctx, [['THE CATALOGUE', FG]], W / 2, P ? S.y + 120 : 150, P ? 120 : 100, 0, () => springU(u, -0.3, SPRING.snappy), 'center', 4);
 }
 function sPrice(ctx, u, IMG) {        // Big R 20mg: $125.00 -> $85.00 (the site's product page)
   bg(ctx);
   const k = springU(u, -0.3, SPRING.gentle);
-  const vw = P ? 330 : 330, vh = vw * 2.35;
-  const vx = P ? W / 2 - vw / 2 : W * 0.26, vy = P ? S.y + 60 : (H - vh) / 2;
+  const vh = P ? 760 : 760, vw = vh * 0.43;
+  const vx = P ? W / 2 - vw / 2 : W * 0.26, vy = P ? S.y + 60 : (H - vh) / 2 - 20;
   ctx.save(); ctx.translate(0, (1 - k) * H * 0.5);
-  ctx.save(); ctx.shadowColor = 'rgba(15,27,45,0.35)'; ctx.shadowBlur = 60; ctx.shadowOffsetY = 24;
-  rrect(ctx, vx, vy, vw, vh, 34); ctx.fillStyle = C.navy; ctx.fill(); ctx.restore();
-  cover(ctx, IMG.v_big, vx + 30, vy + 30, vw - 60, vh - 60, { radius: 24, fx: 0.4 });
+  vialOn(ctx, IMG.cut_bigr, vx + vw / 2, vy + vh, vh);
   ctx.restore();
   const tx = P ? S.x + 10 : W * 0.56, ty = P ? vy + vh + 150 : H * 0.42;
   rows(ctx, [['BIG R 20MG', FG]], tx, ty, P ? 130 : 130, 0, () => springU(u, 0.3, SPRING.snappy), 'left', 2);
@@ -388,7 +398,7 @@ const drawScene = (i, ctx, u, IMG) => SCENES[i][1](ctx, u - SCENES[i][0], IMG);
 
 M.film({
   fonts: [font(100, 700, DISPLAY), font(40, 500, UI), font(40, 700, UI)],
-  images: Object.fromEntries(['hero', 'v_row', 'v_big', 'c_ipamorelin', 'c_glow', 'c_cagri', 'c_bigt', 'c_klow'].map((k) => [k, `assets/products/${k}.png`])),
+  images: Object.fromEntries([['hero', 'assets/products/hero.png'], ['v_big', 'assets/products/v_big.png'], ...['c_ipamorelin', 'c_glow', 'c_cagri', 'c_bigt', 'c_klow'].map((k) => [k, `assets/products/${k}.png`]), ...['bigr', 'bigt', 'cagrilintide', 'glow', 'ipamorelin', 'klow', 'nad', 'tb500'].map((n) => ['cut_' + n, `assets/products/cut/${n}.png`])]),
   hits: HITS,
   draw(ctx, u, t, IMG) {
     BGU = u;
