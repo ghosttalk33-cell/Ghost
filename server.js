@@ -9,6 +9,9 @@ const crypto = require('crypto');
 const tls = require('tls');
 
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || undefined; // op een server: 127.0.0.1 (achter Caddy)
+const auth = require('./auth')({ dir: __dirname });
+if (auth.cli(process.argv.slice(2))) process.exit();
 const USER_AGENT = 'Mozilla/5.0 (compatible; GhostCrawler/3.0)';
 const SCANS_DIR = path.join(__dirname, 'scans');
 const FILE_EXT = /\.(jpe?g|png|gif|svg|webp|avif|ico|bmp|pdf|docx?|xlsx?|pptx?|csv|txt|zip|rar|7z|gz|tar|mp3|wav|mp4|avi|mov|wmv|webm|css|js|mjs|woff2?|ttf|eot|otf|xml|json|rss|apk|exe|dmg)$/i;
@@ -757,6 +760,8 @@ async function readBody(req, max = 100e6) {
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
 
+  if (!(await auth.check(req, res, url))) return;
+
   const pwm = url.pathname.match(/^\/api\/pw\/(nl|us)(\/.*)$/);
   if (pwm) return priceWatch[pwm[1]](req, res, pwm[2]);
   if (PW_PAGES[url.pathname]) {
@@ -846,9 +851,10 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, HOST, () => {
   console.log(`\n  👻 Ghost Crawler v3 draait op http://localhost:${PORT}\n`);
   console.log(`  🇳🇱 Prijsvolger NL:   http://localhost:${PORT}/prijzen.html`);
   console.log(`  🇺🇸 Price tracker US: http://localhost:${PORT}/prices.html\n`);
+  console.log(auth.enabled() ? '  🔒 Inloggen staat aan.\n' : '');
   console.log('  Open dit adres in je browser. Stoppen: CTRL + C\n');
 });

@@ -38,6 +38,10 @@ Twee versies van de prijsvolger voor peptidewebshops:
 - **Automatisch** prijzen bijwerken en opnieuw naar nieuwe shops zoeken
 - export naar **CSV**
 
+## ☁️ Online zetten (gratis)
+
+Zie **[ORACLE.md](ORACLE.md)**: stap voor stap op een gratis Oracle Cloud-server, met inloggen (jij ziet alles, je vriend alleen de 🇺🇸 prijzen), automatisch herstarten en optioneel je eigen domein met https.
+
 ## Op je Android-telefoon (Termux)
 
 1. Installeer **Termux** via F-Droid: https://f-droid.org/packages/com.termux/

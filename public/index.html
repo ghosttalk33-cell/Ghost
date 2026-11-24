@@ -138,6 +138,7 @@
   <h1>👻 Ghost Crawler</h1>
   <span style="flex:1">Volledige website-audit: SEO, snelheid, beveiliging, privacy en toegankelijkheid</span>
   <a href="/prijzen.html" style="color:var(--muted);font-size:13px;text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:5px 12px">💰 Prijsvolger</a>
+  <a href="/logout" id="logoutBtn" style="display:none;color:var(--muted);font-size:13px;text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:5px 12px">⎋</a>
 </header>
 
 <main>
@@ -1047,6 +1048,7 @@ function openReport() {
 }
 
 // ---------- Opstarten ----------
+fetch('/api/me').then(r => r.ok ? r.json() : null).then(me => { if (me) { $('logoutBtn').style.display = ''; $('logoutBtn').title = me.name; } }).catch(() => {});
 (async function init() {
   const opts = store.get('ghost-opts');
   if (opts) for (const [k, v] of Object.entries(opts)) {

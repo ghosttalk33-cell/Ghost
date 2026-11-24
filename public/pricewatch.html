@@ -92,7 +92,7 @@
 <body>
 <header>
   <h1 id="title"></h1>
-  <div class="lang-switch"><a href="/prijzen.html">🇳🇱 NL</a><a href="/prices.html">🇺🇸 US</a><a href="/">👻</a></div>
+  <div class="lang-switch"><a href="/prijzen.html" class="adm">🇳🇱 NL</a><a href="/prices.html" class="adm">🇺🇸 US</a><a href="/" class="adm">👻</a><a href="/logout" id="logoutBtn" style="display:none">⎋</a></div>
 </header>
 <main>
   <div class="card" id="jobCard" style="display:none">
@@ -531,7 +531,7 @@ function render() {
 }
 
 async function load() {
-  try { D = await (await fetch(API + '/state')).json(); } catch { return; }
+  try { const r = await fetch(API + '/state'); if (r.status === 401) { location.href = '/login?next=' + encodeURIComponent(location.pathname); return; } D = await r.json(); } catch { return; }
   BASE = D.base || BASE;
   render();
   if (D.job.running) startPolling();
@@ -609,6 +609,11 @@ $('csvBtn').addEventListener('click', () => {
 
 setTab(tab);
 load();
+fetch('/api/me').then(r => r.ok ? r.json() : null).then(me => {
+  if (!me) return;
+  $('logoutBtn').style.display = ''; $('logoutBtn').title = me.name;
+  if (me.role !== 'admin') document.querySelectorAll('.adm').forEach(a => a.style.display = 'none');
+}).catch(() => {});
 </script>
 </body>
 </html>
