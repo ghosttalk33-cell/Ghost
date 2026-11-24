@@ -1,0 +1,613 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0f1117">
+<title>Ghost Price Tracker</title>
+<script>window.REGION = '__REGION__';</script>
+<style>
+  :root {
+    --bg: #0f1117; --panel: #171a23; --panel2: #1d2130; --border: #2a2f3d; --text: #e6e8ee; --muted: #8b90a0;
+    --accent: #8b7bff; --ok: #3ecf8e; --warn: #f5a524; --err: #f2555a; --info: #5aa9f2;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+  header { padding: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 20px; flex: 1; white-space: nowrap; }
+  header a { color: var(--muted); font-size: 13px; text-decoration: none; border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px; white-space: nowrap; }
+  main { padding: 0 16px 40px; max-width: 1000px; margin: 0 auto; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+  h3 { margin: 0 0 10px; font-size: 16px; }
+  h4 { margin: 14px 0 6px; font-size: 14px; color: var(--muted); }
+  input[type=text], input[type=number], input[type=password], select, textarea { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 9px; padding: 11px 12px; font: inherit; width: 100%; min-width: 0; }
+  textarea { min-height: 70px; resize: vertical; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  button { background: var(--accent); color: #fff; border: 0; border-radius: 9px; padding: 11px 18px; font: inherit; font-weight: 600; cursor: pointer; }
+  button.secondary { background: var(--panel2); border: 1px solid var(--border); color: var(--text); font-weight: 500; }
+  button.small { padding: 7px 12px; font-size: 13px; }
+  button.danger { background: transparent; border: 1px solid #f2555a66; color: var(--err); }
+  button:disabled { opacity: .45; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .field { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: 12px; }
+  .muted { color: var(--muted); }
+  nav.tabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 14px; padding: 6px 0 2px; scrollbar-width: none; position: sticky; top: 0; background: var(--bg); z-index: 5; }
+  nav.tabs::-webkit-scrollbar { display: none; }
+  nav.tabs button { background: var(--panel); border: 1px solid var(--border); color: var(--muted); font-weight: 500; white-space: nowrap; padding: 8px 14px; border-radius: 999px; flex: none; }
+  nav.tabs button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  nav.tabs .cnt { font-size: 12px; opacity: .8; margin-left: 4px; }
+  .panel { display: none; } .panel.active { display: block; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chips button { white-space: nowrap; flex: none; padding: 6px 12px; font-size: 13px; background: var(--panel2); border: 1px solid var(--border); color: var(--text); font-weight: 500; border-radius: 999px; }
+  .chips button.active { border-color: var(--accent); background: #8b7bff33; }
+  .chips button span { color: var(--muted); font-size: 12px; margin-left: 3px; }
+  .chips.scroll { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .chips.scroll::-webkit-scrollbar { display: none; }
+  .check { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; margin-right: 14px; }
+  .check input { width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+  .offer { border-bottom: 1px solid var(--border); padding: 12px 2px; cursor: pointer; }
+  .offer:last-child { border: 0; }
+  .offer .top { display: flex; gap: 10px; align-items: flex-start; }
+  .rank { width: 26px; height: 26px; border-radius: 50%; background: var(--panel2); display: grid; place-items: center; font-size: 12px; font-weight: 700; flex: none; margin-top: 2px; }
+  .rank.gold { background: #f5a524; color: #000; }
+  .offer .main { flex: 1; min-width: 0; }
+  .offer .shop { font-weight: 700; word-break: break-all; }
+  .offer .name { color: var(--muted); font-size: 13px; }
+  .offer .price { text-align: right; flex: none; }
+  .offer .price b { font-size: 17px; display: block; }
+  .offer .price small { color: var(--muted); font-size: 12px; display: block; }
+  .badges { margin-top: 6px; display: flex; gap: 5px; flex-wrap: wrap; }
+  .b { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--panel2); border: 1px solid var(--border); white-space: nowrap; }
+  .b.ok { color: var(--ok); border-color: #3ecf8e55; } .b.warn { color: var(--warn); border-color: #f5a52455; } .b.err { color: var(--err); border-color: #f2555a55; } .b.info { color: var(--info); border-color: #5aa9f255; }
+  .details { margin-top: 10px; background: var(--panel2); border-radius: 10px; padding: 10px 12px; font-size: 13px; cursor: auto; }
+  .details a { color: var(--accent); word-break: break-all; }
+  .details ul { margin: 4px 0; padding-left: 18px; }
+  .item { border-bottom: 1px solid var(--border); padding: 12px 0; }
+  .item:last-child { border: 0; }
+  .item .head { display: flex; gap: 8px; align-items: center; }
+  .item .head b { flex: 1; word-break: break-all; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+  .stat { background: var(--panel2); border-radius: 10px; padding: 10px 12px; }
+  .stat b { display: block; font-size: 20px; }
+  .stat small { color: var(--muted); font-size: 12px; }
+  .progress { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+  .progress div { height: 100%; background: linear-gradient(90deg, var(--accent), #c2b8ff, var(--accent)); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+  .log { font: 12px/1.5 ui-monospace, monospace; color: var(--muted); max-height: 200px; overflow: auto; margin-top: 8px; word-break: break-word; }
+  .empty { text-align: center; color: var(--muted); padding: 30px 10px; }
+  .pct { font-weight: 700; min-width: 60px; text-align: right; flex: none; }
+  .down { color: var(--ok); } .up { color: var(--err); }
+  .bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 4px; }
+  .bar i { display: block; height: 100%; }
+  svg.spark { width: 100%; height: 50px; display: block; margin: 6px 0; }
+  .note { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  table.deals { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.deals td { padding: 9px 4px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.deals tr { cursor: pointer; }
+  table.deals td.r { text-align: right; white-space: nowrap; }
+  .lang-switch { display: flex; gap: 6px; }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title"></h1>
+  <div class="lang-switch"><a href="/prijzen.html">🇳🇱 NL</a><a href="/prices.html">🇺🇸 US</a><a href="/">👻</a></div>
+</header>
+<main>
+  <div class="card" id="jobCard" style="display:none">
+    <div class="row" style="justify-content:space-between"><b id="jobTitle"></b><small class="muted" id="jobCount"></small></div>
+    <div class="muted" style="font-size:13px;word-break:break-word" id="jobPhase"></div>
+    <div class="progress"><div></div></div>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="deals" class="active" data-t="tabDeals"></button>
+    <button data-tab="compare" data-t="tabCompare"></button>
+    <button data-tab="alerts"><span data-t="tabAlerts"></span><span class="cnt" id="cAlerts"></span></button>
+    <button data-tab="coa" data-t="tabCoa"></button>
+    <button data-tab="changes"><span data-t="tabChanges"></span><span class="cnt" id="cChanges"></span></button>
+    <button data-tab="shops"><span data-t="tabShops"></span><span class="cnt" id="cShops"></span></button>
+    <button data-tab="find" data-t="tabFind"></button>
+  </nav>
+
+  <section class="panel active" id="p-deals"></section>
+
+  <section class="panel" id="p-compare">
+    <div class="card">
+      <input type="text" id="search">
+      <div class="chips scroll" id="pepChips" style="margin-top:10px"></div>
+      <div class="chips" id="doseChips" style="margin-top:8px"></div>
+      <div class="row" style="margin-top:10px">
+        <label class="check"><input type="checkbox" id="onlyStock" checked> <span data-t="inStock"></span></label>
+        <label class="check"><input type="checkbox" id="onlyCoa"> <span data-t="withCoa"></span></label>
+        <select id="sort" style="width:auto;flex:1;min-width:150px"></select>
+      </div>
+    </div>
+    <div class="card" id="offers"></div>
+  </section>
+
+  <section class="panel" id="p-alerts">
+    <div class="card">
+      <h3 data-t="newAlert"></h3>
+      <div class="grid2">
+        <label class="field"><span data-t="peptide"></span><select id="aPep"></select></label>
+        <label class="field"><span data-t="dose"></span><select id="aDose"></select></label>
+        <label class="field"><span id="aPerMgLbl"></span><input type="number" id="aPerMg" step="0.01" min="0"></label>
+        <label class="field"><span id="aPriceLbl"></span><input type="number" id="aPrice" step="0.01" min="0"></label>
+      </div>
+      <label class="check" style="margin-top:10px"><input type="checkbox" id="aCoa"> <span data-t="onlyWithCoa"></span></label>
+      <div style="margin-top:10px"><button id="aAdd" data-t="addAlert"></button></div>
+      <p class="note" data-t="alertNote"></p>
+    </div>
+    <div id="alertList"></div>
+  </section>
+
+  <section class="panel" id="p-coa"></section>
+  <section class="panel" id="p-changes"></section>
+
+  <section class="panel" id="p-shops">
+    <div class="card">
+      <h3 data-t="addShops"></h3>
+      <textarea id="newShops"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button id="addBtn" data-t="addAndScan"></button>
+        <button class="secondary" id="scanAllBtn" data-t="rescanAll"></button>
+      </div>
+    </div>
+    <div class="card">
+      <h3 data-t="autoScan"></h3>
+      <select id="autoHours"></select>
+      <p class="note" style="margin:8px 0 0" data-t="autoNote"></p>
+    </div>
+    <div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0" data-t="yourShops"></h3><button class="secondary small" id="csvBtn">⬇ CSV</button></div><div id="shopList" style="margin-top:6px"></div></div>
+    <div class="card"><h3 data-t="logbook"></h3><div class="log" id="log"></div></div>
+  </section>
+
+  <section class="panel" id="p-find">
+    <div class="card">
+      <h3 data-t="findTitle"></h3>
+      <p class="note" style="margin-top:-4px" data-t="findIntro"></p>
+      <button id="discoverBtn" data-t="findStart"></button>
+      <label class="check" style="margin-top:12px;display:flex"><input type="checkbox" id="autoAdd"> <span data-t="autoAdd"></span></label>
+      <label class="field" style="margin-top:12px"><span data-t="autoFind"></span>
+        <select id="autoDiscover"></select></label>
+      <details style="margin-top:12px"><summary class="muted" data-t="advanced"></summary>
+        <label class="field" style="margin-top:10px"><span data-t="braveKey"></span><input type="password" id="braveKey" autocomplete="off" placeholder="BSA..."></label>
+        <p class="note" data-t="braveNote"></p>
+        <label class="field" style="margin-top:10px"><span data-t="extraQueries"></span><textarea id="extraQueries"></textarea></label>
+        <button class="secondary small" id="saveFind" style="margin-top:8px" data-t="save"></button>
+      </details>
+    </div>
+    <div class="card" id="discList"></div>
+  </section>
+
+  <p class="note" data-t="disclaimer"></p>
+</main>
+
+<script>
+const REGION = window.REGION === 'us' ? 'us' : 'nl';
+const API = '/api/pw/' + REGION;
+const T = {
+  nl: {
+    title: '💰 Prijsvolger 🇳🇱', tabDeals: 'Beste deals', tabCompare: 'Vergelijken', tabAlerts: 'Prijsalarm', tabCoa: "COA's", tabChanges: 'Wijzigingen', tabShops: 'Shops', tabFind: '🔎 Shops zoeken',
+    search: '🔍 Zoek peptide, product of shop…', inStock: 'Op voorraad', withCoa: 'Met COA', sortPerMg: 'Goedkoopste per mg', sortPrice: 'Laagste prijs', sortCoa: 'Beste COA eerst', sortShop: 'Shop (A-Z)',
+    allDoses: 'Alle doseringen', notRecognized: 'Niet herkend', offers: 'aanbiedingen', shops: 'shops', avgPerMg: 'Gemiddeld {a} per mg · goedkoopste {b} per mg',
+    noData: 'Nog geen prijzen. Ga naar <b>🔎 Shops zoeken</b> om automatisch alle shops te vinden, of voeg ze zelf toe bij <b>Shops</b>.', noResults: 'Niets gevonden met deze filters.',
+    soldOut: 'Uitverkocht', sale: 'Aanbieding', lowestEver: 'Laagste prijs ooit', viewInShop: 'Bekijk in de shop ↗', price: 'Prijs', total: 'totaal', priceHistory: 'Prijsverloop',
+    lowest: 'Laagst', highest: 'Hoogst', measurements: 'metingen sinds', coaVerif: 'COA verifieerbaar', coaNamed: 'COA genoemd, niet gevonden', noCoa: 'Geen COA', pure: 'zuiver',
+    coaMention: 'De pagina noemt een COA/labtest, maar er is geen document gevonden. Vraag het op bij de shop.', coaNone: 'Geen COA gevonden op de productpagina of de COA-pagina van de shop.',
+    viaCoaPage: 'via COA-pagina, controleer batch/dosering', lab: 'lab', purity: 'zuiverheid', shopInfo: 'Shopinfo', payments: 'Betalen', freeShip: 'Gratis verzending vanaf', shipsFrom: 'Verzendt vanuit',
+    dealsTitle: '🏆 Goedkoopste per peptide', dealsIntro: 'Per peptide de laagste prijs per mg (op voorraad). Tik op een rij om alle aanbiedingen te vergelijken.',
+    perMg: 'per mg', peptide: 'Peptide', dose: 'Dosering', anyDose: 'Elke dosering', maxPerMg: 'Max. prijs per mg ({c})', maxPrice: 'Max. prijs ({c})', onlyWithCoa: 'Alleen met COA',
+    newAlert: '🔔 Nieuw prijsalarm', addAlert: 'Alarm toevoegen', alertNote: 'Na elke scan wordt gekeken of er een aanbieding is die aan je alarm voldoet. Treffers zie je hier en bij Wijzigingen.',
+    noAlerts: 'Nog geen alarmen.', currentBest: 'Nu het goedkoopst', hits: 'treffers', remove: 'Verwijderen', alertFor: 'Alarm', noMatch: 'Nog geen aanbieding die hieraan voldoet.',
+    coaScore: '🔬 COA-score per shop', coaScoreIntro: 'Hoeveel producten een COA hebben, en hoeveel daarvan te verifiëren zijn (bijv. via Janoshik).',
+    coaOf: '{a} van {b} producten met COA · {c} verifieerbaar', avgPurity: 'gem. zuiverheid', coaPage: 'COA-pagina',
+    coaTips: '💡 Waar let je op bij een COA?', coaTipList: ['<b>Onafhankelijk lab</b>: bijv. Janoshik, Chromate of Freedom Diagnostics, niet de fabrikant zelf.', '<b>Verifieerbaar</b>: Janoshik-rapporten hebben een code/link waarmee je op janoshik.com controleert of het echt is.', '<b>Zelfde batch en dosering</b>: het rapport moet over het product gaan dat je koopt (batchnummer, mg per flesje).', '<b>Recent</b>: een COA van jaren geleden zegt weinig over de huidige voorraad.', '<b>Zuiverheid én hoeveelheid</b>: kijk naar purity (bijv. &gt;98%) én de gemeten mg (zit er echt 10 mg in?).'],
+    noChanges: 'Nog geen wijzigingen. Na een volgende scan zie je hier prijsdalingen, prijsstijgingen, nieuwe producten en producten die weer op voorraad zijn.',
+    latestChanges: 'Laatste wijzigingen', alertHits: '🔔 Prijsalarm-treffers', newProduct: '🆕 Nieuw product', restock: '📦 Weer op voorraad', NEW: 'NIEUW', BACK: 'TERUG',
+    filterAll: 'Alles', filterDown: 'Dalingen', filterUp: 'Stijgingen', filterNew: 'Nieuw', filterRestock: 'Weer leverbaar',
+    addShops: 'Shops zelf toevoegen', shopsPlaceholder: 'Plak één of meer webshop-adressen (elk op een nieuwe regel)\nbijv. peptideshop.nl', addAndScan: 'Toevoegen en scannen', rescanAll: '🔄 Alles opnieuw scannen',
+    autoScan: '⏰ Prijzen automatisch bijwerken', autoNote: 'Werkt zolang de server (Termux) draait.', off: 'Uit', every: 'Elke {n} uur', daily: 'Elke dag', weekly: 'Elke week', everyDays: 'Elke {n} dagen',
+    yourShops: 'Jouw shops', noShops: 'Nog geen shops.', products: 'producten', prices: 'prijzen', scanned: 'gescand', never: 'nooit', scan: '🔄 Scannen', open: 'Open ↗', confirmDel: 'Deze shop en zijn prijzen verwijderen?',
+    logbook: 'Logboek', nothingYet: 'Nog niets gebeurd.', found: 'gevonden', fitLabel: 'past bij NL',
+    findTitle: '🔎 Alle peptideshops in Nederland/Europa zoeken', findIntro: 'Zoekt met tientallen zoekopdrachten (Nederlands en Engels) naar peptideshops, controleert van elke website of het echt een peptidewebshop is en of hij bij Nederland past (euro, .nl/.be, Nederlandstalig, verzendt in Europa). Gevonden shops worden automatisch toegevoegd en gescand. Dit duurt een paar minuten.',
+    findStart: '🔎 Shops zoeken', autoAdd: 'Gevonden shops automatisch toevoegen en scannen', autoFind: 'Automatisch opnieuw zoeken naar nieuwe shops', advanced: 'Geavanceerd',
+    braveKey: 'Brave Search API-sleutel (optioneel, aanbevolen)', braveNote: 'Zonder sleutel wordt Bing en DuckDuckGo gebruikt; die blokkeren soms automatische zoekopdrachten. Een gratis sleutel (2000 zoekopdrachten/maand) maak je op api.search.brave.com.',
+    extraQueries: 'Extra zoekopdrachten (één per regel)', save: 'Opslaan', saved: 'Opgeslagen',
+    discTitle: 'Gevonden websites', discEmpty: 'Nog niet gezocht. Tik op 🔎 Shops zoeken.', stShop: '✔ Peptideshop', stOther: '🌍 Ander land', stNot: '✖ Geen peptideshop', stErr: '⚠ Niet bereikbaar', stRemoved: 'Verwijderd',
+    addAnyway: 'Toch toevoegen', added: 'Toegevoegd', inList: 'In je lijst',
+    scanning: '🔄 Bezig: ', task: 'taak {a} van {b}',
+    disclaimer: '⚠️ COA\'s kunnen vervalst of van een andere batch zijn. Een Janoshik-COA kun je verifiëren op janoshik.com. Prijzen in euro zijn omgerekend met de actuele wisselkoers; verzendkosten zijn niet meegerekend. Controleer zelf of een shop betrouwbaar is en wat er in jouw land wettelijk mag.',
+    statShops: 'Shops', statOffers: 'Prijzen', statPeptides: 'Peptiden', statCoa: 'Met COA',
+  },
+  us: {
+    title: '💰 Price Tracker 🇺🇸', tabDeals: 'Best deals', tabCompare: 'Compare', tabAlerts: 'Price alerts', tabCoa: 'COAs', tabChanges: 'Changes', tabShops: 'Shops', tabFind: '🔎 Find shops',
+    search: '🔍 Search peptide, product or shop…', inStock: 'In stock', withCoa: 'With COA', sortPerMg: 'Cheapest per mg', sortPrice: 'Lowest price', sortCoa: 'Best COA first', sortShop: 'Shop (A-Z)',
+    allDoses: 'All doses', notRecognized: 'Not recognized', offers: 'offers', shops: 'shops', avgPerMg: 'Average {a} per mg · cheapest {b} per mg',
+    noData: 'No prices yet. Go to <b>🔎 Find shops</b> to automatically find all shops, or add them yourself under <b>Shops</b>.', noResults: 'Nothing found with these filters.',
+    soldOut: 'Sold out', sale: 'On sale', lowestEver: 'Lowest price ever', viewInShop: 'View in shop ↗', price: 'Price', total: 'total', priceHistory: 'Price history',
+    lowest: 'Lowest', highest: 'Highest', measurements: 'data points since', coaVerif: 'Verifiable COA', coaNamed: 'COA mentioned, not found', noCoa: 'No COA', pure: 'pure',
+    coaMention: 'The page mentions a COA/lab test, but no document was found. Ask the vendor for it.', coaNone: 'No COA found on the product page or the vendor\'s COA page.',
+    viaCoaPage: 'via COA page, check batch/dose', lab: 'lab', purity: 'purity', shopInfo: 'Vendor info', payments: 'Payment', freeShip: 'Free shipping over', shipsFrom: 'Ships from',
+    dealsTitle: '🏆 Cheapest per peptide', dealsIntro: 'Lowest price per mg for each peptide (in stock). Tap a row to compare all offers.',
+    perMg: 'per mg', peptide: 'Peptide', dose: 'Dose', anyDose: 'Any dose', maxPerMg: 'Max price per mg ({c})', maxPrice: 'Max price ({c})', onlyWithCoa: 'Only with COA',
+    newAlert: '🔔 New price alert', addAlert: 'Add alert', alertNote: 'After every scan, offers are checked against your alerts. Matches show up here and under Changes.',
+    noAlerts: 'No alerts yet.', currentBest: 'Cheapest right now', hits: 'matches', remove: 'Remove', alertFor: 'Alert', noMatch: 'No matching offer yet.',
+    coaScore: '🔬 COA score per vendor', coaScoreIntro: 'How many products have a COA, and how many of those can be verified (e.g. via Janoshik).',
+    coaOf: '{a} of {b} products with COA · {c} verifiable', avgPurity: 'avg. purity', coaPage: 'COA page',
+    coaTips: '💡 What to look for in a COA', coaTipList: ['<b>Independent lab</b>: e.g. Janoshik, Chromate or Freedom Diagnostics, not the manufacturer itself.', '<b>Verifiable</b>: Janoshik reports have a code/link you can check on janoshik.com.', '<b>Same batch and dose</b>: the report must cover the product you\'re buying (batch number, mg per vial).', '<b>Recent</b>: a COA from years ago says little about current stock.', '<b>Purity and quantity</b>: check purity (e.g. &gt;98%) and the measured mg (is there really 10 mg in it?).'],
+    noChanges: 'No changes yet. After the next scan you\'ll see price drops, increases, new products and restocks here.',
+    latestChanges: 'Latest changes', alertHits: '🔔 Price alert matches', newProduct: '🆕 New product', restock: '📦 Back in stock', NEW: 'NEW', BACK: 'BACK',
+    filterAll: 'All', filterDown: 'Drops', filterUp: 'Increases', filterNew: 'New', filterRestock: 'Restocks',
+    addShops: 'Add shops manually', shopsPlaceholder: 'Paste one or more shop URLs (one per line)\ne.g. peptideshop.com', addAndScan: 'Add and scan', rescanAll: '🔄 Rescan all',
+    autoScan: '⏰ Update prices automatically', autoNote: 'Runs as long as the server (Termux/computer) is running.', off: 'Off', every: 'Every {n} hours', daily: 'Daily', weekly: 'Weekly', everyDays: 'Every {n} days',
+    yourShops: 'Your shops', noShops: 'No shops yet.', products: 'products', prices: 'prices', scanned: 'scanned', never: 'never', scan: '🔄 Scan', open: 'Open ↗', confirmDel: 'Remove this shop and its prices?',
+    logbook: 'Log', nothingYet: 'Nothing happened yet.', found: 'found', fitLabel: 'fits US',
+    findTitle: '🔎 Find all peptide shops in the USA', findIntro: 'Runs dozens of searches for peptide vendors, checks every website to see if it really is a peptide shop and whether it fits the US (USD prices, US shipping, English). Shops that qualify are added and scanned automatically. This takes a few minutes.',
+    findStart: '🔎 Find shops', autoAdd: 'Automatically add and scan shops that are found', autoFind: 'Automatically search for new shops', advanced: 'Advanced',
+    braveKey: 'Brave Search API key (optional, recommended)', braveNote: 'Without a key, Bing and DuckDuckGo are used; they sometimes block automated searches. Get a free key (2,000 searches/month) at api.search.brave.com.',
+    extraQueries: 'Extra search queries (one per line)', save: 'Save', saved: 'Saved',
+    discTitle: 'Websites found', discEmpty: 'No search yet. Tap 🔎 Find shops.', stShop: '✔ Peptide shop', stOther: '🌍 Other country', stNot: '✖ Not a peptide shop', stErr: '⚠ Unreachable', stRemoved: 'Removed',
+    addAnyway: 'Add anyway', added: 'Added', inList: 'In your list',
+    scanning: '🔄 Working: ', task: 'task {a} of {b}',
+    disclaimer: '⚠️ COAs can be fake or from a different batch. A Janoshik COA can be verified on janoshik.com. Prices exclude shipping; foreign prices are converted at the current exchange rate. Check vendor reputation yourself and what is legal where you live.',
+    statShops: 'Shops', statOffers: 'Prices', statPeptides: 'Peptides', statCoa: 'With COA',
+  },
+}[REGION];
+const t = (k, v = {}) => String(T[k] ?? k).replace(/\{(\w)\}/g, (_, x) => v[x] ?? '');
+document.documentElement.lang = REGION === 'us' ? 'en' : 'nl';
+document.title = REGION === 'us' ? 'Price Tracker USA' : 'Prijsvolger NL';
+const $ = id => document.getElementById(id);
+$('title').textContent = T.title;
+document.querySelectorAll('[data-t]').forEach(el => el.textContent = t(el.dataset.t));
+$('search').placeholder = T.search;
+$('newShops').placeholder = T.shopsPlaceholder;
+$('extraQueries').placeholder = REGION === 'us' ? 'e.g. buy kpv peptide' : 'bijv. kpv peptide kopen';
+$('sort').innerHTML = ['perMg', 'price', 'coa', 'shop'].map(k => `<option value="${k}">${t('sort' + k[0].toUpperCase() + k.slice(1))}</option>`).join('');
+$('autoHours').innerHTML = [0, 3, 6, 12, 24, 168].map(h => `<option value="${h}">${h === 0 ? T.off : h === 24 ? T.daily : h === 168 ? T.weekly : t('every', { n: h })}</option>`).join('');
+$('autoDiscover').innerHTML = [0, 1, 3, 7, 14, 30].map(d => `<option value="${d}">${d === 0 ? T.off : d === 1 ? T.daily : d === 7 ? T.weekly : t('everyDays', { n: d })}</option>`).join('');
+
+const LOCALE = REGION === 'us' ? 'en-US' : 'nl-NL';
+const SYM = { EUR: '€', USD: '$', GBP: '£' };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let BASE = REGION === 'us' ? 'USD' : 'EUR';
+const money = (v, c = BASE) => v == null ? '—' : (SYM[c] ? SYM[c] + (REGION === 'nl' ? ' ' : '') : c + ' ') + Number(v).toLocaleString(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const ago = ts => {
+  if (!ts) return T.never;
+  const m = Math.round((Date.now() - ts) / 60000);
+  const rtf = new Intl.RelativeTimeFormat(LOCALE, { numeric: 'auto' });
+  return m < 60 ? rtf.format(-m, 'minute') : m < 1440 ? rtf.format(-Math.round(m / 60), 'hour') : rtf.format(-Math.round(m / 1440), 'day');
+};
+const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+const post = (u, b) => fetch(API + u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b || {}) });
+
+let D = { shops: [], offers: [], changes: [], alertHits: [], discovered: [], settings: {}, job: {} };
+let tab = store.get('pw-tab-' + REGION) || 'deals', pep = store.get('pw-pep-' + REGION), dose = null, openKey = null, polling = null, changeFilter = 'all';
+const isWater = o => o.peptide === 'Bacteriostatic water';
+
+function coaLevel(o) {
+  const c = o.coa || {};
+  if (c.verifiable) return 3;
+  if ((c.links || []).length && (c.labs || []).length) return 2;
+  if ((c.links || []).length) return 1;
+  return 0;
+}
+function coaBadge(o) {
+  const c = o.coa || {}, lvl = coaLevel(o), lab = (c.labs || [])[0];
+  if (lvl === 3) return `<span class="b ok">🔬 ${T.coaVerif}${lab ? ' · ' + esc(lab) : ''}</span>`;
+  if (lvl === 2) return `<span class="b ok">📄 COA · ${esc(lab)}</span>`;
+  if (lvl === 1) return `<span class="b info">📄 COA</span>`;
+  if (c.mentions) return `<span class="b warn">❓ ${T.coaNamed}</span>`;
+  return `<span class="b err">✖ ${T.noCoa}</span>`;
+}
+function spark(h, cur) {
+  if (!h || h.length < 2) return '';
+  const ps = h.map(x => x.p), mn = Math.min(...ps), mx = Math.max(...ps), W = 300, H = 50;
+  const pts = h.map((x, i) => `${(i / (h.length - 1) * W).toFixed(1)},${(H - 6 - (mx === mn ? .5 : (x.p - mn) / (mx - mn)) * (H - 12)).toFixed(1)}`).join(' ');
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="#8b7bff" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
+    <div class="muted" style="font-size:12px">${T.lowest}: ${money(mn, cur)} · ${T.highest}: ${money(mx, cur)} · ${h.length} ${T.measurements} ${new Date(h[0].t).toLocaleDateString(LOCALE)}</div>`;
+}
+const shopById = id => D.shops.find(s => s.id === id) || {};
+function shopInfoHtml(s) {
+  const i = s.info || {};
+  const parts = [];
+  if (i.payments?.length) parts.push(`<b>${T.payments}:</b> ${i.payments.map(esc).join(', ')}`);
+  if (i.freeShipping) parts.push(`<b>${T.freeShip}</b> ${esc(i.freeShipping)}`);
+  if (i.shipsFrom) parts.push(`<b>${T.shipsFrom}:</b> ${esc(i.shipsFrom)}`);
+  if (i.discount) parts.push(`🏷️ ${esc(i.discount)}`);
+  if (i.trustpilot) parts.push('⭐ Trustpilot');
+  return parts.join(' · ');
+}
+
+// ---------- Beste deals ----------
+function renderDeals() {
+  const el = $('p-deals');
+  const shopsScanned = D.shops.filter(s => s.lastScan && !s.lastError).length;
+  const real = D.offers.filter(o => o.peptide && !isWater(o));
+  const stats = `<div class="stats">
+    <div class="stat"><b>${shopsScanned}</b><small>${T.statShops}</small></div>
+    <div class="stat"><b>${D.offers.length}</b><small>${T.statOffers}</small></div>
+    <div class="stat"><b>${new Set(real.map(o => o.peptide)).size}</b><small>${T.statPeptides}</small></div>
+    <div class="stat"><b>${real.filter(o => coaLevel(o) > 0).length}</b><small>${T.statCoa}</small></div></div>`;
+  if (!D.offers.length) { el.innerHTML = `<div class="card">${stats}</div><div class="card empty">${T.noData}</div>`; return; }
+  const by = new Map();
+  for (const o of real) {
+    if (!o.inStock || o.perMg == null) continue;
+    const cur = by.get(o.peptide);
+    if (!cur || o.perMg < cur.best.perMg) by.set(o.peptide, { best: o, n: (cur?.n || 0) + 1, shops: new Set([...(cur?.shops || []), o.shopId]) });
+    else { cur.n++; cur.shops.add(o.shopId); }
+  }
+  const rows = [...by.entries()].sort((a, b) => b[1].shops.size - a[1].shops.size || a[0].localeCompare(b[0]));
+  el.innerHTML = `<div class="card">${stats}</div>
+    <div class="card"><h3>${T.dealsTitle}</h3><p class="note" style="margin:-4px 0 6px">${T.dealsIntro}</p>
+    <table class="deals">${rows.map(([p, r]) => `<tr data-pep="${esc(p)}">
+      <td><b>${esc(p)}</b><div class="muted" style="font-size:12px">${esc(r.best.shop)} · ${esc(r.best.dose)}</div><div class="badges">${coaBadge(r.best)}</div></td>
+      <td class="r"><b>${money(r.best.perMg)}</b><div class="muted" style="font-size:12px">${T.perMg}</div><div class="muted" style="font-size:12px">${r.shops.size} ${T.shops}</div></td></tr>`).join('')}</table></div>`;
+}
+
+// ---------- Vergelijken ----------
+function renderCompare() {
+  const q = $('search').value.toLowerCase().trim();
+  const counts = new Map();
+  for (const o of D.offers) { const k = o.peptide || T.notRecognized; counts.set(k, (counts.get(k) || 0) + 1); }
+  const peps = [...counts.entries()].sort((a, b) => (a[0] === T.notRecognized) - (b[0] === T.notRecognized) || (a[0] === 'Bacteriostatic water') - (b[0] === 'Bacteriostatic water') || b[1] - a[1]);
+  if (!q && (!pep || !counts.has(pep)) && peps.length) pep = peps[0][0];
+  $('pepChips').innerHTML = q ? '' : peps.map(([p, c]) => `<button data-pep="${esc(p)}" class="${p === pep ? 'active' : ''}">${esc(p)}<span>${c}</span></button>`).join('');
+  let list = q ? D.offers.filter(o => `${o.name} ${o.variant} ${o.peptide} ${o.shop}`.toLowerCase().includes(q)) : D.offers.filter(o => (o.peptide || T.notRecognized) === pep);
+  const doses = [...new Set(list.map(o => o.dose).filter(Boolean))].sort((a, b) => parseFloat(a.replace(/^\d+× /, '')) - parseFloat(b.replace(/^\d+× /, '')) || a.localeCompare(b));
+  if (dose && !doses.includes(dose)) dose = null;
+  $('doseChips').innerHTML = doses.length > 1 ? `<button data-dose="" class="${!dose ? 'active' : ''}">${T.allDoses}</button>` + doses.map(d => `<button data-dose="${esc(d)}" class="${d === dose ? 'active' : ''}">${esc(d)}</button>`).join('') : '';
+  if (dose) list = list.filter(o => o.dose === dose);
+  if ($('onlyStock').checked) list = list.filter(o => o.inStock);
+  if ($('onlyCoa').checked) list = list.filter(o => coaLevel(o) > 0);
+  const sort = $('sort').value;
+  const by = {
+    perMg: (a, b) => (a.perMg ?? 1e9) - (b.perMg ?? 1e9) || (a.priceBase ?? 1e9) - (b.priceBase ?? 1e9),
+    price: (a, b) => (a.priceBase ?? 1e9) - (b.priceBase ?? 1e9),
+    coa: (a, b) => coaLevel(b) - coaLevel(a) || (a.perMg ?? 1e9) - (b.perMg ?? 1e9),
+    shop: (a, b) => a.shop.localeCompare(b.shop),
+  };
+  list.sort(by[sort]);
+  if (!D.offers.length) { $('offers').innerHTML = `<div class="empty">${T.noData}</div>`; return; }
+  if (!list.length) { $('offers').innerHTML = `<div class="empty">${T.noResults}</div>`; return; }
+  const perMgs = list.map(o => o.perMg).filter(v => v != null);
+  const avg = perMgs.length ? perMgs.reduce((a, b) => a + b, 0) / perMgs.length : null;
+  $('offers').innerHTML = `
+    <div class="row" style="justify-content:space-between;margin-bottom:6px"><h3 style="margin:0">${esc(q ? `"${q}"` : pep)}${dose ? ' · ' + esc(dose) : ''}</h3><small class="muted">${list.length} ${T.offers} · ${new Set(list.map(o => o.shopId)).size} ${T.shops}</small></div>
+    ${avg && sort === 'perMg' ? `<p class="muted" style="font-size:13px;margin:0 0 6px">${t('avgPerMg', { a: money(avg), b: money(Math.min(...perMgs)) })}</p>` : ''}
+    ${list.slice(0, 300).map((o, i) => {
+      const prev = o.history && o.history.length > 1 ? o.history[o.history.length - 2].p : null;
+      const diff = prev != null && prev !== o.price ? (o.price - prev) / prev * 100 : null;
+      let html = `<div class="offer" data-key="${esc(o.key)}"><div class="top">
+        <span class="rank ${i === 0 && sort !== 'shop' ? 'gold' : ''}">${i + 1}</span>
+        <div class="main"><div class="shop">${esc(o.shop)}</div><div class="name">${esc(o.name)}${o.variant ? ' · ' + esc(o.variant) : ''}</div></div>
+        <div class="price"><b>${money(o.priceBase)}</b>${o.perMg != null ? `<small>${money(o.perMg)}/mg</small>` : ''}${o.currency !== BASE ? `<small>${money(o.price, o.currency)}</small>` : ''}</div>
+      </div>
+      <div class="badges">
+        ${o.dose ? `<span class="b">${esc(o.dose)}</span>` : ''}
+        ${o.inStock ? '' : `<span class="b err">${T.soldOut}</span>`}
+        ${coaBadge(o)}
+        ${o.coa?.purity ? `<span class="b ok">${o.coa.purity}% ${T.pure}</span>` : ''}
+        ${diff != null ? `<span class="b ${diff < 0 ? 'ok' : 'err'}">${diff < 0 ? '▼' : '▲'} ${Math.abs(diff).toFixed(0)}%</span>` : ''}
+        ${o.compareAt && o.compareAt > o.price ? `<span class="b warn">${T.sale}</span>` : ''}
+        ${o.lowest != null && o.price <= o.lowest && o.history?.length > 2 ? `<span class="b ok">${T.lowestEver}</span>` : ''}
+      </div>`;
+      if (openKey === o.key) {
+        const c = o.coa || {}, si = shopInfoHtml(shopById(o.shopId));
+        html += `<div class="details" data-stop>
+          <div><a href="${esc(o.url)}" target="_blank" rel="noopener">${T.viewInShop}</a></div>
+          <div style="margin-top:6px"><b>${T.price}:</b> ${money(o.price, o.currency)}${o.compareAt ? ` <s class="muted">${money(o.compareAt, o.currency)}</s>` : ''}${o.totalMg ? ` · ${o.totalMg} mg ${T.total}` : ''}</div>
+          ${o.history?.length > 1 ? `<div style="margin-top:6px"><b>${T.priceHistory}</b>${spark(o.history, o.currency)}</div>` : ''}
+          <div style="margin-top:8px"><b>COA</b>${c.labs?.length ? ` · ${T.lab}: ` + c.labs.map(esc).join(', ') : ''}${c.purity ? ` · ${T.purity} ${c.purity}%` : ''}</div>
+          ${(c.links || []).length ? `<ul>${c.links.map(l => `<li><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label || 'COA')}</a>${l.lab ? ` <span class="muted">(${esc(l.lab)})</span>` : ''}${l.viaPage ? ` <span class="muted">· ${T.viaCoaPage}</span>` : ''}</li>`).join('')}</ul>`
+            : `<div class="muted">${c.mentions ? T.coaMention : T.coaNone}</div>`}
+          ${si ? `<div style="margin-top:8px"><b>${T.shopInfo}</b><div class="muted">${si}</div></div>` : ''}
+        </div>`;
+      }
+      return html + '</div>';
+    }).join('')}`;
+}
+
+// ---------- Prijsalarm ----------
+function renderAlerts() {
+  const peps = [...new Set(D.offers.map(o => o.peptide).filter(p => p && p !== 'Bacteriostatic water'))].sort();
+  const cur = $('aPep').value;
+  $('aPep').innerHTML = peps.map(p => `<option ${p === cur ? 'selected' : ''}>${esc(p)}</option>`).join('');
+  const sel = $('aPep').value;
+  const doses = [...new Set(D.offers.filter(o => o.peptide === sel).map(o => o.dose).filter(Boolean))];
+  const curD = $('aDose').value;
+  $('aDose').innerHTML = `<option value="">${T.anyDose}</option>` + doses.map(d => `<option ${d === curD ? 'selected' : ''}>${esc(d)}</option>`).join('');
+  $('aPerMgLbl').textContent = t('maxPerMg', { c: SYM[BASE] });
+  $('aPriceLbl').textContent = t('maxPrice', { c: SYM[BASE] });
+  const alerts = D.settings.alerts || [];
+  $('alertList').innerHTML = alerts.length ? alerts.map(a => {
+    const matches = D.offers.filter(o => o.peptide === a.peptide && o.inStock && (!a.dose || o.dose === a.dose) && (!a.coaOnly || coaLevel(o) > 0)).sort((x, y) => (x.perMg ?? 1e9) - (y.perMg ?? 1e9));
+    const best = matches[0];
+    const hits = D.alertHits.filter(h => h.alertId === a.id);
+    const ok = best && (!a.maxPerMg || (best.perMg != null && best.perMg <= a.maxPerMg)) && (!a.maxPrice || best.priceBase <= a.maxPrice);
+    return `<div class="card"><div class="item" style="padding:0"><div class="head"><b>🔔 ${esc(a.peptide)}${a.dose ? ' · ' + esc(a.dose) : ''}</b><button class="danger small" data-adel="${a.id}">${T.remove}</button></div>
+      <div class="muted" style="font-size:13px">${a.maxPerMg ? '≤ ' + money(a.maxPerMg) + '/mg ' : ''}${a.maxPrice ? '≤ ' + money(a.maxPrice) + ' ' : ''}${a.coaOnly ? '· ' + T.onlyWithCoa : ''}</div>
+      ${best ? `<div style="margin-top:8px;font-size:13px">${ok ? '✅' : '⏳'} ${T.currentBest}: <b>${esc(best.shop)}</b> · ${esc(best.dose)} · ${money(best.priceBase)}${best.perMg != null ? ` (${money(best.perMg)}/mg)` : ''} <a href="${esc(best.url)}" target="_blank" rel="noopener" style="color:var(--accent)">↗</a></div>` : `<div class="muted" style="font-size:13px;margin-top:6px">${T.noMatch}</div>`}
+      ${hits.length ? `<div class="muted" style="font-size:12px;margin-top:6px">${hits.length} ${T.hits} · ${ago(hits[0].t)}</div>` : ''}
+    </div></div>`;
+  }).join('') : `<div class="card empty">${T.noAlerts}</div>`;
+}
+
+// ---------- COA-overzicht ----------
+function renderCoa() {
+  const el = $('p-coa');
+  if (!D.offers.length) { el.innerHTML = `<div class="card empty">${T.noData}</div>`; return; }
+  const rows = D.shops.filter(s => s.lastScan && !s.lastError).map(s => {
+    const os = D.offers.filter(o => o.shopId === s.id && o.peptide && !isWater(o));
+    const prods = new Map();
+    for (const o of os) prods.set(o.productId, Math.max(prods.get(o.productId) ?? 0, coaLevel(o)));
+    const n = prods.size || 1;
+    const withCoa = [...prods.values()].filter(v => v > 0).length, verif = [...prods.values()].filter(v => v === 3).length;
+    const pur = os.map(o => o.coa?.purity).filter(Boolean);
+    return { s, n: prods.size, withCoa, verif, labs: [...new Set(os.flatMap(o => o.coa?.labs || []))], score: Math.round((withCoa / n) * 70 + (verif / n) * 30), purity: pur.length ? (pur.reduce((a, b) => a + b, 0) / pur.length).toFixed(1) : null };
+  }).sort((a, b) => b.score - a.score);
+  const col = v => v >= 70 ? 'var(--ok)' : v >= 35 ? 'var(--warn)' : 'var(--err)';
+  el.innerHTML = `<div class="card"><h3>${T.coaScore}</h3><p class="muted" style="font-size:13px;margin:-4px 0 8px">${T.coaScoreIntro}</p>
+    ${rows.map(r => `<div class="item"><div class="head"><b>${esc(r.s.name)}</b><span style="font-weight:700;color:${col(r.score)}">${r.score}</span></div>
+      <div class="bar"><i style="width:${r.score}%;background:${col(r.score)}"></i></div>
+      <div class="muted" style="font-size:13px;margin-top:4px">${t('coaOf', { a: r.withCoa, b: r.n, c: r.verif })}${r.purity ? ` · ${T.avgPurity} ${r.purity}%` : ''}</div>
+      ${r.labs.length ? `<div class="badges">${r.labs.map(l => `<span class="b info">${esc(l)}</span>`).join('')}</div>` : ''}
+      ${(r.s.coaPages || []).length ? `<div style="font-size:13px;margin-top:4px">${T.coaPage}: ${r.s.coaPages.map(u => `<a href="${esc(u)}" target="_blank" rel="noopener" style="color:var(--accent)">${esc(new URL(u).pathname)}</a>`).join(', ')}</div>` : ''}
+    </div>`).join('')}</div>
+    <div class="card"><h3>${T.coaTips}</h3><ul class="note" style="font-size:13px;padding-left:18px;margin:0">${T.coaTipList.map(x => `<li>${x}</li>`).join('')}</ul></div>`;
+}
+
+// ---------- Wijzigingen ----------
+function renderChanges() {
+  const el = $('p-changes');
+  if (!D.changes.length && !D.alertHits.length) { el.innerHTML = `<div class="card empty">${T.noChanges}</div>`; return; }
+  const f = { all: () => true, down: c => c.old && c.new < c.old, up: c => c.old && c.new > c.old, new: c => c.isNew, restock: c => c.restock }[changeFilter];
+  const list = D.changes.filter(f);
+  el.innerHTML = `
+    ${D.alertHits.length ? `<div class="card"><h3>${T.alertHits}</h3>${D.alertHits.slice(0, 20).map(h => `<div class="item" style="display:flex;gap:10px"><div style="flex:1;min-width:0"><b>${esc(h.shop)}</b> · <a href="${esc(h.url)}" target="_blank" rel="noopener" style="color:inherit">${esc(h.peptide)} ${esc(h.dose)}</a><div class="muted" style="font-size:12px">${money(h.priceBase)}${h.perMg != null ? ' · ' + money(h.perMg) + '/mg' : ''} · ${ago(h.t)}</div></div></div>`).join('')}</div>` : ''}
+    <div class="card"><h3>${T.latestChanges}</h3>
+      <div class="chips" id="chgChips" style="margin-bottom:8px">${['all', 'down', 'up', 'new', 'restock'].map(k => `<button data-cf="${k}" class="${k === changeFilter ? 'active' : ''}">${t('filter' + k[0].toUpperCase() + k.slice(1))}</button>`).join('')}</div>
+      ${list.slice(0, 200).map(c => {
+        const pct = c.old ? (c.new - c.old) / c.old * 100 : null;
+        return `<div class="item" style="display:flex;gap:10px;align-items:center">
+          <div style="flex:1;min-width:0"><div><b>${esc(c.shop)}</b> · <a href="${esc(c.url)}" target="_blank" rel="noopener" style="color:inherit">${esc(c.name)}${c.variant ? ' · ' + esc(c.variant) : ''}</a></div>
+          <div class="muted" style="font-size:12px">${c.isNew ? T.newProduct + ' · ' + money(c.new, c.currency) : c.restock ? T.restock + ' · ' + money(c.new, c.currency) : `${money(c.old, c.currency)} → ${money(c.new, c.currency)}`} · ${ago(c.t)}</div></div>
+          ${pct != null ? `<span class="pct ${pct < 0 ? 'down' : 'up'}">${pct < 0 ? '▼' : '▲'} ${Math.abs(pct).toFixed(0)}%</span>` : `<span class="pct" style="color:var(--info)">${c.restock ? T.BACK : T.NEW}</span>`}
+        </div>`;
+      }).join('') || `<div class="empty">—</div>`}
+    </div>`;
+}
+
+// ---------- Shops ----------
+function renderShops() {
+  $('autoHours').value = String(D.settings.autoHours || 0);
+  $('shopList').innerHTML = D.shops.length ? D.shops.slice().sort((a, b) => (b.peptideProducts || 0) - (a.peptideProducts || 0)).map(s => `<div class="item">
+    <div class="head"><b>${esc(s.name)}</b>${s.platform ? `<span class="b">${esc(s.platform)}</span>` : ''}${s.currency ? `<span class="b">${esc(s.currency)}</span>` : ''}${s.discovered ? '<span class="b info">🔎</span>' : ''}</div>
+    <div class="muted" style="font-size:13px">${s.lastError ? `<span style="color:var(--err)">✖ ${esc(s.lastError)}</span> · ` : ''}${s.offers != null ? `${s.products} ${T.products} · ${s.offers} ${T.prices} · ${s.withCoa} COA · ` : ''}${T.scanned} ${ago(s.lastScan)}</div>
+    ${shopInfoHtml(s) ? `<div class="muted" style="font-size:12px;margin-top:2px">${shopInfoHtml(s)}</div>` : ''}
+    ${s.fit && !s.fit.ok ? `<div style="font-size:12px;color:var(--warn);margin-top:2px">🌍 ${esc(s.fit.reasons.join(', '))}</div>` : ''}
+    <div class="row" style="margin-top:6px"><button class="secondary small" data-scan="${s.id}">${T.scan}</button><a class="b" href="${esc(s.url)}" target="_blank" rel="noopener" style="text-decoration:none;color:var(--text);padding:6px 12px">${T.open}</a><button class="danger small" data-del="${s.id}">${T.remove}</button></div>
+  </div>`).join('') : `<div class="empty">${T.noShops}</div>`;
+  $('log').innerHTML = (D.job.log || []).slice().reverse().map(l => `<div>${new Date(l.t).toLocaleTimeString(LOCALE)} ${esc(l.msg)}</div>`).join('') || T.nothingYet;
+}
+
+// ---------- Shops zoeken ----------
+function renderFind() {
+  $('autoAdd').checked = D.settings.autoAdd !== false;
+  $('autoDiscover').value = String(D.settings.autoDiscoverDays || 0);
+  if (document.activeElement !== $('braveKey')) $('braveKey').value = D.settings.braveKey || '';
+  if (document.activeElement !== $('extraQueries')) $('extraQueries').value = (D.settings.extraQueries || []).join('\n');
+  const st = { shop: T.stShop, otherregion: T.stOther, notshop: T.stNot, error: T.stErr, removed: T.stRemoved };
+  const order = { shop: 0, otherregion: 1, removed: 2, notshop: 3, error: 4 };
+  const inList = h => D.shops.some(s => s.name === h);
+  const list = D.discovered.slice().sort((a, b) => order[a.status] - order[b.status]);
+  $('discList').innerHTML = `<h3>${T.discTitle} <span class="muted" style="font-weight:400">(${D.discovered.filter(d => d.status === 'shop').length} / ${D.discovered.length})</span></h3>` + (list.length ? list.slice(0, 300).map(d => `<div class="item">
+    <div class="head"><b>${esc(d.host)}</b><span class="b ${d.status === 'shop' ? 'ok' : d.status === 'otherregion' ? 'warn' : ''}">${st[d.status] || d.status}</span></div>
+    <div class="muted" style="font-size:12px">${d.title ? esc(d.title) + ' · ' : ''}${d.platform ? esc(d.platform) + ' · ' : ''}${d.currency ? esc(d.currency) + ' · ' : ''}${(d.peptides || []).length ? (d.peptides.length + ' peptides: ' + d.peptides.slice(0, 6).map(esc).join(', ')) : ''}${d.reason ? ' · ' + esc(d.reason) : ''}</div>
+    <div class="row" style="margin-top:6px">${inList(d.host) ? `<span class="b ok">${T.inList}</span>` : (d.status === 'shop' || d.status === 'otherregion' || d.status === 'removed') ? `<button class="secondary small" data-addurl="${esc(d.origin)}">${T.addAnyway}</button>` : ''}<a class="b" href="${esc(d.origin)}" target="_blank" rel="noopener" style="text-decoration:none;color:var(--text);padding:6px 12px">${T.open}</a></div>
+  </div>`).join('') : `<div class="empty">${T.discEmpty}</div>`);
+}
+
+function renderJob() {
+  const j = D.job || {};
+  $('jobCard').style.display = j.running ? '' : 'none';
+  if (j.running) {
+    $('jobTitle').textContent = T.scanning + (j.current || '…');
+    $('jobCount').textContent = j.total > 1 ? t('task', { a: Math.min(j.done + 1, j.total), b: j.total }) : '';
+    $('jobPhase').textContent = j.phase || '';
+  }
+  $('cShops').textContent = D.shops.length || '';
+  $('cAlerts').textContent = (D.settings.alerts || []).length || '';
+  const recent = D.changes.filter(c => Date.now() - c.t < 86400e3).length;
+  $('cChanges').textContent = recent || '';
+}
+
+function render() {
+  renderJob();
+  ({ deals: renderDeals, compare: renderCompare, alerts: renderAlerts, coa: renderCoa, changes: renderChanges, shops: renderShops, find: renderFind })[tab]();
+}
+
+async function load() {
+  try { D = await (await fetch(API + '/state')).json(); } catch { return; }
+  BASE = D.base || BASE;
+  render();
+  if (D.job.running) startPolling();
+}
+function startPolling() {
+  if (polling) return;
+  let lastDone = -1, lastLog = 0;
+  polling = setInterval(async () => {
+    try {
+      const j = await (await fetch(API + '/job')).json();
+      D.job = j;
+      if (!j.running) { clearInterval(polling); polling = null; await load(); return; }
+      const logLen = (j.log || []).length;
+      if (j.done !== lastDone || (tab === 'find' && logLen !== lastLog)) { lastDone = j.done; lastLog = logLen; const keep = j; await load(); D.job = keep; }
+      renderJob(); if (tab === 'shops') renderShops();
+    } catch {}
+  }, 2000);
+}
+
+// ---------- Interactie ----------
+function setTab(x) {
+  tab = x; store.set('pw-tab-' + REGION, x);
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === x));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'p-' + x));
+  document.querySelector(`#tabs button[data-tab="${x}"]`)?.scrollIntoView({ inline: 'center', block: 'nearest' });
+  render();
+}
+$('tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.tab); });
+$('p-deals').addEventListener('click', e => { const r = e.target.closest('[data-pep]'); if (!r) return; pep = r.dataset.pep; dose = null; $('search').value = ''; store.set('pw-pep-' + REGION, pep); setTab('compare'); });
+$('pepChips').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; pep = b.dataset.pep; dose = null; openKey = null; store.set('pw-pep-' + REGION, pep); renderCompare(); });
+$('doseChips').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; dose = b.dataset.dose || null; renderCompare(); });
+['onlyStock', 'onlyCoa', 'sort'].forEach(id => $(id).addEventListener('change', renderCompare));
+$('search').addEventListener('input', renderCompare);
+$('offers').addEventListener('click', e => {
+  if (e.target.closest('[data-stop]') || e.target.closest('a')) return;
+  const o = e.target.closest('[data-key]'); if (!o) return;
+  openKey = openKey === o.dataset.key ? null : o.dataset.key; renderCompare();
+});
+$('aPep').addEventListener('change', renderAlerts);
+$('aAdd').addEventListener('click', async () => {
+  if (!$('aPep').value) return;
+  await post('/alerts', { peptide: $('aPep').value, dose: $('aDose').value, maxPerMg: $('aPerMg').value, maxPrice: $('aPrice').value, coaOnly: $('aCoa').checked });
+  $('aPerMg').value = ''; $('aPrice').value = '';
+  await load();
+});
+$('alertList').addEventListener('click', async e => { const d = e.target.closest('[data-adel]'); if (d) { await fetch(API + '/alerts/' + d.dataset.adel, { method: 'DELETE' }); await load(); } });
+$('p-changes').addEventListener('click', e => { const b = e.target.closest('[data-cf]'); if (b) { changeFilter = b.dataset.cf; renderChanges(); } });
+$('addBtn').addEventListener('click', async () => {
+  const v = $('newShops').value.trim(); if (!v) return;
+  await post('/shops', { url: v }); $('newShops').value = '';
+  await load(); startPolling();
+});
+$('scanAllBtn').addEventListener('click', async () => { await post('/scan'); await load(); startPolling(); });
+$('autoHours').addEventListener('change', () => post('/settings', { autoHours: $('autoHours').value }));
+$('shopList').addEventListener('click', async e => {
+  const sc = e.target.closest('[data-scan]'), del = e.target.closest('[data-del]');
+  if (sc) { await post('/scan', { id: sc.dataset.scan }); await load(); startPolling(); }
+  if (del && confirm(T.confirmDel)) { await fetch(API + '/shops/' + del.dataset.del, { method: 'DELETE' }); await load(); }
+});
+$('discoverBtn').addEventListener('click', async () => { await post('/discover'); await load(); startPolling(); });
+$('autoAdd').addEventListener('change', () => post('/settings', { autoAdd: $('autoAdd').checked }));
+$('autoDiscover').addEventListener('change', () => post('/settings', { autoDiscoverDays: $('autoDiscover').value }));
+$('saveFind').addEventListener('click', async () => {
+  const r = await (await post('/settings', { braveKey: $('braveKey').value, extraQueries: $('extraQueries').value })).json();
+  D.settings = r; $('saveFind').textContent = '✔ ' + T.saved; setTimeout(() => $('saveFind').textContent = T.save, 1500); renderFind();
+});
+$('discList').addEventListener('click', async e => { const a = e.target.closest('[data-addurl]'); if (a) { await post('/shops', { url: a.dataset.addurl }); await load(); startPolling(); } });
+$('csvBtn').addEventListener('click', () => {
+  const cols = [['Shop', o => o.shop], ['Peptide', o => o.peptide], ['Product', o => o.name], ['Variant', o => o.variant], ['Dose', o => o.dose], ['Price', o => o.price], ['Currency', o => o.currency],
+    ['Price ' + BASE, o => o.priceBase], [BASE + '/mg', o => o.perMg], ['In stock', o => o.inStock ? 'yes' : 'no'], ['COA', o => (o.coa?.links || []).map(l => l.url).join(' | ')], ['Lab', o => (o.coa?.labs || []).join(', ')], ['Purity', o => o.coa?.purity], ['URL', o => o.url]];
+  const sep = REGION === 'nl' ? ';' : ',';
+  const csv = '﻿' + [cols.map(c => c[0]).join(sep), ...D.offers.map(o => cols.map(c => '"' + String(c[1](o) ?? '').replace(/"/g, '""') + '"').join(sep))].join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `prices-${REGION}-${new Date().toISOString().slice(0, 10)}.csv`; document.body.appendChild(a); a.click(); a.remove();
+});
+
+setTab(tab);
+load();
+</script>
+</body>
+</html>

@@ -67,7 +67,7 @@ async function readLimited(res, max = 200000) {
     chunks.push(value); size += value.length;
   }
   reader.cancel().catch(() => {});
-  return Buffer.concat(chunks).toString('latin1');
+  return Buffer.concat(chunks).toString('utf8');
 }
 
 const STOP = new Set(('de het een en van in is op te dat die voor met zijn er niet aan om ook als bij of door over naar uit tot je jij jouw wij we ons onze u uw ze zij hun hij haar wat wie waar hoe dan maar nog wel geen meer kan kunnen wordt worden werd heeft hebben had was waren zal zou dit deze ik me mijn mij al alle veel zo nu nieuw heel per via na tussen onder tegen zonder hier daar ja nee welke elk elke andere omdat want dus toch zelfs alleen sinds' +
@@ -737,7 +737,12 @@ function listHistory() {
 
 // ---------- Prijsvolger ----------
 
-const priceWatch = require('./pricewatch')({ get, readLimited, decodeEntities, stripTags, getAttr, errText, dir: __dirname });
+const createPriceWatch = require('./pricewatch');
+const priceWatch = {
+  nl: createPriceWatch({ get, readLimited, decodeEntities, stripTags, getAttr, errText, dir: __dirname, region: 'nl' }),
+  us: createPriceWatch({ get, readLimited, decodeEntities, stripTags, getAttr, errText, dir: __dirname, region: 'us' }),
+};
+const PW_PAGES = { '/prijzen.html': 'nl', '/prijzen': 'nl', '/prices.html': 'us', '/prices': 'us' };
 
 // ---------- HTTP-server ----------
 
@@ -752,7 +757,15 @@ async function readBody(req, max = 100e6) {
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
 
-  if (url.pathname.startsWith('/api/pw/')) return priceWatch(req, res, url);
+  const pwm = url.pathname.match(/^\/api\/pw\/(nl|us)(\/.*)$/);
+  if (pwm) return priceWatch[pwm[1]](req, res, pwm[2]);
+  if (PW_PAGES[url.pathname]) {
+    return fs.readFile(path.join(__dirname, 'public', 'pricewatch.html'), 'utf8', (err, html) => {
+      if (err) { res.writeHead(500); return res.end('pricewatch.html ontbreekt'); }
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
+      res.end(html.replace('__REGION__', PW_PAGES[url.pathname]));
+    });
+  }
 
   if (url.pathname === '/api/scan' && req.method === 'POST') {
     let opts;
@@ -835,6 +848,7 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`\n  👻 Ghost Crawler v3 draait op http://localhost:${PORT}\n`);
-  console.log(`  💰 Prijsvolger:      http://localhost:${PORT}/prijzen.html\n`);
+  console.log(`  🇳🇱 Prijsvolger NL:   http://localhost:${PORT}/prijzen.html`);
+  console.log(`  🇺🇸 Price tracker US: http://localhost:${PORT}/prices.html\n`);
   console.log('  Open dit adres in je browser. Stoppen: CTRL + C\n');
 });

@@ -20,15 +20,23 @@ De scan loopt op de server, dus hij gaat door als je tussendoor van app wisselt 
 
 <img src="screenshot.png" width="320" alt="screenshot">
 
-## 💰 Prijsvolger
+## 💰 Prijsvolger (🇳🇱 Nederland en 🇺🇸 USA)
 
-Op **http://localhost:3000/prijzen.html** staat een prijsvolger voor webshops (gemaakt voor peptideshops):
+Twee versies van de prijsvolger voor peptidewebshops:
 
-- je voegt webshops toe. Shopify en WooCommerce worden automatisch herkend, andere shops worden via hun productpagina's uitgelezen
-- per peptide vergelijk je alle shops, gesorteerd op **prijs per mg** (omgerekend naar euro, inclusief kits en blends)
-- **COA-check** per product: certificaat gevonden, welk lab, zuiverheid, en of het verifieerbaar is (Janoshik). Plus een COA-score per shop
-- **prijsgeschiedenis**, prijsdalingen en -stijgingen, en nieuwe producten
-- **automatisch scannen** elke 3, 6, 12 of 24 uur, of elke week
+| | Adres | Taal | Valuta | Zoekt shops in |
+|---|---|---|---|---|
+| 🇳🇱 | http://localhost:3000/prijzen.html | Nederlands | EUR | Nederland, België en Europa |
+| 🇺🇸 | http://localhost:3000/prices.html | English | USD | USA ([installatiegids in het Engels](INSTALL-US.md)) |
+
+- **🔎 Shops zoeken**: zoekt via zoekmachines alle peptideshops in het land, controleert of elke website echt een peptideshop is en bij het land past, en voegt ze automatisch toe
+- **Beste deals**: de goedkoopste prijs per mg per peptide
+- **Vergelijken**: per peptide en dosering, met prijs per mg (kits en blends meegerekend), COA-status, zuiverheid, prijsverloop en shopinfo (betaalmethodes, gratis verzending, land van verzending)
+- **COA-check**: certificaat, lab, zuiverheid, Janoshik-verificatie, plus een COA-score per shop
+- **Prijsalarm**: een melding als een peptide onder jouw prijs per mg of prijs komt
+- **Wijzigingen**: prijsdalingen, prijsstijgingen, nieuwe producten en producten die weer op voorraad zijn
+- **Automatisch** prijzen bijwerken en opnieuw naar nieuwe shops zoeken
+- export naar **CSV**
 
 ## Op je Android-telefoon (Termux)
 
