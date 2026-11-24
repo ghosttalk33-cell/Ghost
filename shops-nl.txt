@@ -1,6 +1,11 @@
 # 🇳🇱 Extra shops voor de Nederlandse prijsvolger
-# Zet hier webshops die je zelf kent, één per regel. Bijvoorbeeld:
-# peptideshop.nl
-# https://www.voorbeeldwinkel.eu
-#
-# De prijsvolger zoekt daarnaast zelf naar nieuwe shops (één keer per week).
+# Eén webshop per regel. De robot leest hieruit automatisch alle prijzen en COA's,
+# ook als de zoekmachines niets teruggeven.
+
+24peptides.com
+nextgenpeptides.nl
+peptidelab.nl
+pulsepeptides.com
+
+# Je kunt er zelf meer toevoegen, bijvoorbeeld:
+# anderewinkel.nl

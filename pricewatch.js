@@ -52,7 +52,7 @@ const REGIONS = {
 };
 
 // Domeinen die geen webshop zijn (social media, nieuws, wiki, marktplaatsen…)
-const NOT_SHOP = /(^|\.)(reddit|youtube|youtu|facebook|instagram|tiktok|twitter|x|wikipedia|wikimedia|amazon|ebay|bol|marktplaats|aliexpress|alibaba|temu|etsy|walmart|pubmed|ncbi|nih|sciencedirect|springer|frontiersin|mdpi|researchgate|healthline|webmd|mayoclinic|medicalnewstoday|examine|verywellhealth|clevelandclinic|drugs|rxlist|medium|quora|trustpilot|google|bing|duckduckgo|linkedin|pinterest|tumblr|substack|wordpress|blogspot|github|fda|europa|rivm|thuisarts|nu|nos|ad|telegraaf|volkskrant|nytimes|cnn|bbc|forbes|businessinsider|vice|apple|spotify|podcasts|goodrx|hims|ro|everlywell|sciencedaily|newsweek|statnews|wired|theguardian|independent|dailymail|nypost|yahoo|msn|t|discord|whatsapp|telegram)\.[a-z.]+$|\.gov(\.[a-z]+)?$|\.edu$|\.mil$/i;
+const NOT_SHOP = /(^|\.)(reddit|youtube|youtu|facebook|meta|instagram|tiktok|twitter|x|wikipedia|wikimedia|amazon|ebay|bol|marktplaats|aliexpress|alibaba|temu|etsy|walmart|pubmed|ncbi|nih|sciencedirect|springer|frontiersin|mdpi|researchgate|healthline|webmd|mayoclinic|medicalnewstoday|examine|verywellhealth|clevelandclinic|drugs|rxlist|medium|quora|trustpilot|google|bing|duckduckgo|linkedin|pinterest|tumblr|substack|wordpress|blogspot|github|fda|europa|rivm|thuisarts|nu|nos|ad|telegraaf|volkskrant|nytimes|cnn|bbc|forbes|businessinsider|vice|apple|spotify|podcasts|goodrx|hims|ro|everlywell|sciencedaily|newsweek|statnews|wired|theguardian|independent|dailymail|nypost|yahoo|msn|t|discord|whatsapp|telegram)\.[a-z.]+$|\.gov(\.[a-z]+)?$|\.edu$|\.mil$/i;
 
 module.exports = function createPriceWatch({ get, readLimited, decodeEntities, stripTags, getAttr, errText, dir, region }) {
   const R = REGIONS[region];
