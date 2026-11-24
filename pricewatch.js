@@ -513,40 +513,52 @@ module.exports = function createPriceWatch({ get, readLimited, decodeEntities, s
   }
 
   // ---------- Shops zoeken (ontdekken) ----------
+  // Alleen zoekresultaten die echt over peptiden gaan (titel, beschrijving of adres)
+  const RELEVANT = /peptid|bpc[\s-]?157|tb[\s-]?500|semaglut|tirzepat|retatrut|cagrilint|ipamorelin|cjc[\s-]?1295|ghk[\s-]?cu|mots[\s-]?c|epitalon|selank|semax|pt[\s-]?141|melanotan|tesamorelin|sermorelin|aod[\s-]?9604|glp[\s-]?[123]|research chem|kisspeptin|thymosin/i;
   async function searchWeb(q) {
     const found = new Set();
-    const add = u => { try { const x = new URL(u); if (/^https?:$/.test(x.protocol)) found.add(x.origin); } catch {} };
+    const add = (u, text = '') => {
+      try {
+        const x = new URL(u);
+        if (!/^https?:$/.test(x.protocol)) return;
+        if (!RELEVANT.test(text + ' ' + x.hostname + x.pathname)) return;
+        found.add(x.origin);
+      } catch {}
+    };
     if (process.env.PW_SEARCH_URL) { // alleen voor tests
-      try { const r = await fetch(`${process.env.PW_SEARCH_URL}?q=${encodeURIComponent(q)}&region=${region}`); for (const u of await r.json()) add(u); } catch {}
+      try { const r = await fetch(`${process.env.PW_SEARCH_URL}?q=${encodeURIComponent(q)}&region=${region}`); for (const u of await r.json()) found.add(new URL(u).origin); } catch {}
       return [...found];
     }
     if (settings.braveKey) {
       try {
-        const r = await fetch(`https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(q)}&country=${R.brave}&count=20`, {
+        const r = await fetch(`https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(q)}&country=${R.brave}&count=20&safesearch=strict`, {
           headers: { Accept: 'application/json', 'X-Subscription-Token': settings.braveKey }, signal: AbortSignal.timeout(15000) });
         const d = await r.json();
-        for (const x of d.web?.results || []) add(x.url);
+        for (const x of d.web?.results || []) add(x.url, `${x.title || ''} ${x.description || ''}`);
       } catch (e) { log('Brave: ' + errText(e)); }
     }
     try {
-      const r = await get(`https://www.bing.com/search?q=${encodeURIComponent(q)}&cc=${R.bingCc}&setlang=${R.bingLang}&count=30`, { timeout: 15000 });
+      const r = await get(`https://www.bing.com/search?q=${encodeURIComponent(q)}&cc=${R.bingCc}&setlang=${R.bingLang}&count=30&adlt=strict`, { timeout: 15000 });
       const html = await r.text();
-      for (const m of html.matchAll(/<li class="b_algo"[\s\S]*?<h2[^>]*>\s*<a[^>]+href="([^"]+)"/g)) {
-        let u = decodeEntities(m[1]);
+      for (const m of html.matchAll(/<li class="b_algo"[\s\S]*?<\/li>/g)) {
+        const h = (m[0].match(/<h2[^>]*>\s*<a[^>]+href="([^"]+)"/) || [])[1];
+        if (!h) continue;
+        let u = decodeEntities(h);
         const enc = (u.match(/[?&]u=a1([^&]+)/) || [])[1];
         if (enc) { try { u = Buffer.from(enc.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'); } catch {} }
-        add(u);
+        add(u, stripTags(m[0]));
       }
     } catch {}
     try {
-      const r = await get(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(q)}&kl=${R.ddg}`, { timeout: 15000 });
+      const r = await get(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(q)}&kl=${R.ddg}&kp=1`, { timeout: 15000 });
       const html = await r.text();
-      for (const m of html.matchAll(/class="result__a"[^>]*href="([^"]+)"/g)) {
+      for (const m of html.matchAll(/class="result__a"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>([\s\S]*?)(?=class="result__a"|$)/g)) {
         let u = decodeEntities(m[1]);
         const enc = (u.match(/[?&]uddg=([^&]+)/) || [])[1];
         if (enc) u = decodeURIComponent(enc);
         if (u.startsWith('//')) u = 'https:' + u;
-        add(u);
+        const snip = (m[3].match(/class="result__snippet"[^>]*>([\s\S]*?)<\/a>/) || [])[1] || '';
+        add(u, stripTags(m[2] + ' ' + snip));
       }
     } catch {}
     return [...found];

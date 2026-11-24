@@ -225,7 +225,7 @@ const T = {
     braveKey: 'Brave Search API-sleutel (optioneel, aanbevolen)', braveNote: 'Zonder sleutel wordt Bing en DuckDuckGo gebruikt; die blokkeren soms automatische zoekopdrachten. Een gratis sleutel (2000 zoekopdrachten/maand) maak je op api.search.brave.com.',
     extraQueries: 'Extra zoekopdrachten (één per regel)', save: 'Opslaan', saved: 'Opgeslagen',
     discTitle: 'Gevonden websites', discEmpty: 'Nog niet gezocht. Tik op 🔎 Shops zoeken.', stShop: '✔ Peptideshop', stOther: '🌍 Ander land', stNot: '✖ Geen peptideshop', stErr: '⚠ Niet bereikbaar', stRemoved: 'Verwijderd',
-    addAnyway: 'Toch toevoegen', added: 'Toegevoegd', inList: 'In je lijst',
+    addAnyway: 'Toch toevoegen', showRejected: 'Toon ook afgewezen ({n})', hideRejected: 'Verberg afgewezen', added: 'Toegevoegd', inList: 'In je lijst',
     scanning: '🔄 Bezig: ', task: 'taak {a} van {b}',
     disclaimer: '⚠️ COA\'s kunnen vervalst of van een andere batch zijn. Een Janoshik-COA kun je verifiëren op janoshik.com. Prijzen in euro zijn omgerekend met de actuele wisselkoers; verzendkosten zijn niet meegerekend. Controleer zelf of een shop betrouwbaar is en wat er in jouw land wettelijk mag.',
     statShops: 'Shops', statOffers: 'Prijzen', statPeptides: 'Peptiden', statCoa: 'Met COA',
@@ -261,7 +261,7 @@ const T = {
     braveKey: 'Brave Search API key (optional, recommended)', braveNote: 'Without a key, Bing and DuckDuckGo are used; they sometimes block automated searches. Get a free key (2,000 searches/month) at api.search.brave.com.',
     extraQueries: 'Extra search queries (one per line)', save: 'Save', saved: 'Saved',
     discTitle: 'Websites found', discEmpty: 'No search yet. Tap 🔎 Find shops.', stShop: '✔ Peptide shop', stOther: '🌍 Other country', stNot: '✖ Not a peptide shop', stErr: '⚠ Unreachable', stRemoved: 'Removed',
-    addAnyway: 'Add anyway', added: 'Added', inList: 'In your list',
+    addAnyway: 'Add anyway', showRejected: 'Show rejected too ({n})', hideRejected: 'Hide rejected', added: 'Added', inList: 'In your list',
     scanning: '🔄 Working: ', task: 'task {a} of {b}',
     disclaimer: '⚠️ COAs can be fake or from a different batch. A Janoshik COA can be verified on janoshik.com. Prices exclude shipping; foreign prices are converted at the current exchange rate. Check vendor reputation yourself and what is legal where you live.',
     statShops: 'Shops', statOffers: 'Prices', statPeptides: 'Peptides', statCoa: 'With COA',
@@ -298,6 +298,7 @@ const ago = ts => {
 const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 const post = (u, b) => STATIC ? Promise.resolve(new Response('{}')) : fetch(API + u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b || {}) });
 
+let showRejected = false;
 let D = { shops: [], offers: [], changes: [], alertHits: [], discovered: [], settings: {}, job: {} };
 let tab = store.get('pw-tab-' + REGION) || 'deals', pep = store.get('pw-pep-' + REGION), dose = null, openKey = null, polling = null, changeFilter = 'all';
 const isWater = o => o.peptide === 'Bacteriostatic water';
@@ -517,8 +518,9 @@ function renderFind() {
   const st = { shop: T.stShop, otherregion: T.stOther, notshop: T.stNot, error: T.stErr, removed: T.stRemoved };
   const order = { shop: 0, otherregion: 1, removed: 2, notshop: 3, error: 4 };
   const inList = h => D.shops.some(s => s.name === h);
-  const list = D.discovered.slice().sort((a, b) => order[a.status] - order[b.status]);
-  $('discList').innerHTML = `<h3>${T.discTitle} <span class="muted" style="font-weight:400">(${D.discovered.filter(d => d.status === 'shop').length} / ${D.discovered.length})</span></h3>` + (list.length ? list.slice(0, 300).map(d => `<div class="item">
+  const rejected = D.discovered.filter(d => d.status === 'notshop' || d.status === 'error').length;
+  const list = D.discovered.filter(d => showRejected || (d.status !== 'notshop' && d.status !== 'error')).sort((a, b) => order[a.status] - order[b.status]);
+  $('discList').innerHTML = `<h3>${T.discTitle} <span class="muted" style="font-weight:400">(${D.discovered.filter(d => d.status === 'shop').length} / ${D.discovered.length})</span></h3>` + (rejected ? `<button class="secondary small" id="toggleRejected" style="margin-bottom:8px">${showRejected ? T.hideRejected : t('showRejected', { n: rejected })}</button>` : '') + (list.length ? list.slice(0, 300).map(d => `<div class="item">
     <div class="head"><b>${esc(d.host)}</b><span class="b ${d.status === 'shop' ? 'ok' : d.status === 'otherregion' ? 'warn' : ''}">${st[d.status] || d.status}</span></div>
     <div class="muted" style="font-size:12px">${d.title ? esc(d.title) + ' · ' : ''}${d.platform ? esc(d.platform) + ' · ' : ''}${d.currency ? esc(d.currency) + ' · ' : ''}${(d.peptides || []).length ? (d.peptides.length + ' peptides: ' + d.peptides.slice(0, 6).map(esc).join(', ')) : ''}${d.reason ? ' · ' + esc(d.reason) : ''}</div>
     <div class="row" style="margin-top:6px">${inList(d.host) ? `<span class="b ok">${T.inList}</span>` : (d.status === 'shop' || d.status === 'otherregion' || d.status === 'removed') ? `<button class="secondary small live" data-addurl="${esc(d.origin)}">${T.addAnyway}</button>` : ''}<a class="b" href="${esc(d.origin)}" target="_blank" rel="noopener" style="text-decoration:none;color:var(--text);padding:6px 12px">${T.open}</a></div>
@@ -627,7 +629,8 @@ $('saveFind').addEventListener('click', async () => {
   const r = await (await post('/settings', { braveKey: $('braveKey').value, extraQueries: $('extraQueries').value })).json();
   D.settings = r; $('saveFind').textContent = '✔ ' + T.saved; setTimeout(() => $('saveFind').textContent = T.save, 1500); renderFind();
 });
-$('discList').addEventListener('click', async e => { const a = e.target.closest('[data-addurl]'); if (a) { await post('/shops', { url: a.dataset.addurl }); await load(); startPolling(); } });
+$('discList').addEventListener('click', async e => {
+  if (e.target.id === 'toggleRejected') { showRejected = !showRejected; renderFind(); return; } const a = e.target.closest('[data-addurl]'); if (a) { await post('/shops', { url: a.dataset.addurl }); await load(); startPolling(); } });
 $('csvBtn').addEventListener('click', () => {
   const cols = [['Shop', o => o.shop], ['Peptide', o => o.peptide], ['Product', o => o.name], ['Variant', o => o.variant], ['Dose', o => o.dose], ['Price', o => o.price], ['Currency', o => o.currency],
     ['Price ' + BASE, o => o.priceBase], [BASE + '/mg', o => o.perMg], ['In stock', o => o.inStock ? 'yes' : 'no'], ['COA', o => (o.coa?.links || []).map(l => l.url).join(' | ')], ['Lab', o => (o.coa?.labs || []).join(', ')], ['Purity', o => o.coa?.purity], ['URL', o => o.url]];
