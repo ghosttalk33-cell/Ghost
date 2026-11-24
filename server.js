@@ -521,6 +521,25 @@ async function siteChecks(start, robots, securityChecks, isCancelled) {
 
   if (start.protocol === 'https:') jobs.push((async () => { c.ssl = await sslInfo(start.hostname); })());
 
+  // E-mailbeveiliging (SPF/DMARC) via DNS — alleen opvragen, geen aanval
+  jobs.push((async () => {
+    const dns = require('dns').promises;
+    const domain = bareHost(start.hostname);
+    const withTimeout = p => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('t')), 8000))]);
+    c.email = { mx: false, spf: '', dmarc: '', dmarcPolicy: '' };
+    try { const mx = await withTimeout(dns.resolveMx(domain)); c.email.mx = (mx || []).length > 0; } catch {}
+    try {
+      const txt = await withTimeout(dns.resolveTxt(domain));
+      const spf = (txt || []).map(r => r.join('')).find(t => /^v=spf1/i.test(t));
+      if (spf) c.email.spf = spf.slice(0, 120);
+    } catch {}
+    try {
+      const txt = await withTimeout(dns.resolveTxt('_dmarc.' + domain));
+      const d = (txt || []).map(r => r.join('')).find(t => /^v=DMARC1/i.test(t));
+      if (d) { c.email.dmarc = d.slice(0, 160); c.email.dmarcPolicy = (d.match(/\bp=(\w+)/i) || [])[1] || ''; }
+    } catch {}
+  })());
+
   jobs.push((async () => {
     try {
       const r = await get(start.origin + '/.well-known/security.txt', { timeout: 8000 });

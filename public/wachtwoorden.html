@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0f1117">
+<title>Wachtwoorden & lekken · Ghost</title>
+<style>
+  :root { --bg:#0f1117; --panel:#171a23; --panel2:#1d2130; --border:#2a2f3d; --text:#e6e8ee; --muted:#8b90a0; --accent:#8b7bff; --ok:#3ecf8e; --warn:#f5a524; --err:#f2555a; --info:#5aa9f2; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+  header { padding:16px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  header h1 { margin:0; font-size:20px; flex:1; }
+  header a { color:var(--muted); font-size:13px; text-decoration:none; border:1px solid var(--border); border-radius:999px; padding:5px 12px; }
+  main { padding:0 16px 40px; max-width:620px; margin:0 auto; }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:14px; }
+  h3 { margin:0 0 4px; font-size:16px; }
+  .sub { color:var(--muted); font-size:13px; margin:0 0 12px; }
+  input[type=text], input[type=password], input[type=number] { width:100%; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:9px; padding:12px; font:inherit; font-size:16px; }
+  input:focus { outline:2px solid var(--accent); outline-offset:-1px; }
+  .pwwrap { position:relative; }
+  .pwwrap button.eye { position:absolute; right:6px; top:6px; background:var(--panel2); border:1px solid var(--border); color:var(--text); border-radius:7px; padding:6px 10px; font-size:14px; }
+  button { background:var(--accent); color:#fff; border:0; border-radius:9px; padding:11px 16px; font:inherit; font-weight:600; cursor:pointer; }
+  button.secondary { background:var(--panel2); border:1px solid var(--border); color:var(--text); font-weight:500; }
+  button.small { padding:8px 12px; font-size:13px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .meter { height:10px; background:var(--border); border-radius:5px; overflow:hidden; margin:12px 0 6px; }
+  .meter i { display:block; height:100%; width:0; transition:width .25s, background .25s; }
+  .label { font-weight:700; font-size:15px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+  .stat { background:var(--panel2); border-radius:9px; padding:9px 11px; }
+  .stat b { display:block; font-size:15px; word-break:break-word; }
+  .stat small { color:var(--muted); font-size:12px; }
+  ul { margin:10px 0 0; padding-left:18px; }
+  ul li { margin:3px 0; }
+  .ok { color:var(--ok); } .warn { color:var(--warn); } .err { color:var(--err); } .muted { color:var(--muted); }
+  .result { margin-top:12px; padding:11px 12px; border-radius:9px; font-size:14px; display:none; }
+  .result.show { display:block; }
+  .result.safe { background:#3ecf8e1a; border:1px solid #3ecf8e55; }
+  .result.bad { background:#f2555a1a; border:1px solid #f2555a55; }
+  .result.err { background:#f5a5241a; border:1px solid #f5a52455; }
+  label.opt { display:flex; align-items:center; gap:8px; font-size:14px; }
+  label.opt input { width:18px; height:18px; accent-color:var(--accent); }
+  .gen { font:16px/1.5 ui-monospace,monospace; word-break:break-all; background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:12px; margin-top:10px; min-height:48px; }
+  .note { font-size:12px; color:var(--muted); line-height:1.5; }
+  .big { font-size:18px; font-weight:700; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🔑 Wachtwoorden &amp; lekken</h1>
+  <a href="/">👻 Scanner</a>
+</header>
+<main>
+  <div class="card">
+    <h3>Hoe sterk is mijn wachtwoord?</h3>
+    <p class="sub">Typ een wachtwoord om te zien hoe sterk het is. Alles blijft op dit apparaat; er wordt niets verstuurd.</p>
+    <div class="pwwrap">
+      <input type="password" id="pw" placeholder="Typ hier een wachtwoord…" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="eye" id="eye" type="button">👁</button>
+    </div>
+    <div class="meter"><i id="bar"></i></div>
+    <div class="row" style="justify-content:space-between"><span class="label" id="verdict">—</span><span class="muted" id="entropy"></span></div>
+    <div class="grid">
+      <div class="stat"><b id="crackOnline">—</b><small>Kraaktijd online (met limiet)</small></div>
+      <div class="stat"><b id="crackOffline">—</b><small>Kraaktijd als hackers de database stelen</small></div>
+    </div>
+    <ul id="tips"></ul>
+    <div style="margin-top:12px"><button class="small" id="breachBtn" type="button">🔓 Check of dit wachtwoord ooit gelekt is</button></div>
+    <div class="result" id="breachResult"></div>
+    <p class="note" style="margin-top:10px">De datalek-check stuurt alleen de eerste 5 tekens van een versleutelde code van je wachtwoord naar de dienst <b>Have I Been Pwned</b>, nooit het wachtwoord zelf. Dit heet k-anonimiteit.</p>
+  </div>
+
+  <div class="card">
+    <h3>Sterk wachtwoord maken</h3>
+    <p class="sub">Een willekeurig, sterk wachtwoord dat niemand kan raden.</p>
+    <div class="row">
+      <label class="opt" style="flex:1"><input type="checkbox" id="oUpper" checked> Hoofdletters</label>
+      <label class="opt" style="flex:1"><input type="checkbox" id="oLower" checked> Kleine letters</label>
+    </div>
+    <div class="row" style="margin-top:6px">
+      <label class="opt" style="flex:1"><input type="checkbox" id="oNum" checked> Cijfers</label>
+      <label class="opt" style="flex:1"><input type="checkbox" id="oSym" checked> Tekens (!@#…)</label>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <label class="opt" style="flex:1">Lengte: <b id="lenVal">20</b></label>
+      <input type="range" id="len" min="8" max="64" value="20" style="flex:2;accent-color:var(--accent)">
+    </div>
+    <div class="gen" id="genOut">—</div>
+    <div class="row" style="margin-top:10px">
+      <button class="small" id="genBtn" type="button">🔄 Nieuw</button>
+      <button class="secondary small" id="copyBtn" type="button">📋 Kopiëren</button>
+      <span class="ok" id="copied" style="display:none">Gekopieerd!</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>💡 Tips voor veilige wachtwoorden</h3>
+    <ul style="font-size:14px">
+      <li>Gebruik een <b>ander</b> wachtwoord voor elke site.</li>
+      <li>Langer is beter dan ingewikkeld: een zin van 4-5 woorden is sterk en makkelijk te onthouden.</li>
+      <li>Zet <b>tweestapsverificatie (2FA)</b> aan waar het kan.</li>
+      <li>Gebruik een <b>wachtwoordmanager</b> (bijv. Bitwarden, gratis) om ze te bewaren.</li>
+      <li>Verander een wachtwoord meteen als het in een datalek staat.</li>
+    </ul>
+  </div>
+  <p class="note">Gebruik deze tool voor je eigen wachtwoorden en accounts.</p>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+// ---------- Sterkte ----------
+const COMMON = ['123456','password','123456789','12345678','12345','111111','1234567','sunshine','qwerty','iloveyou','admin','welcome','monkey','dragon','football','123123','abc123','wachtwoord','geheim','letmein','000000','qwerty123','superman','trustno1','hallo','voetbal'];
+const SEQ = ['0123456789','abcdefghijklmnopqrstuvwxyz','qwertyuiop','azerty','qwerty'];
+function analyze(pw) {
+  if (!pw) return null;
+  let pool = 0;
+  if (/[a-z]/.test(pw)) pool += 26;
+  if (/[A-Z]/.test(pw)) pool += 26;
+  if (/[0-9]/.test(pw)) pool += 10;
+  if (/[^a-zA-Z0-9]/.test(pw)) pool += 33;
+  let entropy = pw.length * Math.log2(pool || 1);
+  const warns = [];
+  const low = pw.toLowerCase();
+  if (COMMON.includes(low)) { entropy = Math.min(entropy, 10); warns.push({ t: 'Dit is een van de meest gebruikte wachtwoorden ter wereld.', c: 'err' }); }
+  if (SEQ.some(s => s.includes(low) || s.split('').reverse().join('').includes(low)) && pw.length > 2) { entropy = Math.min(entropy, 18); warns.push({ t: 'Bevat een toetsenbord- of letterreeks (zoals "abc" of "qwerty").', c: 'err' }); }
+  if (/^(.)\1+$/.test(pw)) { entropy = Math.min(entropy, 8); warns.push({ t: 'Bestaat uit één herhaald teken.', c: 'err' }); }
+  if (/^\d+$/.test(pw)) warns.push({ t: 'Alleen cijfers: makkelijk te raden. Voeg letters en tekens toe.', c: 'warn' });
+  if (/^(19|20)\d\d$/.test(pw)) { entropy = Math.min(entropy, 12); warns.push({ t: 'Lijkt op een jaartal.', c: 'err' }); }
+  if (pw.length < 8) warns.push({ t: 'Te kort. Gebruik minstens 12 tekens.', c: 'warn' });
+  else if (pw.length < 12) warns.push({ t: 'Aan de korte kant. 14+ tekens is veel veiliger.', c: 'warn' });
+  if (!/[A-Z]/.test(pw)) warns.push({ t: 'Voeg een hoofdletter toe.', c: 'info' });
+  if (!/[0-9]/.test(pw)) warns.push({ t: 'Voeg een cijfer toe.', c: 'info' });
+  if (!/[^a-zA-Z0-9]/.test(pw)) warns.push({ t: 'Voeg een teken toe, zoals ! of @.', c: 'info' });
+  return { entropy, pool, warns };
+}
+function crackTime(entropy, perSec) {
+  const seconds = Math.pow(2, entropy) / 2 / perSec;
+  if (seconds < 1) return 'direct';
+  const u = [['seconde',1],['minuut',60],['uur',3600],['dag',86400],['jaar',31536000],['eeuw',3153600000]];
+  for (let i = u.length - 1; i >= 0; i--) { const v = seconds / u[i][1]; if (v >= 1) { if (v > 1e9) return 'miljarden jaren'; if (v > 1000 && u[i][0]==='eeuw') return Math.round(v).toLocaleString('nl') + ' eeuwen'; const n = v >= 100 ? Math.round(v) : v >= 10 ? Math.round(v) : v.toFixed(1); return n.toLocaleString ? n.toLocaleString('nl') + ' ' + u[i][0] + (v>=2?'en':'') : n + ' ' + u[i][0]; } }
+  return 'direct';
+}
+function render() {
+  const pw = $('pw').value;
+  const a = analyze(pw);
+  if (!a) { $('bar').style.width = '0'; $('verdict').textContent = '—'; $('entropy').textContent=''; $('crackOnline').textContent='—'; $('crackOffline').textContent='—'; $('tips').innerHTML=''; return; }
+  const levels = [[28,'Zeer zwak','var(--err)'],[40,'Zwak','var(--err)'],[55,'Redelijk','var(--warn)'],[75,'Sterk','var(--ok)'],[1e9,'Zeer sterk','var(--ok)']];
+  const lvl = levels.find(l => a.entropy < l[0]);
+  $('bar').style.width = Math.min(100, a.entropy / 80 * 100) + '%';
+  $('bar').style.background = lvl[2];
+  $('verdict').textContent = lvl[1]; $('verdict').style.color = lvl[2];
+  $('entropy').textContent = Math.round(a.entropy) + ' bits';
+  $('crackOnline').textContent = crackTime(a.entropy, 1000);          // 1000 pogingen/sec (met limiet)
+  $('crackOffline').textContent = crackTime(a.entropy, 1e10);         // 10 miljard/sec (gestolen database)
+  $('tips').innerHTML = a.warns.length ? a.warns.map(w => `<li class="${w.c}">${w.t}</li>`).join('') : '<li class="ok">Ziet er goed uit! 👍</li>';
+  $('breachResult').classList.remove('show');
+}
+$('pw').addEventListener('input', render);
+$('eye').addEventListener('click', () => { const i = $('pw'); i.type = i.type === 'password' ? 'text' : 'password'; });
+
+// ---------- Datalek-check (k-anonimiteit) ----------
+async function sha1(str) {
+  const buf = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+$('breachBtn').addEventListener('click', async () => {
+  const pw = $('pw').value;
+  const box = $('breachResult');
+  if (!pw) return;
+  box.className = 'result show'; box.textContent = 'Bezig met controleren…';
+  try {
+    const hash = await sha1(pw);
+    const res = await fetch('https://api.pwnedpasswords.com/range/' + hash.slice(0, 5), { headers: { 'Add-Padding': 'true' } });
+    if (!res.ok) throw new Error('offline');
+    const text = await res.text();
+    const suffix = hash.slice(5);
+    let count = 0;
+    for (const line of text.split('\n')) { const [s, c] = line.trim().split(':'); if (s === suffix) { count = parseInt(c) || 0; break; } }
+    if (count > 0) { box.className = 'result show bad'; box.innerHTML = `<span class="big err">⚠️ Gelekt!</span><br>Dit wachtwoord staat in <b>${count.toLocaleString('nl')}</b> bekende datalekken. Gebruik het nergens meer. Hackers proberen precies deze wachtwoorden als eerste.`; }
+    else { box.className = 'result show safe'; box.innerHTML = '<span class="big ok">✅ Niet gevonden</span><br>Dit wachtwoord staat in geen enkel bekend datalek. Dat is goed, maar betekent niet automatisch dat het sterk genoeg is.'; }
+  } catch {
+    box.className = 'result show err'; box.textContent = '⚠️ Kon de check niet uitvoeren. Controleer je internetverbinding en probeer het opnieuw.';
+  }
+});
+
+// ---------- Generator ----------
+function generate() {
+  const sets = [];
+  if ($('oLower').checked) sets.push('abcdefghijkmnopqrstuvwxyz');
+  if ($('oUpper').checked) sets.push('ABCDEFGHJKLMNPQRSTUVWXYZ');
+  if ($('oNum').checked) sets.push('23456789');
+  if ($('oSym').checked) sets.push('!@#$%^&*()-_=+?');
+  if (!sets.length) { $('genOut').textContent = 'Kies minstens één soort teken.'; return; }
+  const all = sets.join('');
+  const len = +$('len').value;
+  const bytes = new Uint32Array(len * 2);
+  crypto.getRandomValues(bytes);
+  let out = '', bi = 0;
+  // Zorg dat elke gekozen soort minstens één keer voorkomt
+  for (const s of sets) out += s[bytes[bi++] % s.length];
+  while (out.length < len) out += all[bytes[bi++] % all.length];
+  // Schudden
+  const arr = out.split('');
+  for (let i = arr.length - 1; i > 0; i--) { const j = bytes[bi++ % bytes.length] % (i + 1); [arr[i], arr[j]] = [arr[j], arr[i]]; }
+  $('genOut').textContent = arr.join('');
+}
+$('genBtn').addEventListener('click', generate);
+$('len').addEventListener('input', () => { $('lenVal').textContent = $('len').value; generate(); });
+['oUpper','oLower','oNum','oSym'].forEach(id => $(id).addEventListener('change', generate));
+$('copyBtn').addEventListener('click', async () => {
+  const t = $('genOut').textContent;
+  if (!t || t.includes('Kies')) return;
+  try { await navigator.clipboard.writeText(t); } catch {
+    const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+  }
+  $('copied').style.display = ''; setTimeout(() => $('copied').style.display = 'none', 1500);
+});
+generate();
+</script>
+</body>
+</html>

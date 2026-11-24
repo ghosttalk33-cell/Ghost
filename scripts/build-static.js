@@ -47,11 +47,13 @@ const readList = f => {
     console.log(`[${region}] klaar: ${state.shops.length} shops, ${state.offers.length} prijzen`);
   }
 
+  // Wachtwoordentool meenemen (werkt volledig in de browser)
+  fs.copyFileSync(path.join(ROOT, 'public', 'wachtwoorden.html'), path.join(OUT, 'wachtwoorden.html'));
   fs.writeFileSync(path.join(OUT, '.nojekyll'), '');
   fs.writeFileSync(path.join(OUT, 'index.html'), `<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0f1117"><title>Ghost Prijsvolger</title>
 <style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0f1117;color:#e6e8ee;font:16px/1.5 system-ui,sans-serif;padding:16px}
 main{width:100%;max-width:380px}h1{font-size:22px}a{display:block;background:#171a23;border:1px solid #2a2f3d;border-radius:12px;padding:18px;margin:10px 0;color:#e6e8ee;text-decoration:none;font-weight:600}
 a small{display:block;color:#8b90a0;font-weight:400}</style></head><body><main><h1>💰 Ghost Prijsvolger</h1>
-<a href="prijzen/">🇳🇱 Nederland<small>Peptideprijzen in euro</small></a><a href="prices/">🇺🇸 United States<small>Peptide prices in USD</small></a></main></body></html>`);
+<a href="prijzen/">🇳🇱 Nederland<small>Peptideprijzen in euro</small></a><a href="prices/">🇺🇸 United States<small>Peptide prices in USD</small></a><a href="wachtwoorden.html">🔑 Wachtwoorden &amp; lekken<small>Sterkte testen, datalek-check, generator</small></a></main></body></html>`);
   console.log('Samenvatting:', JSON.stringify(summary));
 })().catch(e => { console.error(e); process.exit(1); });

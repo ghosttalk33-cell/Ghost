@@ -138,6 +138,7 @@
   <h1>👻 Ghost Crawler</h1>
   <span style="flex:1">Volledige website-audit: SEO, snelheid, beveiliging, privacy en toegankelijkheid</span>
   <a href="/prijzen.html" style="color:var(--muted);font-size:13px;text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:5px 12px">💰 Prijsvolger</a>
+  <a href="/wachtwoorden.html" style="color:var(--muted);font-size:13px;text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:5px 12px">🔑 Wachtwoorden</a>
   <a href="/logout" id="logoutBtn" style="display:none;color:var(--muted);font-size:13px;text-decoration:none;border:1px solid var(--border);border-radius:999px;padding:5px 12px">⎋</a>
 </header>
 
@@ -368,6 +369,16 @@ function siteCheckList() {
   add('Beveiligingsheaders', 'securityTxt', s.securityTxt, 'info', 0, 'security.txt', s.securityTxt ? 'Aanwezig: onderzoekers weten hoe ze lekken kunnen melden.' : 'Ontbreekt (optioneel). Vertelt onderzoekers hoe ze beveiligingsproblemen kunnen melden.');
   if (s.corsWildcard) add('Beveiligingsheaders', 'cors', false, s.corsWildcard === 'credentials' ? 'error' : 'warn', s.corsWildcard === 'credentials' ? 10 : 3, 'CORS staat open voor iedereen', s.corsWildcard === 'credentials' ? 'Access-Control-Allow-Origin is "*" én credentials staan aan. Andere websites kunnen namens een ingelogde bezoeker gegevens opvragen. Zeer riskant.' : 'Access-Control-Allow-Origin is "*": elke andere website mag gegevens van deze site opvragen. Beperk dit tot je eigen domeinen.');
 
+  // E-mailbeveiliging (SPF/DMARC): voorkomt dat anderen nep-mails uit jouw naam sturen
+  const em = s.email;
+  if (em && em.mx) {
+    add('E-mailbeveiliging', 'spf', !!em.spf, 'warn', 3, 'SPF-record', em.spf ? 'Ingesteld: ' + em.spf : 'Geen SPF-record. Zonder SPF kunnen anderen makkelijker nep-mails versturen die lijken te komen van jouw domein.');
+    add('E-mailbeveiliging', 'dmarc', !!em.dmarc, 'warn', 3, 'DMARC-record', em.dmarc ? 'Ingesteld (beleid: ' + (em.dmarcPolicy || 'none') + ').' : 'Geen DMARC-record. DMARC vertelt ontvangers wat ze met nep-mails uit jouw naam moeten doen.');
+    if (em.dmarc && (em.dmarcPolicy || 'none').toLowerCase() === 'none') add('E-mailbeveiliging', 'dmarcweak', false, 'info', 1, 'DMARC staat op "none"', 'DMARC is ingesteld maar doet nog niets (p=none). Zet het later op "quarantine" of "reject" om nep-mails echt te blokkeren.');
+  } else if (em) {
+    add('E-mailbeveiliging', 'mx', null, 'info', 0, 'Geen e-mail op dit domein', 'Dit domein heeft geen mailserver (MX-record), dus SPF/DMARC zijn niet nodig.');
+  }
+
   // Verouderde software met bekende lekken
   const gv = s.generatorVersion;
   if (gv) add('Verouderde software', 'gen', false, 'warn', 3, 'Softwareversie zichtbaar in de pagina', `De pagina verraadt "${gv}". Verberg het versienummer en controleer of je de laatste (veilige) versie draait.`);
@@ -456,7 +467,7 @@ function analyze() {
   if (S.links.length) catPen.tech += (broken.length / S.links.length) * 40;
   if (S.images.length) { catPen.tech += (brokenImages.length / S.images.length) * 30; catPen.speed += (heavyImages.length / S.images.length) * 30; }
   for (const c of siteChecks) if (c.ok === false) {
-    const cat = /Beveilig|Lekken|Verbinding|Inloggen|Verouderde/.test(c.group) ? 'security' : c.group === 'Google & SEO' ? 'seo' : c.group === 'Privacy (AVG)' ? 'security' : 'tech';
+    const cat = /Beveilig|Lekken|Verbinding|Inloggen|Verouderde|E-mail/.test(c.group) ? 'security' : c.group === 'Google & SEO' ? 'seo' : c.group === 'Privacy (AVG)' ? 'security' : 'tech';
     catPen[cat] += c.w * 2;
   }
   const cats = Object.fromEntries(Object.entries(catPen).map(([k, v]) => [k, Math.max(0, Math.min(100, Math.round(100 - v)))]));
@@ -716,7 +727,7 @@ function renderSite() {
   const icon = c => c.ok ? '✅' : c.ok == null ? '➖' : c.sev === 'error' ? '❌' : c.sev === 'warn' ? '⚠️' : 'ℹ️';
   el.innerHTML = `
     ${S.site.error ? `<div class="card" style="color:var(--err)">⚠️ Startpagina niet bereikbaar: ${esc(S.site.error)}</div>` : ''}
-    ${Object.entries(groups).map(([g, list]) => `<div class="card"><h3>${{ Verbinding: '🔒', 'Google & SEO': '🔎', Beveiligingsheaders: '🛡️', 'Verouderde software': '📦', 'Inloggen & admin': '🔑', Lekken: '🕳️', 'Privacy (AVG)': '🍪' }[g] || ''} ${esc(g)}</h3>
+    ${Object.entries(groups).map(([g, list]) => `<div class="card"><h3>${{ Verbinding: '🔒', 'Google & SEO': '🔎', Beveiligingsheaders: '🛡️', 'Verouderde software': '📦', 'E-mailbeveiliging': '📧', 'Inloggen & admin': '🔑', Lekken: '🕳️', 'Privacy (AVG)': '🍪' }[g] || ''} ${esc(g)}</h3>
       ${g === 'Lekken' ? '<p class="muted" style="font-size:12px;margin:-4px 0 6px">Alleen gebruiken op je eigen website.</p>' : ''}
       ${list.map(c => `<div class="check-row"><span class="ic">${icon(c)}</span><div>${esc(c.label)}<small>${esc(c.tip)}</small></div></div>`).join('')}</div>`).join('')}
     ${!S.site.securityChecked ? '<div class="card muted">🕳️ Lekkencheck staat uit (zie Instellingen).</div>' : ''}
