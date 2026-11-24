@@ -13,7 +13,10 @@ const REGIONS = {
     queries: ['peptiden kopen', 'peptides kopen', 'research peptides kopen', 'peptide webshop nederland', 'peptides kopen nederland', 'peptiden webshop',
       'bpc-157 kopen', 'tb-500 kopen', 'bpc 157 tb 500 kopen', 'retatrutide kopen', 'tirzepatide peptide kopen', 'semaglutide peptide kopen', 'ghk-cu kopen',
       'ipamorelin kopen', 'cjc-1295 kopen', 'mots-c kopen', 'epitalon kopen', 'melanotan 2 kopen', 'pt-141 kopen', 'nad+ peptide kopen',
-      'peptides bestellen ideal', 'research peptides belgië', 'peptides kopen europa', 'buy research peptides netherlands', 'peptide shop europe', 'research peptides eu shop'],
+      'peptides bestellen ideal', 'research peptides belgië', 'peptides kopen europa', 'buy research peptides netherlands', 'peptide shop europe', 'research peptides eu shop',
+      'buy peptides europe', 'research peptides europe shipping', 'buy bpc-157 europe', 'buy retatrutide europe', 'buy tirzepatide peptide europe', 'peptides eu warehouse',
+      'research peptides euro prices', 'buy peptides netherlands', 'peptide shop belgium', 'research peptides germany', 'peptide kaufen', 'peptide kaufen deutschland',
+      'bpc 157 kaufen', 'forschungspeptide kaufen', 'retatrutide kaufen', 'peptides acheter europe', 'peptide vendor europe janoshik', 'eu peptide vendor third party tested'],
     fit(sig) {
       let s = 0; const r = [];
       if (/\.(nl|be)$/.test(sig.host)) { s += 3; r.push('.' + sig.host.split('.').pop() + '-domein'); }

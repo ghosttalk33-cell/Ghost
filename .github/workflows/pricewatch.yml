@@ -78,5 +78,8 @@ jobs:
         with:
           path: site
 
+      - name: Even wachten (GitHub moet het bestand eerst verwerken)
+        run: sleep 20
+
       - id: deploy
         uses: actions/deploy-pages@v4
