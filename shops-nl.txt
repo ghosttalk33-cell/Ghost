@@ -1,0 +1,6 @@
+# 🇳🇱 Extra shops voor de Nederlandse prijsvolger
+# Zet hier webshops die je zelf kent, één per regel. Bijvoorbeeld:
+# peptideshop.nl
+# https://www.voorbeeldwinkel.eu
+#
+# De prijsvolger zoekt daarnaast zelf naar nieuwe shops (één keer per week).

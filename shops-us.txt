@@ -1,0 +1,5 @@
+# 🇺🇸 Extra shops for the US price tracker
+# Add vendor websites here, one per line. For example:
+# examplepeptides.com
+#
+# The tracker also searches for new shops by itself (once a week).

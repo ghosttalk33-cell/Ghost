@@ -1,0 +1,81 @@
+name: Prijsvolger bijwerken
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'   # elke 6 uur
+  workflow_dispatch:
+    inputs:
+      discover:
+        description: 'Nu ook naar nieuwe shops zoeken'
+        type: boolean
+        default: false
+  push:
+    branches: [claude/wat-kan-je-nog-maken-2vgrv8]
+    paths:
+      - 'shops-*.txt'
+      - 'public/pricewatch.html'
+      - 'pricewatch.js'
+      - 'scripts/build-static.js'
+      - '.github/workflows/pricewatch.yml'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pricewatch
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Opgeslagen gegevens ophalen
+        run: |
+          if git ls-remote --exit-code --heads origin pricewatch-data > /dev/null; then
+            git fetch --depth=1 origin pricewatch-data
+            git worktree add data-branch FETCH_HEAD
+            if [ -d data-branch/data ]; then cp -r data-branch/data ./data; fi
+          else
+            echo "Eerste keer: nog geen opgeslagen gegevens."
+          fi
+
+      - name: Shops zoeken en prijzen scannen
+        env:
+          BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
+          DISCOVER: ${{ inputs.discover }}
+        run: node scripts/build-static.js
+
+      - name: Gegevens bewaren
+        if: always()
+        run: |
+          [ -d data ] || exit 0
+          git config user.name "prijsvolger-bot"
+          git config user.email "prijsvolger-bot@users.noreply.github.com"
+          rm -rf store && mkdir store && cd store
+          git init -q -b pricewatch-data
+          mkdir data && cp -r ../data/nl ../data/us data/ 2> /dev/null || true
+          rm -f data/users.json data/secret.key
+          git add -A
+          git commit -q -m "Prijzen bijgewerkt $(date -u '+%Y-%m-%d %H:%M') UTC" || exit 0
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" pricewatch-data
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

@@ -674,7 +674,7 @@ module.exports = function createPriceWatch({ get, readLimited, decodeEntities, s
     runQueue();
   }
 
-  setInterval(() => {
+  const timer = setInterval(() => {
     if (job.running) return;
     if (settings.autoDiscoverDays > 0 && Date.now() - (settings.lastDiscover || 0) > settings.autoDiscoverDays * 864e5) {
       settings.lastDiscover = Date.now(); saveSettings();
@@ -692,7 +692,7 @@ module.exports = function createPriceWatch({ get, readLimited, decodeEntities, s
   async function body(req) { let b = ''; for await (const c of req) { b += c; if (b.length > 1e6) break; } try { return JSON.parse(b || '{}'); } catch { return {}; } }
   const publicSettings = () => ({ ...settings, braveKey: settings.braveKey ? '••••' + settings.braveKey.slice(-4) : '' });
 
-  return async function handle(req, res, p) {
+  const handle = async function handle(req, res, p) {
     if (p === '/state') {
       const offers = shops.flatMap(s => load(`offers-${s.id}.json`, []));
       return json(res, 200, { region, base: BASE, shops, offers, settings: publicSettings(), job: { ...job, queue: job.queue.length, log: job.log.slice(-60) },
@@ -754,6 +754,35 @@ module.exports = function createPriceWatch({ get, readLimited, decodeEntities, s
     }
     return json(res, 404, { error: 'Unknown' });
   };
+
+  // ---------- Zonder webserver gebruiken (GitHub Actions) ----------
+  handle.addShops = urls => {
+    for (let raw of urls) {
+      if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
+      let u; try { u = new URL(raw); } catch { continue; }
+      const h = u.host.replace(/^www\./, '');
+      if (shops.some(s => new URL(s.url).host.replace(/^www\./, '') === h)) continue;
+      shops.push({ id: crypto.randomBytes(4).toString('hex'), url: u.origin, name: h, added: Date.now() });
+    }
+    saveShops();
+  };
+  handle.configure = obj => { Object.assign(settings, obj); saveSettings(); };
+  handle.needsDiscover = days => !shops.length || Date.now() - (settings.lastDiscover || 0) > days * 864e5;
+  handle.run = async ({ discover = false, scan = true } = {}) => {
+    const tasks = [];
+    if (discover) tasks.push({ type: 'discover' });
+    if (scan) tasks.push(...shops.map(s => ({ type: 'scan', id: s.id })));
+    enqueue(tasks);
+    while (job.running || job.queue.length) await sleep(1000);
+  };
+  handle.exportState = () => ({
+    region, base: BASE, static: true, generated: Date.now(), shops, offers: shops.flatMap(s => load(`offers-${s.id}.json`, [])),
+    settings: { alerts: [], autoAdd: settings.autoAdd, lastDiscover: settings.lastDiscover }, job: { running: false, log: job.log.slice(-80) },
+    changes: load('changes.json', []).slice(0, 300), alertHits: [], discovered: discovered.slice(0, 400), rates, ratesAt,
+  });
+  handle.stop = () => clearInterval(timer);
+  handle.onLog = fn => { const orig = job.log.push.bind(job.log); job.log.push = x => { fn(x.msg); return orig(x); }; };
+  return handle;
 };
 
 module.exports.REGIONS = REGIONS;

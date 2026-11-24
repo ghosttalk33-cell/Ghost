@@ -87,6 +87,9 @@
   table.deals tr { cursor: pointer; }
   table.deals td.r { text-align: right; white-space: nowrap; }
   .lang-switch { display: flex; gap: 6px; }
+  body.static .live { display: none !important; }
+  #staticInfo a { color: var(--accent); }
+  body:not(.static) .static-only { display: none !important; }
 </style>
 </head>
 <body>
@@ -138,7 +141,7 @@
       </div>
       <label class="check" style="margin-top:10px"><input type="checkbox" id="aCoa"> <span data-t="onlyWithCoa"></span></label>
       <div style="margin-top:10px"><button id="aAdd" data-t="addAlert"></button></div>
-      <p class="note" data-t="alertNote"></p>
+      <p class="note" data-t="alertNote" id="alertNote"></p>
     </div>
     <div id="alertList"></div>
   </section>
@@ -147,7 +150,8 @@
   <section class="panel" id="p-changes"></section>
 
   <section class="panel" id="p-shops">
-    <div class="card">
+    <div class="card static-only" id="staticInfo"></div>
+    <div class="card live">
       <h3 data-t="addShops"></h3>
       <textarea id="newShops"></textarea>
       <div class="row" style="margin-top:8px">
@@ -155,7 +159,7 @@
         <button class="secondary" id="scanAllBtn" data-t="rescanAll"></button>
       </div>
     </div>
-    <div class="card">
+    <div class="card live">
       <h3 data-t="autoScan"></h3>
       <select id="autoHours"></select>
       <p class="note" style="margin:8px 0 0" data-t="autoNote"></p>
@@ -168,11 +172,12 @@
     <div class="card">
       <h3 data-t="findTitle"></h3>
       <p class="note" style="margin-top:-4px" data-t="findIntro"></p>
-      <button id="discoverBtn" data-t="findStart"></button>
-      <label class="check" style="margin-top:12px;display:flex"><input type="checkbox" id="autoAdd"> <span data-t="autoAdd"></span></label>
-      <label class="field" style="margin-top:12px"><span data-t="autoFind"></span>
+      <p class="note static-only" id="staticFind"></p>
+      <button id="discoverBtn" class="live" data-t="findStart"></button>
+      <label class="check live" style="margin-top:12px;display:flex"><input type="checkbox" id="autoAdd"> <span data-t="autoAdd"></span></label>
+      <label class="field live" style="margin-top:12px"><span data-t="autoFind"></span>
         <select id="autoDiscover"></select></label>
-      <details style="margin-top:12px"><summary class="muted" data-t="advanced"></summary>
+      <details class="live" style="margin-top:12px"><summary class="muted" data-t="advanced"></summary>
         <label class="field" style="margin-top:10px"><span data-t="braveKey"></span><input type="password" id="braveKey" autocomplete="off" placeholder="BSA..."></label>
         <p class="note" data-t="braveNote"></p>
         <label class="field" style="margin-top:10px"><span data-t="extraQueries"></span><textarea id="extraQueries"></textarea></label>
@@ -187,7 +192,10 @@
 
 <script>
 const REGION = window.REGION === 'us' ? 'us' : 'nl';
+const STATIC = !!window.STATIC;
 const API = '/api/pw/' + REGION;
+if (STATIC) document.body.classList.add('static');
+const GH = 'https://github.com/ghosttalk33-cell/Ghost/edit/claude/wat-kan-je-nog-maken-2vgrv8/shops-' + REGION + '.txt';
 const T = {
   nl: {
     title: '💰 Prijsvolger 🇳🇱', tabDeals: 'Beste deals', tabCompare: 'Vergelijken', tabAlerts: 'Prijsalarm', tabCoa: "COA's", tabChanges: 'Wijzigingen', tabShops: 'Shops', tabFind: '🔎 Shops zoeken',
@@ -221,6 +229,9 @@ const T = {
     scanning: '🔄 Bezig: ', task: 'taak {a} van {b}',
     disclaimer: '⚠️ COA\'s kunnen vervalst of van een andere batch zijn. Een Janoshik-COA kun je verifiëren op janoshik.com. Prijzen in euro zijn omgerekend met de actuele wisselkoers; verzendkosten zijn niet meegerekend. Controleer zelf of een shop betrouwbaar is en wat er in jouw land wettelijk mag.',
     statShops: 'Shops', statOffers: 'Prijzen', statPeptides: 'Peptiden', statCoa: 'Met COA',
+    updated: 'Bijgewerkt', autoEvery: 'Prijzen worden elke 6 uur automatisch bijgewerkt door GitHub. Eén keer per week wordt er gezocht naar nieuwe shops.',
+    addViaGithub: 'Shop toevoegen? Zet het adres in <a href="{u}" target="_blank" rel="noopener">shops-nl.txt</a> op GitHub (✏️ potloodje → regel toevoegen → <i>Commit changes</i>). Binnen ± 15 minuten staat hij erin.',
+    staticFind: 'Het zoeken naar shops gebeurt automatisch, één keer per week. Hieronder zie je wat er gevonden is.', alertsLocal: 'Alarmen worden op dit apparaat bewaard en na elke update gecontroleerd.',
   },
   us: {
     title: '💰 Price Tracker 🇺🇸', tabDeals: 'Best deals', tabCompare: 'Compare', tabAlerts: 'Price alerts', tabCoa: 'COAs', tabChanges: 'Changes', tabShops: 'Shops', tabFind: '🔎 Find shops',
@@ -254,6 +265,9 @@ const T = {
     scanning: '🔄 Working: ', task: 'task {a} of {b}',
     disclaimer: '⚠️ COAs can be fake or from a different batch. A Janoshik COA can be verified on janoshik.com. Prices exclude shipping; foreign prices are converted at the current exchange rate. Check vendor reputation yourself and what is legal where you live.',
     statShops: 'Shops', statOffers: 'Prices', statPeptides: 'Peptides', statCoa: 'With COA',
+    updated: 'Updated', autoEvery: 'Prices are updated automatically every 6 hours by GitHub. New shops are searched for once a week.',
+    addViaGithub: 'Missing a shop? Ask the owner of this page to add it, or add it to <a href="{u}" target="_blank" rel="noopener">shops-us.txt</a> on GitHub.',
+    staticFind: 'Shop discovery runs automatically once a week. Here is what was found.', alertsLocal: 'Alerts are stored on this device and checked after every update.',
   },
 }[REGION];
 const pl = (n, one, many) => `${n} ${n === 1 ? T[one] : T[many]}`;
@@ -282,7 +296,7 @@ const ago = ts => {
   return m < 60 ? rtf.format(-m, 'minute') : m < 1440 ? rtf.format(-Math.round(m / 60), 'hour') : rtf.format(-Math.round(m / 1440), 'day');
 };
 const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
-const post = (u, b) => fetch(API + u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b || {}) });
+const post = (u, b) => STATIC ? Promise.resolve(new Response('{}')) : fetch(API + u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b || {}) });
 
 let D = { shops: [], offers: [], changes: [], alertHits: [], discovered: [], settings: {}, job: {} };
 let tab = store.get('pw-tab-' + REGION) || 'deals', pep = store.get('pw-pep-' + REGION), dose = null, openKey = null, polling = null, changeFilter = 'all';
@@ -489,7 +503,7 @@ function renderShops() {
     <div class="muted" style="font-size:13px">${s.lastError ? `<span style="color:var(--err)">✖ ${esc(s.lastError)}</span> · ` : ''}${s.offers != null ? `${s.products} ${T.products} · ${s.offers} ${T.prices} · ${s.withCoa} COA · ` : ''}${T.scanned} ${ago(s.lastScan)}</div>
     ${shopInfoHtml(s) ? `<div class="muted" style="font-size:12px;margin-top:2px">${shopInfoHtml(s)}</div>` : ''}
     ${s.fit && !s.fit.ok ? `<div style="font-size:12px;color:var(--warn);margin-top:2px">🌍 ${esc(s.fit.reasons.join(', '))}</div>` : ''}
-    <div class="row" style="margin-top:6px"><button class="secondary small" data-scan="${s.id}">${T.scan}</button><a class="b" href="${esc(s.url)}" target="_blank" rel="noopener" style="text-decoration:none;color:var(--text);padding:6px 12px">${T.open}</a><button class="danger small" data-del="${s.id}">${T.remove}</button></div>
+    <div class="row" style="margin-top:6px"><button class="secondary small live" data-scan="${s.id}">${T.scan}</button><a class="b" href="${esc(s.url)}" target="_blank" rel="noopener" style="text-decoration:none;color:var(--text);padding:6px 12px">${T.open}</a><button class="danger small live" data-del="${s.id}">${T.remove}</button></div>
   </div>`).join('') : `<div class="empty">${T.noShops}</div>`;
   $('log').innerHTML = (D.job.log || []).slice().reverse().map(l => `<div>${new Date(l.t).toLocaleTimeString(LOCALE)} ${esc(l.msg)}</div>`).join('') || T.nothingYet;
 }
@@ -507,7 +521,7 @@ function renderFind() {
   $('discList').innerHTML = `<h3>${T.discTitle} <span class="muted" style="font-weight:400">(${D.discovered.filter(d => d.status === 'shop').length} / ${D.discovered.length})</span></h3>` + (list.length ? list.slice(0, 300).map(d => `<div class="item">
     <div class="head"><b>${esc(d.host)}</b><span class="b ${d.status === 'shop' ? 'ok' : d.status === 'otherregion' ? 'warn' : ''}">${st[d.status] || d.status}</span></div>
     <div class="muted" style="font-size:12px">${d.title ? esc(d.title) + ' · ' : ''}${d.platform ? esc(d.platform) + ' · ' : ''}${d.currency ? esc(d.currency) + ' · ' : ''}${(d.peptides || []).length ? (d.peptides.length + ' peptides: ' + d.peptides.slice(0, 6).map(esc).join(', ')) : ''}${d.reason ? ' · ' + esc(d.reason) : ''}</div>
-    <div class="row" style="margin-top:6px">${inList(d.host) ? `<span class="b ok">${T.inList}</span>` : (d.status === 'shop' || d.status === 'otherregion' || d.status === 'removed') ? `<button class="secondary small" data-addurl="${esc(d.origin)}">${T.addAnyway}</button>` : ''}<a class="b" href="${esc(d.origin)}" target="_blank" rel="noopener" style="text-decoration:none;color:var(--text);padding:6px 12px">${T.open}</a></div>
+    <div class="row" style="margin-top:6px">${inList(d.host) ? `<span class="b ok">${T.inList}</span>` : (d.status === 'shop' || d.status === 'otherregion' || d.status === 'removed') ? `<button class="secondary small live" data-addurl="${esc(d.origin)}">${T.addAnyway}</button>` : ''}<a class="b" href="${esc(d.origin)}" target="_blank" rel="noopener" style="text-decoration:none;color:var(--text);padding:6px 12px">${T.open}</a></div>
   </div>`).join('') : `<div class="empty">${T.discEmpty}</div>`);
 }
 
@@ -531,6 +545,16 @@ function render() {
 }
 
 async function load() {
+  if (STATIC) {
+    try { D = await (await fetch('state.json?t=' + Date.now())).json(); } catch { return; }
+    D.settings.alerts = store.get('pw-alerts-' + REGION) || [];
+    BASE = D.base || BASE;
+    const when = new Date(D.generated).toLocaleString(LOCALE);
+    $('staticInfo').innerHTML = `<b>🕒 ${T.updated}: ${when}</b><p class="note" style="margin:6px 0 0">${T.autoEvery}</p><p class="note" style="margin:6px 0 0">${t('addViaGithub', { u: GH })}</p>`;
+    $('staticFind').textContent = T.staticFind + ' ' + T.updated + ': ' + when + '.';
+    render();
+    return;
+  }
   try { const r = await fetch(API + '/state'); if (r.status === 401) { location.href = '/login?next=' + encodeURIComponent(location.pathname); return; } D = await r.json(); } catch { return; }
   BASE = D.base || BASE;
   render();
@@ -573,11 +597,16 @@ $('offers').addEventListener('click', e => {
 $('aPep').addEventListener('change', renderAlerts);
 $('aAdd').addEventListener('click', async () => {
   if (!$('aPep').value) return;
+  if (STATIC) {
+    const a = { id: Math.random().toString(16).slice(2, 10), peptide: $('aPep').value, dose: $('aDose').value, maxPerMg: parseFloat($('aPerMg').value) || null, maxPrice: parseFloat($('aPrice').value) || null, coaOnly: $('aCoa').checked, created: Date.now() };
+    D.settings.alerts = [...(D.settings.alerts || []), a]; store.set('pw-alerts-' + REGION, D.settings.alerts);
+    $('aPerMg').value = ''; $('aPrice').value = ''; renderAlerts(); renderJob(); return;
+  }
   await post('/alerts', { peptide: $('aPep').value, dose: $('aDose').value, maxPerMg: $('aPerMg').value, maxPrice: $('aPrice').value, coaOnly: $('aCoa').checked });
   $('aPerMg').value = ''; $('aPrice').value = '';
   await load();
 });
-$('alertList').addEventListener('click', async e => { const d = e.target.closest('[data-adel]'); if (d) { await fetch(API + '/alerts/' + d.dataset.adel, { method: 'DELETE' }); await load(); } });
+$('alertList').addEventListener('click', async e => { const d = e.target.closest('[data-adel]'); if (d && STATIC) { D.settings.alerts = D.settings.alerts.filter(a => a.id !== d.dataset.adel); store.set('pw-alerts-' + REGION, D.settings.alerts); renderAlerts(); renderJob(); return; } if (d) { await fetch(API + '/alerts/' + d.dataset.adel, { method: 'DELETE' }); await load(); } });
 $('p-changes').addEventListener('click', e => { const b = e.target.closest('[data-cf]'); if (b) { changeFilter = b.dataset.cf; renderChanges(); } });
 $('addBtn').addEventListener('click', async () => {
   const v = $('newShops').value.trim(); if (!v) return;
@@ -607,9 +636,17 @@ $('csvBtn').addEventListener('click', () => {
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `prices-${REGION}-${new Date().toISOString().slice(0, 10)}.csv`; document.body.appendChild(a); a.click(); a.remove();
 });
 
+if (STATIC) {
+  document.querySelectorAll('.lang-switch a').forEach(a => {
+    if (a.getAttribute('href') === '/prijzen.html') a.href = '../prijzen/';
+    else if (a.getAttribute('href') === '/prices.html') a.href = '../prices/';
+    else a.style.display = 'none';
+  });
+  $('alertNote').textContent = T.alertsLocal;
+}
 setTab(tab);
 load();
-fetch('/api/me').then(r => r.ok ? r.json() : null).then(me => {
+if (!STATIC) fetch('/api/me').then(r => r.ok ? r.json() : null).then(me => {
   if (!me) return;
   $('logoutBtn').style.display = ''; $('logoutBtn').title = me.name;
   if (me.role !== 'admin') document.querySelectorAll('.adm').forEach(a => a.style.display = 'none');

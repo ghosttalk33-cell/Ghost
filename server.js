@@ -11,7 +11,7 @@ const tls = require('tls');
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || undefined; // op een server: 127.0.0.1 (achter Caddy)
 const auth = require('./auth')({ dir: __dirname });
-if (auth.cli(process.argv.slice(2))) process.exit();
+if (require.main === module && auth.cli(process.argv.slice(2))) process.exit();
 const USER_AGENT = 'Mozilla/5.0 (compatible; GhostCrawler/3.0)';
 const SCANS_DIR = path.join(__dirname, 'scans');
 const FILE_EXT = /\.(jpe?g|png|gif|svg|webp|avif|ico|bmp|pdf|docx?|xlsx?|pptx?|csv|txt|zip|rar|7z|gz|tar|mp3|wav|mp4|avi|mov|wmv|webm|css|js|mjs|woff2?|ttf|eot|otf|xml|json|rss|apk|exe|dmg)$/i;
@@ -741,10 +741,12 @@ function listHistory() {
 // ---------- Prijsvolger ----------
 
 const createPriceWatch = require('./pricewatch');
-const priceWatch = {
-  nl: createPriceWatch({ get, readLimited, decodeEntities, stripTags, getAttr, errText, dir: __dirname, region: 'nl' }),
-  us: createPriceWatch({ get, readLimited, decodeEntities, stripTags, getAttr, errText, dir: __dirname, region: 'us' }),
-};
+const helpers = { get, readLimited, decodeEntities, stripTags, getAttr, errText };
+module.exports = helpers;
+const priceWatch = require.main === module ? {
+  nl: createPriceWatch({ ...helpers, dir: __dirname, region: 'nl' }),
+  us: createPriceWatch({ ...helpers, dir: __dirname, region: 'us' }),
+} : {};
 const PW_PAGES = { '/prijzen.html': 'nl', '/prijzen': 'nl', '/prices.html': 'us', '/prices': 'us' };
 
 // ---------- HTTP-server ----------
@@ -851,7 +853,7 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-server.listen(PORT, HOST, () => {
+if (require.main === module) server.listen(PORT, HOST, () => {
   console.log(`\n  👻 Ghost Crawler v3 draait op http://localhost:${PORT}\n`);
   console.log(`  🇳🇱 Prijsvolger NL:   http://localhost:${PORT}/prijzen.html`);
   console.log(`  🇺🇸 Price tracker US: http://localhost:${PORT}/prices.html\n`);
