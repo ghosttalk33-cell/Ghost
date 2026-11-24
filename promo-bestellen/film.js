@@ -243,7 +243,7 @@ function sOrder(ctx, u, IMG) {
   bg(ctx, P ? 0.5 : 0.62, 0.55, 1.1);
   const out = E.inOutCubic(prog(u, 27.2, 28.2));
   // phone geometry (390 x 844 css screen)
-  const ph = P ? 1480 : 940, pw = ph * 390 / 844;
+  const ph = P ? 1480 : 820, pw = ph * 390 / 844;
   const inK = springU(u, -0.5, SPRING.gentle);
   const px = P ? W / 2 : W * 0.68, py = P ? H * 0.7 : H * 0.52;
   const tilt = (1 - inK) * 0.35 + 0.04 * Math.sin(u * 0.4) * (1 - out);

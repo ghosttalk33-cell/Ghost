@@ -138,7 +138,7 @@ function sLineup(ctx, u, IMG) {       // three vials pop in one per beat (sale)
 function sPrice(ctx, u, IMG) {        // Big R 20mg: $125.00 -> $85.00 (the site's product page)
   bg(ctx);
   const k = springU(u, -0.3, SPRING.gentle);
-  const vw = P ? 560 : 520, vh = vw * 2.35;
+  const vw = P ? 560 : 390, vh = vw * 2.35;
   const vx = P ? W / 2 - vw / 2 : W * 0.2, vy = P ? S.y + 40 : (H - vh) / 2 + 60;
   ctx.save(); ctx.translate(0, (1 - k) * H * 0.5);
   ctx.save(); ctx.shadowColor = 'rgba(15,27,45,0.35)'; ctx.shadowBlur = 60; ctx.shadowOffsetY = 24;
@@ -169,7 +169,7 @@ function sPrice(ctx, u, IMG) {        // Big R 20mg: $125.00 -> $85.00 (the site
 function sVial(ctx, u, IMG, [img, name, mg, fx], side) {   // brand: one vial per 4 beats, big
   bg(ctx);
   const k = springU(u, -0.5, SPRING.gentle);
-  const vw = P ? 640 : 560, vh = vw * 1.85;
+  const vw = P ? 640 : 480, vh = vw * 1.85;
   const vx = P ? W / 2 - vw / 2 : (side > 0 ? W * 0.14 : W * 0.86 - vw), vy = P ? S.y + 20 : (H - vh) / 2;
   ctx.save(); ctx.translate(0, (1 - k) * 200);
   card(ctx, IMG[img], vx, vy, vw, vh, { fx, fy: 0.35, zoom: 1.0 * 1.08 ** prog(u, 0, 4) });

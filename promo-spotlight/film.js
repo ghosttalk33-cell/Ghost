@@ -183,8 +183,8 @@ function sSpot(ctx, u, IMG) {
   // the vial: rises at the start, turns (scaleX through 0) on each downbeat, gently floats
   const rise = springU(u, -0.4, SPRING.gentle);
   const end = E.inOutCubic(prog(u, 27.2, 28.2));
-  const vs = (P ? 1150 : 1000) * lerp(1, 0.55, end);
-  const vx = W / 2, vy = lerp(P ? H * 0.45 : H * 0.5, P ? H * 0.2 : H * 0.18, end) + (1 - rise) * H * 0.8 + 12 * Math.sin(u * 0.7);
+  const vs = (P ? 1150 : 760) * lerp(1, 0.55, end);
+  const vx = W / 2, vy = lerp(P ? H * 0.45 : H * 0.42, P ? H * 0.2 : H * 0.18, end) + (1 - rise) * H * 0.8 + 12 * Math.sin(u * 0.7);
   let sx = 1, img = IMG['m' + it.img];
   if (i > 0 && u < i * 4) {
     const p = prog(u, i * 4 - 0.7, i * 4 - 0.05);
