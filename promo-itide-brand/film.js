@@ -119,21 +119,24 @@ function sHeroPhoto(ctx, u, IMG) {    // the site's hero photo: ITide sign + fou
   ctx.restore();
 }
 const VIALS = [['v_bpc', 'BPC-157', '10MG', 0.9], ['v_tb500', 'TB-500', '10MG', 0.5], ['v_nad', 'NAD+', '500MG', 0.5]];
-function sLineup(ctx, u, IMG) {       // three vials pop in one per beat (sale)
+function sLineup(ctx, u, IMG) {       // the site's own vial row (whole vials, nothing cut out of it), labels under each
   bg(ctx);
-  const n = VIALS.length, gap = P ? 28 : 40;
-  const cw = P ? (W - 2 * S.x - gap * (n - 1)) / n : 290, ch = cw * 1.9;
-  const x0 = (W - (cw * n + gap * (n - 1))) / 2, y0 = P ? H * 0.3 : H * 0.24;
-  VIALS.forEach(([img, name, mg, fx], i) => {
-    const k = springU(u, -0.2 + i * 0.6, SPRING.bouncy); if (k <= 0) return;
-    const x = x0 + i * (cw + gap), y = y0 + (1 - k) * 300;
-    ctx.save(); ctx.globalAlpha = clamp(k * 1.5);
-    card(ctx, IMG[img], x, y, cw, ch, { fx, fy: 0.35, zoom: 1 });
-    text(ctx, name, x + cw / 2, y + ch + (P ? 80 : 75), font(P ? 66 : 60, 700, DISPLAY), FG, 'center', 1);
-    text(ctx, mg + ' · 99%', x + cw / 2, y + ch + (P ? 130 : 120), font(P ? 34 : 30, 500, UI), C.mute, 'center', 3);
+  const im = IMG.v_row;
+  const w = P ? W - 2 * 40 : 1100, h = w * im.height / im.width;
+  const x = (W - w) / 2, y = P ? H * 0.3 : H * 0.2;
+  const k = springU(u, -0.4, SPRING.gentle);
+  ctx.save(); ctx.translate(0, (1 - k) * H * 0.5);
+  card(ctx, im, x, y, w, h, { zoom: 1.0 * 1.03 ** prog(u, 0, 4) });
+  ctx.restore();
+  [['BPC-157', '10MG', 0.09], ['TB-500', '10MG', 0.35], ['NAD+', '500MG', 0.68]].forEach(([name, mg, fx], i) => {
+    const lk = springU(u, 0.2 + i * 0.5, SPRING.bouncy); if (lk <= 0) return;
+    const cx = x + w * fx, ly = y + h + (P ? 95 : 85);
+    ctx.save(); ctx.translate(cx, ly); ctx.scale(lk, lk);
+    text(ctx, name, 0, 0, font(P ? 62 : 58, 700, DISPLAY), FG, 'center', 1);
+    text(ctx, mg + ' · 99%', 0, P ? 50 : 46, font(P ? 32 : 28, 500, UI), C.mute, 'center', 3);
     ctx.restore();
   });
-  rows(ctx, [['THE CATALOGUE', FG]], W / 2, P ? S.y + 120 : 150, P ? 120 : 100, 0, () => springU(u, -0.3, SPRING.snappy), 'center', 4);
+  rows(ctx, [['THE CATALOGUE', FG]], W / 2, P ? S.y + 120 : 130, P ? 120 : 100, 0, () => springU(u, -0.3, SPRING.snappy), 'center', 4);
 }
 function sPrice(ctx, u, IMG) {        // Big R 20mg: $125.00 -> $85.00 (the site's product page)
   bg(ctx);
@@ -318,7 +321,7 @@ const drawScene = (i, ctx, u, IMG) => SCENES[i][1](ctx, u - SCENES[i][0], IMG);
 
 M.film({
   fonts: [font(100, 700, DISPLAY), font(40, 500, UI), font(40, 700, UI)],
-  images: Object.fromEntries(['hero', 'v_bpc', 'v_tb500', 'v_nad', 'v_big', 'c_ipamorelin', 'c_glow', 'c_cagri', 'c_bigt', 'c_klow'].map((k) => [k, `assets/products/${k}.png`])),
+  images: Object.fromEntries(['hero', 'v_row', 'v_big', 'c_ipamorelin', 'c_glow', 'c_cagri', 'c_bigt', 'c_klow'].map((k) => [k, `assets/products/${k}.png`])),
   hits: HITS,
   draw(ctx, u, t, IMG) {
     for (const [b, [dx, dy]] of Object.entries(WHIPS).map(([b, v]) => [Number(b), v])) {
