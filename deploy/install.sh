@@ -33,6 +33,13 @@ FRIEND_USER=$(ask "Gebruikersnaam voor je Amerikaanse vriend (Enter = overslaan)
 FRIEND_PW=""
 if [ -n "$FRIEND_USER" ]; then FRIEND_PW=$(askpw "Wachtwoord voor $FRIEND_USER: "); fi
 
+if [ "$(awk '/MemTotal/{print $2}' /proc/meminfo)" -lt 1600000 ] && [ -z "$(swapon --show 2> /dev/null)" ]; then
+  echo; echo "▶ Weinig geheugen: 1 GB reservegeheugen (swap) aanmaken…"
+  fallocate -l 1G /swapfile 2> /dev/null || dd if=/dev/zero of=/swapfile bs=1M count=1024 status=none
+  chmod 600 /swapfile && mkswap /swapfile > /dev/null && swapon /swapfile
+  grep -q '^/swapfile' /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
+fi
+
 echo; echo "▶ Systeem bijwerken en programma's installeren (dit duurt een paar minuten)…"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y -qq
@@ -115,6 +122,6 @@ echo "🇳🇱  Jouw prijsvolger:   $BASE/prijzen.html"
 echo "👻  Website-scanner:    $BASE/"
 echo "🇺🇸  Voor je vriend:     $BASE/prices.html"
 echo
-echo "Werkt de link niet? Zet dan in Oracle poort 80 en 443 open (zie ORACLE.md, stap 5)."
+echo "Werkt de link niet? Zet dan poort 80 en 443 open (Oracle: ORACLE.md stap 5 · Google: GOOGLE.md stap 3)."
 echo "Bijwerken naar de nieuwste versie:  sudo $DIR/deploy/update.sh"
 echo "Gebruiker toevoegen/wijzigen:       sudo $DIR/deploy/user.sh"

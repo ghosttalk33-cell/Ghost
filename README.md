@@ -40,7 +40,7 @@ Twee versies van de prijsvolger voor peptidewebshops:
 
 ## ☁️ Online zetten (gratis)
 
-Zie **[ORACLE.md](ORACLE.md)**: stap voor stap op een gratis Oracle Cloud-server, met inloggen (jij ziet alles, je vriend alleen de 🇺🇸 prijzen), automatisch herstarten en optioneel je eigen domein met https.
+Zie **[GOOGLE.md](GOOGLE.md)** (Google Cloud) of **[ORACLE.md](ORACLE.md)** (Oracle Cloud): stap voor stap op een gratis server, met inloggen (jij ziet alles, je vriend alleen de 🇺🇸 prijzen), automatisch herstarten en optioneel je eigen domein met https.
 
 ## Op je Android-telefoon (Termux)
 
