@@ -192,7 +192,7 @@ const T = {
   nl: {
     title: '💰 Prijsvolger 🇳🇱', tabDeals: 'Beste deals', tabCompare: 'Vergelijken', tabAlerts: 'Prijsalarm', tabCoa: "COA's", tabChanges: 'Wijzigingen', tabShops: 'Shops', tabFind: '🔎 Shops zoeken',
     search: '🔍 Zoek peptide, product of shop…', inStock: 'Op voorraad', withCoa: 'Met COA', sortPerMg: 'Goedkoopste per mg', sortPrice: 'Laagste prijs', sortCoa: 'Beste COA eerst', sortShop: 'Shop (A-Z)',
-    allDoses: 'Alle doseringen', notRecognized: 'Niet herkend', offers: 'aanbiedingen', shops: 'shops', avgPerMg: 'Gemiddeld {a} per mg · goedkoopste {b} per mg',
+    allDoses: 'Alle doseringen', notRecognized: 'Niet herkend', offers: 'aanbiedingen', offer: 'aanbieding', shops: 'shops', shop: 'shop', avgPerMg: 'Gemiddeld {a} per mg · goedkoopste {b} per mg',
     noData: 'Nog geen prijzen. Ga naar <b>🔎 Shops zoeken</b> om automatisch alle shops te vinden, of voeg ze zelf toe bij <b>Shops</b>.', noResults: 'Niets gevonden met deze filters.',
     soldOut: 'Uitverkocht', sale: 'Aanbieding', lowestEver: 'Laagste prijs ooit', viewInShop: 'Bekijk in de shop ↗', price: 'Prijs', total: 'totaal', priceHistory: 'Prijsverloop',
     lowest: 'Laagst', highest: 'Hoogst', measurements: 'metingen sinds', coaVerif: 'COA verifieerbaar', coaNamed: 'COA genoemd, niet gevonden', noCoa: 'Geen COA', pure: 'zuiver',
@@ -225,7 +225,7 @@ const T = {
   us: {
     title: '💰 Price Tracker 🇺🇸', tabDeals: 'Best deals', tabCompare: 'Compare', tabAlerts: 'Price alerts', tabCoa: 'COAs', tabChanges: 'Changes', tabShops: 'Shops', tabFind: '🔎 Find shops',
     search: '🔍 Search peptide, product or shop…', inStock: 'In stock', withCoa: 'With COA', sortPerMg: 'Cheapest per mg', sortPrice: 'Lowest price', sortCoa: 'Best COA first', sortShop: 'Shop (A-Z)',
-    allDoses: 'All doses', notRecognized: 'Not recognized', offers: 'offers', shops: 'shops', avgPerMg: 'Average {a} per mg · cheapest {b} per mg',
+    allDoses: 'All doses', notRecognized: 'Not recognized', offers: 'offers', offer: 'offer', shops: 'shops', shop: 'shop', avgPerMg: 'Average {a} per mg · cheapest {b} per mg',
     noData: 'No prices yet. Go to <b>🔎 Find shops</b> to automatically find all shops, or add them yourself under <b>Shops</b>.', noResults: 'Nothing found with these filters.',
     soldOut: 'Sold out', sale: 'On sale', lowestEver: 'Lowest price ever', viewInShop: 'View in shop ↗', price: 'Price', total: 'total', priceHistory: 'Price history',
     lowest: 'Lowest', highest: 'Highest', measurements: 'data points since', coaVerif: 'Verifiable COA', coaNamed: 'COA mentioned, not found', noCoa: 'No COA', pure: 'pure',
@@ -256,6 +256,7 @@ const T = {
     statShops: 'Shops', statOffers: 'Prices', statPeptides: 'Peptides', statCoa: 'With COA',
   },
 }[REGION];
+const pl = (n, one, many) => `${n} ${n === 1 ? T[one] : T[many]}`;
 const t = (k, v = {}) => String(T[k] ?? k).replace(/\{(\w)\}/g, (_, x) => v[x] ?? '');
 document.documentElement.lang = REGION === 'us' ? 'en' : 'nl';
 document.title = REGION === 'us' ? 'Price Tracker USA' : 'Prijsvolger NL';
@@ -344,7 +345,7 @@ function renderDeals() {
     <div class="card"><h3>${T.dealsTitle}</h3><p class="note" style="margin:-4px 0 6px">${T.dealsIntro}</p>
     <table class="deals">${rows.map(([p, r]) => `<tr data-pep="${esc(p)}">
       <td><b>${esc(p)}</b><div class="muted" style="font-size:12px">${esc(r.best.shop)} · ${esc(r.best.dose)}</div><div class="badges">${coaBadge(r.best)}</div></td>
-      <td class="r"><b>${money(r.best.perMg)}</b><div class="muted" style="font-size:12px">${T.perMg}</div><div class="muted" style="font-size:12px">${r.shops.size} ${T.shops}</div></td></tr>`).join('')}</table></div>`;
+      <td class="r"><b>${money(r.best.perMg)}</b><div class="muted" style="font-size:12px">${T.perMg}</div><div class="muted" style="font-size:12px">${pl(r.shops.size, 'shop', 'shops')}</div></td></tr>`).join('')}</table></div>`;
 }
 
 // ---------- Vergelijken ----------
@@ -375,7 +376,7 @@ function renderCompare() {
   const perMgs = list.map(o => o.perMg).filter(v => v != null);
   const avg = perMgs.length ? perMgs.reduce((a, b) => a + b, 0) / perMgs.length : null;
   $('offers').innerHTML = `
-    <div class="row" style="justify-content:space-between;margin-bottom:6px"><h3 style="margin:0">${esc(q ? `"${q}"` : pep)}${dose ? ' · ' + esc(dose) : ''}</h3><small class="muted">${list.length} ${T.offers} · ${new Set(list.map(o => o.shopId)).size} ${T.shops}</small></div>
+    <div class="row" style="justify-content:space-between;margin-bottom:6px"><h3 style="margin:0">${esc(q ? `"${q}"` : pep)}${dose ? ' · ' + esc(dose) : ''}</h3><small class="muted">${pl(list.length, 'offer', 'offers')} · ${pl(new Set(list.map(o => o.shopId)).size, 'shop', 'shops')}</small></div>
     ${avg && sort === 'perMg' ? `<p class="muted" style="font-size:13px;margin:0 0 6px">${t('avgPerMg', { a: money(avg), b: money(Math.min(...perMgs)) })}</p>` : ''}
     ${list.slice(0, 300).map((o, i) => {
       const prev = o.history && o.history.length > 1 ? o.history[o.history.length - 2].p : null;
