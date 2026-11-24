@@ -121,7 +121,7 @@ function sHeroPhoto(ctx, u, IMG) {    // the site's hero photo: ITide sign + fou
   card(ctx, IMG.hero, x, y, w, h, { zoom: 1.0 * 1.04 ** prog(u, 0, 4), fy: P ? 0.55 : 0.3 });
   ctx.restore();
   const tx = P ? S.x + 10 : W * 0.6, ty = P ? S.y + 100 : H * 0.42;
-  const hs = P ? 130 : Math.min(110, fitSize(ctx, V !== 'sale' ? 'RESEARCH-GRADE' : 'ALL PEPTIDES', 700, DISPLAY, W * 0.36, 130, 0.02));
+  const hs = P ? Math.min(130, fitSize(ctx, V !== 'sale' ? 'RESEARCH-GRADE' : 'ALL PEPTIDES', 700, DISPLAY, S.w, 130, 0.02)) : Math.min(110, fitSize(ctx, V !== 'sale' ? 'RESEARCH-GRADE' : 'ALL PEPTIDES', 700, DISPLAY, W * 0.36, 130, 0.02));
   rows(ctx, [[V !== 'sale' ? 'RESEARCH-GRADE' : 'ALL PEPTIDES', FG], [V !== 'sale' ? 'PEPTIDES.' : '25% OFF.', V !== 'sale' ? (DARK ? C.blueHi : C.blue) : C.red]], tx, ty, hs, hs * 1.02,
     (i) => springU(u, 0.4 + i * 0.4, SPRING.snappy), 'left', 2);
   const sk = E.outQuint(prog(u, 1.4, 2));

@@ -105,17 +105,17 @@ function sHeroPhoto(ctx, u, IMG) {    // the site's hero photo: ITide sign + fou
   bg(ctx);
   const k = springU(u, -0.4, SPRING.gentle);
   const w = P ? W - 2 * 50 : W * 0.5, h = P ? w * 1.09 : H * 0.86;
-  const x = P ? (W - w) / 2 : W * 0.05, y = P ? H * 0.3 : (H - h) / 2;
+  const x = P ? (W - w) / 2 : W * 0.05, y = P ? H * 0.335 : (H - h) / 2;
   ctx.save(); ctx.translate(0, (1 - k) * H * 0.6);
   card(ctx, IMG.hero, x, y, w, h, { zoom: 1.0 * 1.04 ** prog(u, 0, 4), fy: P ? 0.55 : 0.3 });
   ctx.restore();
   const tx = P ? S.x + 10 : W * 0.6, ty = P ? S.y + 100 : H * 0.42;
-  const hs = P ? 130 : Math.min(110, fitSize(ctx, DARK ? 'RESEARCH-GRADE' : 'ALL PEPTIDES', 700, DISPLAY, W * 0.36, 130, 0.02));
-  rows(ctx, [[DARK ? 'RESEARCH-GRADE' : 'ALL PEPTIDES', FG], [DARK ? 'PEPTIDES.' : '25% OFF.', DARK ? C.blueHi : C.red]], tx, ty, hs, hs * 1.02,
+  const hs = P ? Math.min(130, fitSize(ctx, V !== 'sale' ? 'RESEARCH-GRADE' : 'ALL PEPTIDES', 700, DISPLAY, S.w, 130, 0.02)) : Math.min(110, fitSize(ctx, V !== 'sale' ? 'RESEARCH-GRADE' : 'ALL PEPTIDES', 700, DISPLAY, W * 0.36, 130, 0.02));
+  rows(ctx, [[V !== 'sale' ? 'RESEARCH-GRADE' : 'ALL PEPTIDES', FG], [V !== 'sale' ? 'PEPTIDES.' : '25% OFF.', V !== 'sale' ? (DARK ? C.blueHi : C.blue) : C.red]], tx, ty, hs, hs * 1.02,
     (i) => springU(u, 0.4 + i * 0.4, SPRING.snappy), 'left', 2);
   const sk = E.outQuint(prog(u, 1.4, 2));
   ctx.save(); ctx.globalAlpha = sk;
-  text(ctx, '99% PURITY · ITIDELABS.COM', tx, ty + (P ? 250 : 220), font(P ? 40 : 34, 500, UI), DARK ? '#93c5fd' : C.blue, 'left', 5);
+  text(ctx, '99% PURITY · ITIDELABS.COM', tx, ty + (P ? 225 : 220), font(P ? 40 : 34, 500, UI), DARK ? '#93c5fd' : C.blue, 'left', 5);
   ctx.restore();
 }
 const VIALS = [['v_bpc', 'BPC-157', '10MG', 0.9], ['v_tb500', 'TB-500', '10MG', 0.5], ['v_nad', 'NAD+', '500MG', 0.5]];
