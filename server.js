@@ -12,8 +12,8 @@ const PORT = process.env.PORT || 3000;
 const USER_AGENT = 'Mozilla/5.0 (compatible; GhostCrawler/3.0)';
 const SCANS_DIR = path.join(__dirname, 'scans');
 const FILE_EXT = /\.(jpe?g|png|gif|svg|webp|avif|ico|bmp|pdf|docx?|xlsx?|pptx?|csv|txt|zip|rar|7z|gz|tar|mp3|wav|mp4|avi|mov|wmv|webm|css|js|mjs|woff2?|ttf|eot|otf|xml|json|rss|apk|exe|dmg)$/i;
-// Pagina's die bots niets opleveren of die je niet wilt "aanklikken" (winkelwagen, inloggen, admin…)
-const SMART_SKIP = /\/(cart|winkelwagen|winkelmand|checkout|afrekenen|kassa|my-account|mijn-account|account|wp-admin|wp-login\.php|login|logout|inloggen|uitloggen|register|registreren|wishlist|verlanglijst|compare|vergelijk)(\/|$)|[?&](add-to-cart|add_to_wishlist|remove_item|orderby|filter_|min_price|max_price|replytocom|share|action=|redirect_to|s=)|\/feed\/?$|\/comment-page-|\/wp-json\//i;
+// Pagina's die bots niets opleveren (winkelwagen, afrekenen, uitloggen, filters…). Inlog- en adminpagina's worden wél gescand.
+const SMART_SKIP = /\/(cart|winkelwagen|winkelmand|checkout|afrekenen|kassa|logout|uitloggen|wishlist|verlanglijst|compare|vergelijk)(\/|$)|[?&](add-to-cart|add_to_wishlist|remove_item|orderby|filter_|min_price|max_price|replytocom|share|action=|redirect_to|s=)|\/feed\/?$|\/comment-page-|\/wp-json\//i;
 
 // ---------- Hulpfuncties ----------
 
@@ -399,6 +399,8 @@ const EXPOSURES = [
   { path: '/wp-content/debug.log', label: 'WordPress debug.log openbaar', sev: 'error', test: (b, r) => r.status === 200 && /PHP (Notice|Warning|Fatal|Deprecated)/i.test(b) },
 ];
 
+const LOGIN_PATHS = ['/wp-login.php', '/wp-admin/', '/admin', '/admin/', '/administrator/', '/login', '/inloggen', '/user/login', '/admin/login', '/account/login', '/my-account/', '/mijn-account/', '/beheer', '/cms', '/backend'];
+
 async function siteChecks(start, robots, securityChecks, isCancelled) {
   const c = { https: start.protocol === 'https:', robots: robots.found, robotsBlocksAll: robots.blocksAll, sitemaps: robots.sitemaps.slice(0, 5) };
   const jobs = [];
@@ -482,6 +484,21 @@ async function siteChecks(start, robots, securityChecks, isCancelled) {
   })());
 
   await Promise.all(jobs);
+
+  c.loginPages = [];
+  if (securityChecks && !isCancelled()) {
+    const seenLogin = new Set();
+    await Promise.all(LOGIN_PATHS.map(async p => {
+      try {
+        const r = await get(start.origin + p, { timeout: 10000 });
+        const b = await readLimited(r, 150000);
+        if (r.status === 200 && /type\s*=\s*["']?password/i.test(b) && !seenLogin.has(r.url)) {
+          seenLogin.add(r.url);
+          c.loginPages.push({ path: p, url: r.url, captcha: /recaptcha|hcaptcha|turnstile/i.test(b), twoFactor: /two.?factor|2fa|authenticator|wordfence/i.test(b) });
+        }
+      } catch {}
+    }));
+  }
 
   c.exposures = [];
   if (securityChecks && !isCancelled()) {

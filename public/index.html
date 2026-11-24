@@ -161,7 +161,7 @@
         <label class="field">Alleen URL's met<input type="text" id="include" placeholder="bijv. /blog/"></label>
         <label class="field">URL's overslaan<input type="text" id="exclude" placeholder="bijv. /tag/|\?page="></label>
       </div>
-      <label class="check"><input type="checkbox" id="smartSkip" checked><span>Slim overslaan<small>Winkelwagen, afrekenen, inloggen, admin en filters niet scannen</small></span></label>
+      <label class="check"><input type="checkbox" id="smartSkip" checked><span>Slim overslaan<small>Winkelwagen, afrekenen, uitloggen en filters niet scannen (inlog- en adminpagina's wél)</small></span></label>
       <label class="check"><input type="checkbox" id="securityChecks" checked><span>Beveiligingscheck<small>Zoekt naar gelekte bestanden (.env, .git, back-ups). Alleen voor je eigen site!</small></span></label>
       <label class="check"><input type="checkbox" id="checkImages" checked><span>Afbeeldingen controleren<small>Kapotte en te zware afbeeldingen</small></span></label>
       <label class="check"><input type="checkbox" id="checkLinks" checked> Externe links en bestanden controleren</label>
@@ -370,6 +370,22 @@ function siteCheckList() {
     for (const x of s.exposures || []) add('Lekken', 'exp' + x.path, false, x.sev, x.sev === 'error' ? 20 : x.sev === 'warn' ? 5 : 1, x.label, 'Gevonden op ' + S.startUrl.replace(/\/$/, '') + x.path + ' · Blokkeer of verwijder dit zo snel mogelijk.');
   }
 
+  // Inlog- en adminpagina's
+  const loginCrawled = S.results.filter(r => isPage(r) && /\/(wp-login\.php|wp-admin|admin|administrator|login|inloggen|my-account|mijn-account|account|beheer|backend|cms)(\/|$|\?)/i.test(pathOf(r.url)));
+  const logins = [...(s.loginPages || []).map(l => l.url), ...loginCrawled.map(r => r.finalUrl || r.url)];
+  const uniqLogins = [...new Set(logins)];
+  if (s.securityChecked || uniqLogins.length) {
+    if (!uniqLogins.length) add('Inloggen & admin', 'login', true, 'info', 0, 'Geen openbare inlogpagina gevonden', 'Standaardadressen (/wp-login.php, /admin, /login…) gecontroleerd.');
+    else {
+      add('Inloggen & admin', 'login', null, 'info', 0, `${uniqLogins.length} inlog-/adminpagina('s) gevonden`, uniqLogins.slice(0, 8).join(' · '));
+      const lp = s.loginPages || [];
+      const wpDefault = lp.some(l => /wp-login\.php|wp-admin/.test(l.path));
+      if (wpDefault) add('Inloggen & admin', 'wpLogin', false, 'info', 1, 'Standaard WordPress-login bereikbaar', 'Bots proberen massaal wachtwoorden op /wp-login.php. Verberg of bescherm deze pagina (bijv. WPS Hide Login, Wordfence) en gebruik tweestapsverificatie.');
+      if (lp.length) add('Inloggen & admin', 'captcha', lp.some(l => l.captcha), 'info', 1, 'Bescherming tegen inlogaanvallen (captcha)', lp.some(l => l.captcha) ? 'Captcha gevonden op de inlogpagina.' : 'Geen captcha gezien op de inlogpagina. Een captcha of limiet op inlogpogingen houdt bots tegen.');
+      if (s.https === false) add('Inloggen & admin', 'loginHttp', false, 'error', 15, 'Inloggen over onbeveiligde verbinding', 'Wachtwoorden worden onversleuteld verstuurd! Zet https aan.');
+    }
+  }
+
   const tech = allTech();
   const trackers = tech.filter(t => ['Google Analytics', 'Google Ads', 'Facebook Pixel', 'TikTok Pixel', 'LinkedIn Insight', 'Hotjar', 'Microsoft Clarity', 'Pinterest Tag'].includes(t));
   const consent = tech.filter(t => ['Cookiebot', 'CookieYes', 'Complianz', 'OneTrust', 'Usercentrics', 'Borlabs Cookie', 'Cookie Notice', 'Iubenda', 'Termly'].includes(t));
@@ -431,7 +447,7 @@ function analyze() {
   if (S.links.length) catPen.tech += (broken.length / S.links.length) * 40;
   if (S.images.length) { catPen.tech += (brokenImages.length / S.images.length) * 30; catPen.speed += (heavyImages.length / S.images.length) * 30; }
   for (const c of siteChecks) if (c.ok === false) {
-    const cat = /Beveilig|Lekken|Verbinding/.test(c.group) ? 'security' : c.group === 'Google & SEO' ? 'seo' : c.group === 'Privacy (AVG)' ? 'security' : 'tech';
+    const cat = /Beveilig|Lekken|Verbinding|Inloggen/.test(c.group) ? 'security' : c.group === 'Google & SEO' ? 'seo' : c.group === 'Privacy (AVG)' ? 'security' : 'tech';
     catPen[cat] += c.w * 2;
   }
   const cats = Object.fromEntries(Object.entries(catPen).map(([k, v]) => [k, Math.max(0, Math.min(100, Math.round(100 - v)))]));
@@ -691,7 +707,7 @@ function renderSite() {
   const icon = c => c.ok ? '✅' : c.ok == null ? '➖' : c.sev === 'error' ? '❌' : c.sev === 'warn' ? '⚠️' : 'ℹ️';
   el.innerHTML = `
     ${S.site.error ? `<div class="card" style="color:var(--err)">⚠️ Startpagina niet bereikbaar: ${esc(S.site.error)}</div>` : ''}
-    ${Object.entries(groups).map(([g, list]) => `<div class="card"><h3>${{ Verbinding: '🔒', 'Google & SEO': '🔎', Beveiligingsheaders: '🛡️', Lekken: '🕳️', 'Privacy (AVG)': '🍪' }[g] || ''} ${esc(g)}</h3>
+    ${Object.entries(groups).map(([g, list]) => `<div class="card"><h3>${{ Verbinding: '🔒', 'Google & SEO': '🔎', Beveiligingsheaders: '🛡️', 'Inloggen & admin': '🔑', Lekken: '🕳️', 'Privacy (AVG)': '🍪' }[g] || ''} ${esc(g)}</h3>
       ${g === 'Lekken' ? '<p class="muted" style="font-size:12px;margin:-4px 0 6px">Alleen gebruiken op je eigen website.</p>' : ''}
       ${list.map(c => `<div class="check-row"><span class="ic">${icon(c)}</span><div>${esc(c.label)}<small>${esc(c.tip)}</small></div></div>`).join('')}</div>`).join('')}
     ${!S.site.securityChecked ? '<div class="card muted">🕳️ Lekkencheck staat uit (zie Instellingen).</div>' : ''}
