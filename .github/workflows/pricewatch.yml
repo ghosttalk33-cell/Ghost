@@ -55,16 +55,17 @@ jobs:
         env:
           BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
           DISCOVER: ${{ inputs.discover }}
+          PW_VERBOSE: '1'
         run: node scripts/build-static.js
 
       - name: Gegevens bewaren
         if: always()
         run: |
           [ -d data ] || exit 0
-          git config user.name "prijsvolger-bot"
-          git config user.email "prijsvolger-bot@users.noreply.github.com"
           rm -rf store && mkdir store && cd store
           git init -q -b pricewatch-data
+          git config user.name "prijsvolger-bot"
+          git config user.email "prijsvolger-bot@users.noreply.github.com"
           mkdir data && cp -r ../data/nl ../data/us data/ 2> /dev/null || true
           rm -f data/users.json data/secret.key
           git add -A

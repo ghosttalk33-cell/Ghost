@@ -35,6 +35,7 @@ const readList = f => {
     const discover = FORCE_DISCOVER || pw.needsDiscover(DISCOVER_DAYS);
     console.log(`[${region}] start · shops zoeken: ${discover ? 'ja' : 'nee'}`);
     await pw.run({ discover, scan: true });
+    pw.pruneFailed();
     pw.stop();
 
     const state = pw.exportState();

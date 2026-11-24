@@ -627,6 +627,7 @@ module.exports = function createPriceWatch({ get, readLimited, decodeEntities, s
         n++;
         job.phase = `${L('Websites controleren', 'Checking websites')} (${n}/${list.length}) · ${foundShops} ${L('shops', 'shops')}`;
         if (known.has(v.host) && v.host !== host) { /* doorverwijzing naar bekende shop */ }
+        if (process.env.PW_VERBOSE && v.status !== 'shop') log(`  · ${v.host}: ${v.status}${v.reason ? ' (' + v.reason + ')' : ''}${v.currency ? ' ' + v.currency : ''}`);
         discovered = discovered.filter(d => d.host !== v.host);
         discovered.unshift(v);
         if (v.status === 'shop') {
@@ -780,6 +781,17 @@ module.exports = function createPriceWatch({ get, readLimited, decodeEntities, s
     settings: { alerts: [], autoAdd: settings.autoAdd, lastDiscover: settings.lastDiscover }, job: { running: false, log: job.log.slice(-80) },
     changes: load('changes.json', []).slice(0, 300), alertHits: [], discovered: discovered.slice(0, 400), rates, ratesAt,
   });
+  // Gevonden 'shops' waar geen enkele prijs uit te halen viel weer opruimen (bijv. klinieken of blogs)
+  handle.pruneFailed = () => {
+    const bad = shops.filter(s => s.discovered && s.lastError && !s.offers);
+    for (const s of bad) {
+      const h = new URL(s.url).host.replace(/^www\./, '');
+      discovered = discovered.map(d => d.host === h ? { ...d, status: 'notshop', reason: L('geen prijzen gevonden', 'no prices found') } : d);
+      log(`🧹 ${s.name}: ${L('verwijderd (geen prijzen gevonden)', 'removed (no prices found)')}`);
+    }
+    shops = shops.filter(s => !bad.includes(s));
+    saveShops(); save('discovered.json', discovered.slice(0, 1500));
+  };
   handle.stop = () => clearInterval(timer);
   handle.onLog = fn => { const orig = job.log.push.bind(job.log); job.log.push = x => { fn(x.msg); return orig(x); }; };
   return handle;
