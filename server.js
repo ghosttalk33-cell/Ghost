@@ -735,6 +735,10 @@ function listHistory() {
   } catch { return []; }
 }
 
+// ---------- Prijsvolger ----------
+
+const priceWatch = require('./pricewatch')({ get, readLimited, decodeEntities, stripTags, getAttr, errText, dir: __dirname });
+
 // ---------- HTTP-server ----------
 
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png' };
@@ -747,6 +751,8 @@ async function readBody(req, max = 100e6) {
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
+
+  if (url.pathname.startsWith('/api/pw/')) return priceWatch(req, res, url);
 
   if (url.pathname === '/api/scan' && req.method === 'POST') {
     let opts;
@@ -829,5 +835,6 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`\n  👻 Ghost Crawler v3 draait op http://localhost:${PORT}\n`);
+  console.log(`  💰 Prijsvolger:      http://localhost:${PORT}/prijzen.html\n`);
   console.log('  Open dit adres in je browser. Stoppen: CTRL + C\n');
 });

@@ -20,6 +20,16 @@ De scan loopt op de server, dus hij gaat door als je tussendoor van app wisselt 
 
 <img src="screenshot.png" width="320" alt="screenshot">
 
+## 💰 Prijsvolger
+
+Op **http://localhost:3000/prijzen.html** staat een prijsvolger voor webshops (gemaakt voor peptideshops):
+
+- je voegt webshops toe. Shopify en WooCommerce worden automatisch herkend, andere shops worden via hun productpagina's uitgelezen
+- per peptide vergelijk je alle shops, gesorteerd op **prijs per mg** (omgerekend naar euro, inclusief kits en blends)
+- **COA-check** per product: certificaat gevonden, welk lab, zuiverheid, en of het verifieerbaar is (Janoshik). Plus een COA-score per shop
+- **prijsgeschiedenis**, prijsdalingen en -stijgingen, en nieuwe producten
+- **automatisch scannen** elke 3, 6, 12 of 24 uur, of elke week
+
 ## Op je Android-telefoon (Termux)
 
 1. Installeer **Termux** via F-Droid: https://f-droid.org/packages/com.termux/
