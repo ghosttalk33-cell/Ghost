@@ -400,7 +400,54 @@ const EXPOSURES = [
   { path: '/readme.html', label: 'WordPress readme.html (verraadt versie)', sev: 'info', test: (b, r) => r.status === 200 && /WordPress/i.test(b) && /<html/i.test(b) },
   { path: '/wp-content/uploads/', label: 'Mapinhoud zichtbaar (directory listing)', sev: 'warn', test: (b, r) => r.status === 200 && /<title>Index of/i.test(b) },
   { path: '/wp-content/debug.log', label: 'WordPress debug.log openbaar', sev: 'error', test: (b, r) => r.status === 200 && /PHP (Notice|Warning|Fatal|Deprecated)/i.test(b) },
+  // Extra gelekte bestanden (alleen meekijken, geen aanvallen)
+  { path: '/.env.local', label: '.env.local met instellingen/sleutels', sev: 'error', test: (b, r) => r.status === 200 && /^[A-Z][A-Z0-9_]+\s*=/m.test(b) && !/<html/i.test(b) },
+  { path: '/.env.production', label: '.env.production met instellingen/sleutels', sev: 'error', test: (b, r) => r.status === 200 && /^[A-Z][A-Z0-9_]+\s*=/m.test(b) && !/<html/i.test(b) },
+  { path: '/.env.backup', label: 'Back-up van .env-bestand', sev: 'error', test: (b, r) => r.status === 200 && /^[A-Z][A-Z0-9_]+\s*=/m.test(b) && !/<html/i.test(b) },
+  { path: '/.htpasswd', label: '.htpasswd met gebruikersnamen/wachtwoordhashes', sev: 'error', test: (b, r) => r.status === 200 && /^[^:\s]+:\$?[\w./$]+$/m.test(b) && !/<html/i.test(b) },
+  { path: '/.htaccess', label: '.htaccess leesbaar (serverregels zichtbaar)', sev: 'warn', test: (b, r) => r.status === 200 && /(RewriteRule|RewriteEngine|AuthType|<Files|Order allow)/i.test(b) && !/<html/i.test(b) },
+  { path: '/.aws/credentials', label: 'AWS-sleutels openbaar', sev: 'error', test: (b, r) => r.status === 200 && /aws_access_key_id/i.test(b) },
+  { path: '/config.php.bak', label: 'Back-up van config.php (broncode/wachtwoorden)', sev: 'error', test: (b, r) => r.status === 200 && /<\?php|define\s*\(|password/i.test(b) && !/<html/i.test(b) },
+  { path: '/configuration.php.bak', label: 'Back-up van Joomla-configuratie', sev: 'error', test: (b, r) => r.status === 200 && /\$password|public \$/i.test(b) && !/<html/i.test(b) },
+  { path: '/database.sql', label: 'Databaseback-up (database.sql) openbaar', sev: 'error', test: (b, r) => r.status === 200 && /(CREATE TABLE|INSERT INTO)/i.test(b) },
+  { path: '/dump.sql', label: 'Databaseback-up (dump.sql) openbaar', sev: 'error', test: (b, r) => r.status === 200 && /(CREATE TABLE|INSERT INTO)/i.test(b) },
+  { path: '/db.sql', label: 'Databaseback-up (db.sql) openbaar', sev: 'error', test: (b, r) => r.status === 200 && /(CREATE TABLE|INSERT INTO)/i.test(b) },
+  { path: '/site.zip', label: 'Back-upbestand (site.zip) openbaar', sev: 'error', test: (b, r) => r.status === 200 && b.startsWith('PK') },
+  { path: '/website.zip', label: 'Back-upbestand (website.zip) openbaar', sev: 'error', test: (b, r) => r.status === 200 && b.startsWith('PK') },
+  { path: '/backup.tar.gz', label: 'Back-upbestand (backup.tar.gz) openbaar', sev: 'error', test: (b, r) => r.status === 200 && (r.headers.get('content-type') || '').includes('gzip') },
+  { path: '/error_log', label: 'Foutenlog (error_log) openbaar', sev: 'warn', test: (b, r) => r.status === 200 && /PHP (Notice|Warning|Fatal|Parse)|\[error\]/i.test(b) && !/<html/i.test(b) },
+  { path: '/storage/logs/laravel.log', label: 'Laravel-logbestand openbaar', sev: 'error', test: (b, r) => r.status === 200 && /(production\.ERROR|testing\.ERROR|local\.ERROR|stacktrace)/i.test(b) },
+  { path: '/info.php', label: 'info.php openbaar (serverdetails)', sev: 'error', test: (b, r) => r.status === 200 && /phpinfo\(\)|PHP Version/i.test(b) },
+  { path: '/test.php', label: 'test.php openbaar (mogelijk serverdetails)', sev: 'warn', test: (b, r) => r.status === 200 && /phpinfo\(\)|PHP Version/i.test(b) },
+  { path: '/adminer.php', label: 'Adminer (database-beheertool) openbaar', sev: 'error', test: (b, r) => r.status === 200 && /Adminer|Login - Adminer/i.test(b) },
+  { path: '/phpmyadmin/', label: 'phpMyAdmin bereikbaar', sev: 'warn', test: (b, r) => r.status === 200 && /phpMyAdmin/i.test(b) },
+  { path: '/.svn/entries', label: 'SVN-map openbaar (broncode)', sev: 'error', test: (b, r) => r.status === 200 && /^(dir|\d+)\s*$/m.test(b) && !/<html/i.test(b) },
+  { path: '/.hg/requires', label: 'Mercurial-map openbaar (broncode)', sev: 'error', test: (b, r) => r.status === 200 && /revlogv|store/i.test(b) && !/<html/i.test(b) },
+  { path: '/.idea/workspace.xml', label: 'Editor-map (.idea) openbaar', sev: 'warn', test: (b, r) => r.status === 200 && /<project/i.test(b) },
+  { path: '/composer.lock', label: 'composer.lock (exacte pakketversies zichtbaar)', sev: 'info', test: (b, r) => r.status === 200 && /"packages"/.test(b) },
+  { path: '/package.json', label: 'package.json (pakketversies zichtbaar)', sev: 'info', test: (b, r) => r.status === 200 && /"dependencies"|"devDependencies"/.test(b) && !/<html/i.test(b) },
+  { path: '/sftp-config.json', label: 'sftp-config.json (FTP-wachtwoord)', sev: 'error', test: (b, r) => r.status === 200 && /"host"|"password"/i.test(b) },
+  { path: '/.well-known/.env', label: 'Verstopt .env-bestand', sev: 'error', test: (b, r) => r.status === 200 && /^[A-Z][A-Z0-9_]+\s*=/m.test(b) && !/<html/i.test(b) },
 ];
+
+// Verouderde bibliotheken met bekende lekken (versie uit de HTML halen, alleen lezen)
+const OLD_LIBS = [
+  { name: 'jQuery', re: /jquery[-.]?(\d+\.\d+(?:\.\d+)?)(?:\.min)?\.js/i, safe: [3, 5], note: 'Versies onder 3.5 hebben bekende XSS-lekken (CVE-2020-11022/11023).' },
+  { name: 'Bootstrap', re: /bootstrap[-.]?(\d+\.\d+(?:\.\d+)?)(?:\.min)?\.(?:js|css)/i, safe: [4, 3, 3], note: 'Versies onder 4.3.1 hebben XSS-lekken.' },
+  { name: 'AngularJS', re: /angular[-.]?(\d+\.\d+(?:\.\d+)?)(?:\.min)?\.js/i, safe: [1, 8], note: 'AngularJS (1.x) wordt niet meer onderhouden en krijgt geen beveiligingsupdates meer.' },
+  { name: 'Lodash', re: /lodash[-.]?(\d+\.\d+(?:\.\d+)?)(?:\.min)?\.js/i, safe: [4, 17, 21], note: 'Versies onder 4.17.21 hebben prototype-pollution-lekken.' },
+  { name: 'Moment.js', re: /moment[-.]?(\d+\.\d+(?:\.\d+)?)(?:\.min)?\.js/i, safe: [2, 29, 4], note: 'Versies onder 2.29.4 hebben een ReDoS-lek (CVE-2022-31129).' },
+];
+const cmpVer = (a, b) => { for (let i = 0; i < Math.max(a.length, b.length); i++) { const x = a[i] ?? 0, y = b[i] ?? 0; if (x !== y) return x - y; } return 0; };
+function detectOldLibs(html) {
+  const out = [];
+  for (const lib of OLD_LIBS) {
+    const m = html.match(lib.re);
+    if (!m) continue;
+    if (cmpVer(m[1].split('.').map(Number), lib.safe) < 0) out.push({ name: lib.name, version: m[1], note: lib.note });
+  }
+  return out;
+}
 
 const LOGIN_PATHS = ['/wp-login.php', '/wp-admin/', '/admin', '/admin/', '/administrator/', '/login', '/inloggen', '/user/login', '/admin/login', '/account/login', '/my-account/', '/mijn-account/', '/beheer', '/cms', '/backend'];
 
@@ -446,13 +493,19 @@ async function siteChecks(start, robots, securityChecks, isCancelled) {
       c.serverVersionLeak = /\d+\.\d+/.test(c.server);
       c.compression = h.get('content-encoding') || '';
       c.http2 = null;
-      const cookies = typeof h.getSetCookie === 'function' ? h.getSetCookie() : [];
-      c.cookies = cookies.map(ck => {
+      // CORS verkeerd ingesteld: alles toestaan, zeker met credentials, is riskant
+      const acao = h.get('access-control-allow-origin') || '';
+      const acac = (h.get('access-control-allow-credentials') || '').toLowerCase() === 'true';
+      c.corsWildcard = acao === '*' ? (acac ? 'credentials' : 'wildcard') : '';
+      c.cookies = (typeof h.getSetCookie === 'function' ? h.getSetCookie() : []).map(ck => {
         const name = ck.split('=')[0];
         return { name, secure: /;\s*secure/i.test(ck), httpOnly: /;\s*httponly/i.test(ck), sameSite: (ck.match(/samesite=(\w+)/i) || [])[1] || '' };
       });
       const html = await r.text();
       c.tech = detectTech(html);
+      c.oldLibs = detectOldLibs(html);
+      const gen = html.match(/<meta[^>]+name=["']generator["'][^>]+content=["']([^"']+)/i);
+      c.generatorVersion = gen && /\d+\.\d+/.test(gen[1]) ? gen[1] : '';
       c.favicon = /<link[^>]+rel=["'][^"']*icon/i.test(html);
     } catch (e) { c.error = errText(e); }
   })());

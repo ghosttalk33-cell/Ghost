@@ -366,9 +366,16 @@ function siteCheckList() {
   const badCookies = (s.cookies || []).filter(c => s.https && (!c.secure || !c.httpOnly));
   if ((s.cookies || []).length) add('Beveiligingsheaders', 'cookies', !badCookies.length, 'info', 1, 'Veilige cookies', badCookies.length ? `${badCookies.length} cookie(s) zonder Secure/HttpOnly: ${badCookies.map(c => c.name).join(', ')}` : 'Cookies zijn goed beveiligd.');
   add('Beveiligingsheaders', 'securityTxt', s.securityTxt, 'info', 0, 'security.txt', s.securityTxt ? 'Aanwezig: onderzoekers weten hoe ze lekken kunnen melden.' : 'Ontbreekt (optioneel). Vertelt onderzoekers hoe ze beveiligingsproblemen kunnen melden.');
+  if (s.corsWildcard) add('Beveiligingsheaders', 'cors', false, s.corsWildcard === 'credentials' ? 'error' : 'warn', s.corsWildcard === 'credentials' ? 10 : 3, 'CORS staat open voor iedereen', s.corsWildcard === 'credentials' ? 'Access-Control-Allow-Origin is "*" én credentials staan aan. Andere websites kunnen namens een ingelogde bezoeker gegevens opvragen. Zeer riskant.' : 'Access-Control-Allow-Origin is "*": elke andere website mag gegevens van deze site opvragen. Beperk dit tot je eigen domeinen.');
+
+  // Verouderde software met bekende lekken
+  const gv = s.generatorVersion;
+  if (gv) add('Verouderde software', 'gen', false, 'warn', 3, 'Softwareversie zichtbaar in de pagina', `De pagina verraadt "${gv}". Verberg het versienummer en controleer of je de laatste (veilige) versie draait.`);
+  for (const lib of s.oldLibs || []) add('Verouderde software', 'lib-' + lib.name, false, 'warn', 5, `Verouderde ${lib.name} (${lib.version})`, lib.note + ' Werk deze bibliotheek bij naar de nieuwste versie.');
+  if (s.securityChecked && !(s.oldLibs || []).length && !gv) add('Verouderde software', 'libok', true, 'info', 0, 'Geen bekende verouderde bibliotheken', 'jQuery, Bootstrap, AngularJS, Lodash en Moment.js gecontroleerd op bekende lekken.');
 
   if (s.securityChecked) {
-    if (!(s.exposures || []).length) add('Lekken', 'exposures', true, 'info', 0, 'Geen gelekte bestanden gevonden', '16 bekende lekken gecontroleerd (.env, .git, back-ups, debug.log, phpinfo…).');
+    if (!(s.exposures || []).length) add('Lekken', 'exposures', true, 'info', 0, 'Geen gelekte bestanden gevonden', '40+ bekende lekken gecontroleerd (.env, .git, back-ups, database-dumps, logbestanden, phpMyAdmin, phpinfo…).');
     for (const x of s.exposures || []) add('Lekken', 'exp' + x.path, false, x.sev, x.sev === 'error' ? 20 : x.sev === 'warn' ? 5 : 1, x.label, 'Gevonden op ' + S.startUrl.replace(/\/$/, '') + x.path + ' · Blokkeer of verwijder dit zo snel mogelijk.');
   }
 
@@ -449,7 +456,7 @@ function analyze() {
   if (S.links.length) catPen.tech += (broken.length / S.links.length) * 40;
   if (S.images.length) { catPen.tech += (brokenImages.length / S.images.length) * 30; catPen.speed += (heavyImages.length / S.images.length) * 30; }
   for (const c of siteChecks) if (c.ok === false) {
-    const cat = /Beveilig|Lekken|Verbinding|Inloggen/.test(c.group) ? 'security' : c.group === 'Google & SEO' ? 'seo' : c.group === 'Privacy (AVG)' ? 'security' : 'tech';
+    const cat = /Beveilig|Lekken|Verbinding|Inloggen|Verouderde/.test(c.group) ? 'security' : c.group === 'Google & SEO' ? 'seo' : c.group === 'Privacy (AVG)' ? 'security' : 'tech';
     catPen[cat] += c.w * 2;
   }
   const cats = Object.fromEntries(Object.entries(catPen).map(([k, v]) => [k, Math.max(0, Math.min(100, Math.round(100 - v)))]));
@@ -709,7 +716,7 @@ function renderSite() {
   const icon = c => c.ok ? '✅' : c.ok == null ? '➖' : c.sev === 'error' ? '❌' : c.sev === 'warn' ? '⚠️' : 'ℹ️';
   el.innerHTML = `
     ${S.site.error ? `<div class="card" style="color:var(--err)">⚠️ Startpagina niet bereikbaar: ${esc(S.site.error)}</div>` : ''}
-    ${Object.entries(groups).map(([g, list]) => `<div class="card"><h3>${{ Verbinding: '🔒', 'Google & SEO': '🔎', Beveiligingsheaders: '🛡️', 'Inloggen & admin': '🔑', Lekken: '🕳️', 'Privacy (AVG)': '🍪' }[g] || ''} ${esc(g)}</h3>
+    ${Object.entries(groups).map(([g, list]) => `<div class="card"><h3>${{ Verbinding: '🔒', 'Google & SEO': '🔎', Beveiligingsheaders: '🛡️', 'Verouderde software': '📦', 'Inloggen & admin': '🔑', Lekken: '🕳️', 'Privacy (AVG)': '🍪' }[g] || ''} ${esc(g)}</h3>
       ${g === 'Lekken' ? '<p class="muted" style="font-size:12px;margin:-4px 0 6px">Alleen gebruiken op je eigen website.</p>' : ''}
       ${list.map(c => `<div class="check-row"><span class="ic">${icon(c)}</span><div>${esc(c.label)}<small>${esc(c.tip)}</small></div></div>`).join('')}</div>`).join('')}
     ${!S.site.securityChecked ? '<div class="card muted">🕳️ Lekkencheck staat uit (zie Instellingen).</div>' : ''}
