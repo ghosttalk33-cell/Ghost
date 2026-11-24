@@ -26,6 +26,7 @@
   button { background: var(--accent); color: #fff; border: 0; border-radius: 9px; padding: 11px 18px; font: inherit; font-weight: 600; cursor: pointer; }
   button.secondary { background: var(--panel2); border: 1px solid var(--border); color: var(--text); font-weight: 500; }
   button.small { padding: 7px 12px; font-size: 13px; }
+  button.danger { background: transparent; border: 1px solid #f2555a66; color: var(--err); }
   button:disabled { opacity: .45; cursor: default; }
   .btns { display: flex; gap: 8px; flex: 1 1 220px; }
   .btns button { flex: 1; }
@@ -34,14 +35,15 @@
   summary { cursor: pointer; color: var(--muted); padding: 4px 0; }
   .opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0 10px; }
   .check { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text); margin-top: 12px; }
-  .check input { width: 18px; height: 18px; accent-color: var(--accent); }
+  .check input { width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+  .check small { color: var(--muted); display: block; font-size: 12px; }
   .status { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 13px; margin-top: 12px; }
   .progress { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 6px; }
   .progress div { height: 100%; width: 0; background: var(--accent); transition: width .3s; }
   .progress.busy div { background: linear-gradient(90deg, var(--accent), #c2b8ff, var(--accent)); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
   @keyframes shimmer { to { background-position: -200% 0; } }
 
-  nav.tabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 14px; padding-bottom: 2px; scrollbar-width: none; position: sticky; top: 0; background: var(--bg); z-index: 5; padding-top: 6px; }
+  nav.tabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 14px; padding: 6px 0 2px; scrollbar-width: none; position: sticky; top: 0; background: var(--bg); z-index: 5; }
   nav.tabs::-webkit-scrollbar { display: none; }
   nav.tabs button { background: var(--panel); border: 1px solid var(--border); color: var(--muted); font-weight: 500; white-space: nowrap; padding: 8px 14px; border-radius: 999px; }
   nav.tabs button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
@@ -54,13 +56,20 @@
   .score div { width: 88px; height: 88px; border-radius: 50%; background: var(--panel); display: grid; place-items: center; text-align: center; }
   .score b { font-size: 30px; line-height: 1; display: block; }
   .score small { color: var(--muted); font-size: 11px; }
+  .score-text { flex: 1; min-width: 200px; }
   .score-text h2 { margin: 0 0 4px; font-size: 18px; }
-  .score-text p { margin: 0; color: var(--muted); font-size: 14px; }
+  .score-text p { margin: 0; color: var(--muted); font-size: 14px; word-break: break-all; }
+  .subscores { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 14px; }
+  .sub { background: var(--panel2); border-radius: 10px; padding: 10px 12px; }
+  .sub .bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+  .sub .bar i { display: block; height: 100%; }
+  .sub b { float: right; }
   .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 14px; }
   .stat { background: var(--panel2); border-radius: 10px; padding: 10px 12px; }
   .stat b { display: block; font-size: 20px; }
   .stat small { color: var(--muted); font-size: 12px; }
   h3 { margin: 0 0 10px; font-size: 16px; }
+  h4 { margin: 14px 0 6px; font-size: 14px; color: var(--muted); font-weight: 600; }
 
   .issue { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
   .issue > .head { display: flex; align-items: center; gap: 10px; padding: 11px 12px; cursor: pointer; }
@@ -68,7 +77,7 @@
   .issue > .head .lbl small { display: block; color: var(--muted); font-size: 12px; }
   .issue .body { display: none; border-top: 1px solid var(--border); padding: 8px 12px; background: var(--panel2); font-size: 13px; }
   .issue.open .body { display: block; }
-  .issue .body ul { margin: 0; padding-left: 0; list-style: none; max-height: 320px; overflow: auto; }
+  .issue .body ul { margin: 0; padding-left: 0; list-style: none; max-height: 340px; overflow: auto; }
   .issue .body li { padding: 5px 0; border-bottom: 1px solid var(--border); word-break: break-all; }
   .issue .body li:last-child { border: 0; }
   .issue .tip { color: var(--muted); margin: 2px 0 8px; word-break: normal; }
@@ -81,6 +90,8 @@
   .s3 { background: #8b7bff22; color: var(--accent); }
   .s4, .s0 { background: #f2555a22; color: var(--err); }
   .s5 { background: #f5a52422; color: var(--warn); }
+  .chip { display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--panel2); border: 1px solid var(--border); font-size: 13px; margin: 0 6px 6px 0; }
+  .chip.warn { border-color: #f5a52466; color: var(--warn); }
 
   .item { border-bottom: 1px solid var(--border); padding: 11px 2px; cursor: pointer; }
   .item:last-child { border-bottom: 0; }
@@ -103,18 +114,29 @@
   .check-row { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border); }
   .check-row:last-child { border: 0; }
   .check-row .ic { font-size: 18px; line-height: 1.2; }
-  .check-row small { display: block; color: var(--muted); }
+  .check-row small { display: block; color: var(--muted); word-break: break-word; }
   .empty { text-align: center; color: var(--muted); padding: 30px 10px; }
   .exports { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
   .snip { color: var(--muted); font-size: 12px; margin-top: 3px; }
   mark { background: #f5a52455; color: var(--text); border-radius: 3px; padding: 0 2px; }
   a.plain { color: inherit; text-decoration: none; }
+  .hbar { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 4px 0; }
+  .hbar span:first-child { flex: 0 0 38%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hbar .track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .hbar .track i { display: block; height: 100%; background: var(--accent); }
+  .hbar b { flex: 0 0 auto; min-width: 54px; text-align: right; font-weight: 600; }
+  .delta-up { color: var(--ok); } .delta-down { color: var(--err); }
+  .hist { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .hist:last-child { border: 0; }
+  .hist .sc { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; flex: none; border: 3px solid; }
+  .hist .info { flex: 1; min-width: 0; }
+  .hist .info div { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 </style>
 </head>
 <body>
 <header>
   <h1>👻 Ghost Crawler</h1>
-  <span>Volledige websitescan: SEO, kapotte links, snelheid en beveiliging</span>
+  <span>Volledige website-audit: SEO, snelheid, beveiliging, privacy en toegankelijkheid</span>
 </header>
 
 <main>
@@ -132,13 +154,16 @@
     <details>
       <summary>⚙️ Instellingen</summary>
       <div class="opts">
-        <label class="field">Max. pagina's<input type="number" id="maxPages" value="100" min="1" max="5000"></label>
-        <label class="field">Max. diepte<input type="number" id="maxDepth" value="5" min="0" max="50"></label>
+        <label class="field">Max. pagina's<input type="number" id="maxPages" value="200" min="1" max="5000"></label>
+        <label class="field">Max. diepte<input type="number" id="maxDepth" value="10" min="0" max="50"></label>
         <label class="field">Tegelijk<input type="number" id="concurrency" value="4" min="1" max="10"></label>
         <label class="field">Pauze (ms)<input type="number" id="delay" value="100" min="0"></label>
         <label class="field">Alleen URL's met<input type="text" id="include" placeholder="bijv. /blog/"></label>
         <label class="field">URL's overslaan<input type="text" id="exclude" placeholder="bijv. /tag/|\?page="></label>
       </div>
+      <label class="check"><input type="checkbox" id="smartSkip" checked><span>Slim overslaan<small>Winkelwagen, afrekenen, inloggen, admin en filters niet scannen</small></span></label>
+      <label class="check"><input type="checkbox" id="securityChecks" checked><span>Beveiligingscheck<small>Zoekt naar gelekte bestanden (.env, .git, back-ups). Alleen voor je eigen site!</small></span></label>
+      <label class="check"><input type="checkbox" id="checkImages" checked><span>Afbeeldingen controleren<small>Kapotte en te zware afbeeldingen</small></span></label>
       <label class="check"><input type="checkbox" id="checkLinks" checked> Externe links en bestanden controleren</label>
       <label class="check"><input type="checkbox" id="useSitemap" checked> Ook pagina's uit sitemap.xml scannen</label>
       <label class="check"><input type="checkbox" id="sameHost" checked> Alleen hetzelfde domein</label>
@@ -152,9 +177,12 @@
     <button data-tab="overview" class="active">Overzicht</button>
     <button data-tab="issues">Problemen<span class="count" id="cIssues"></span></button>
     <button data-tab="pages">Pagina's<span class="count" id="cPages"></span></button>
+    <button data-tab="speed">Snelheid</button>
     <button data-tab="links">Links<span class="count" id="cLinks"></span></button>
+    <button data-tab="site">Beveiliging</button>
+    <button data-tab="content">Inhoud</button>
     <button data-tab="search">Zoeken<span class="count" id="cSearch"></span></button>
-    <button data-tab="site">Website</button>
+    <button data-tab="history">Geschiedenis</button>
   </nav>
 
   <section class="panel active" id="p-overview"></section>
@@ -168,6 +196,7 @@
           <option value="issues">Meeste problemen</option>
           <option value="slow">Traagste eerst</option>
           <option value="words">Minste woorden</option>
+          <option value="size">Grootste eerst</option>
           <option value="depth">Diepte</option>
           <option value="url">URL (A-Z)</option>
         </select>
@@ -181,9 +210,12 @@
       <div id="pageList"></div>
     </div>
   </section>
+  <section class="panel" id="p-speed"></section>
   <section class="panel" id="p-links"></section>
-  <section class="panel" id="p-search"></section>
   <section class="panel" id="p-site"></section>
+  <section class="panel" id="p-content"></section>
+  <section class="panel" id="p-search"></section>
+  <section class="panel" id="p-history"></section>
 </main>
 
 <script>
@@ -194,71 +226,171 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } },
   del(k) { try { localStorage.removeItem(k); } catch {} },
 };
+const kb = b => b == null ? '—' : b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.round(b / 1024) + ' KB';
+const ms = v => v == null ? '—' : v < 1000 ? Math.round(v) + ' ms' : (v / 1000).toFixed(1) + ' s';
+const pathOf = u => { try { const x = new URL(u); return x.pathname + x.search; } catch { return u; } };
+const hostOf = u => { try { return new URL(u).host.replace(/^www\./, ''); } catch { return ''; } };
 
 // ---------- Status ----------
 let S = freshState();
 function freshState() {
-  return { results: [], links: [], site: null, sitemap: null, keywords: [], maxPages: 100, startUrl: '', running: false, finished: false, summary: null, phase: '' };
+  return { results: [], links: [], images: [], site: null, sitemap: null, keywords: [], maxPages: 200, startUrl: '', running: false, finished: false, summary: null, phase: '', savedAs: null };
 }
 let es = null, jobId = null;
 let tab = 'overview', openPage = null, pageFilter = 'all', pageLimit = 150;
 const openIssues = new Set();
+let history = [];
 
 // ---------- Regels voor problemen ----------
 const isPage = r => r.status >= 200 && r.status < 300 && (r.contentType || '').includes('html');
-const RULES = [
-  { id: 'http', sev: 'error', label: 'Pagina geeft een fout', tip: 'Deze pagina\'s zijn niet bereikbaar (404, 500, time-out…). Herstel ze of pas de links ernaartoe aan.',
-    test: r => !r.status || r.status >= 400, detail: r => r.error || 'HTTP ' + r.status },
-  { id: 'mixed', sev: 'error', label: 'Onveilige inhoud (http op https-pagina)', tip: 'Afbeeldingen of scripts worden via http geladen. Browsers blokkeren dit of tonen een waarschuwing.',
-    test: r => isPage(r) && r.mixedContent > 0, detail: r => r.mixedContent + ' onveilige bronnen' },
-  { id: 'notitle', sev: 'error', label: 'Geen paginatitel', tip: 'De titel is wat Google als blauwe link toont. Elke pagina heeft er één nodig.',
-    test: r => isPage(r) && !r.title },
-  { id: 'noviewport', sev: 'warn', label: 'Niet geschikt voor mobiel (geen viewport)', tip: 'Zonder <meta name="viewport"> ziet de pagina er op telefoons klein en onleesbaar uit.',
-    test: r => isPage(r) && !r.viewport },
-  { id: 'dupTitle', sev: 'warn', label: 'Dubbele titel', tip: 'Meerdere pagina\'s hebben dezelfde titel. Geef elke pagina een unieke titel.', dup: 'title' },
-  { id: 'nodesc', sev: 'warn', label: 'Geen meta description', tip: 'De omschrijving die Google onder de titel toont. Ontbreekt deze, dan kiest Google zelf een stuk tekst.',
-    test: r => isPage(r) && !r.description },
-  { id: 'noh1', sev: 'warn', label: 'Geen H1-kop', tip: 'Elke pagina hoort één hoofdkop (H1) te hebben die zegt waar de pagina over gaat.',
-    test: r => isPage(r) && !(r.h1 || []).length },
-  { id: 'alt', sev: 'warn', label: 'Afbeeldingen zonder alt-tekst', tip: 'Alt-tekst helpt blinden/slechtzienden en Google begrijpen wat er op een afbeelding staat.',
-    test: r => isPage(r) && r.imagesNoAlt > 0, detail: r => `${r.imagesNoAlt} van ${r.images} afbeeldingen` },
-  { id: 'slow', sev: 'warn', label: 'Trage pagina (meer dan 2 seconden)', tip: 'Trage pagina\'s zorgen dat bezoekers afhaken en scoren lager in Google.',
-    test: r => isPage(r) && r.timeMs > 2000, detail: r => (r.timeMs / 1000).toFixed(1) + ' s' },
-  { id: 'thin', sev: 'warn', label: 'Weinig tekst (minder dan 200 woorden)', tip: 'Pagina\'s met weinig inhoud worden door Google vaak als minder waardevol gezien.',
-    test: r => isPage(r) && r.wordCount < 200, detail: r => r.wordCount + ' woorden' },
-  { id: 'dupContent', sev: 'warn', label: 'Dubbele inhoud', tip: 'Deze pagina\'s hebben precies dezelfde tekst. Gebruik een canonical-tag of voeg ze samen.', dup: 'contentHash' },
-  { id: 'noindex', sev: 'warn', label: 'Verborgen voor Google (noindex)', tip: 'Deze pagina\'s vragen Google om ze niet te tonen. Controleer of dat de bedoeling is.',
-    test: r => isPage(r) && /noindex/.test(r.robotsMeta || '') },
-  { id: 'titlelong', sev: 'info', label: 'Titel te lang (meer dan 60 tekens)', tip: 'Google kapt lange titels af met "…".',
-    test: r => isPage(r) && r.title && r.title.length > 60, detail: r => r.title.length + ' tekens' },
-  { id: 'titleshort', sev: 'info', label: 'Titel erg kort (minder dan 15 tekens)', tip: 'Een korte titel zegt weinig. Gebruik 30–60 tekens met je belangrijkste zoekwoord.',
-    test: r => isPage(r) && r.title && r.title.length < 15, detail: r => `"${r.title}"` },
-  { id: 'desclong', sev: 'info', label: 'Omschrijving te lang (meer dan 160 tekens)', tip: 'Google kapt lange omschrijvingen af.',
-    test: r => isPage(r) && r.description && r.description.length > 160, detail: r => r.description.length + ' tekens' },
-  { id: 'dupDesc', sev: 'info', label: 'Dubbele omschrijving', tip: 'Meerdere pagina\'s hebben dezelfde meta description.', dup: 'description' },
-  { id: 'multih1', sev: 'info', label: 'Meerdere H1-koppen', tip: 'Gebruik bij voorkeur één H1 per pagina en H2/H3 voor tussenkoppen.',
-    test: r => isPage(r) && (r.h1 || []).length > 1, detail: r => r.h1.length + ' H1-koppen' },
-  { id: 'nolang', sev: 'info', label: 'Taal niet ingesteld', tip: 'Voeg lang="nl" toe aan de <html>-tag zodat browsers en Google de taal kennen.',
-    test: r => isPage(r) && !r.lang },
-  { id: 'redirect', sev: 'info', label: 'Doorverwijzing', tip: 'Deze links sturen door naar een ander adres. Link liever direct naar het eindadres.',
-    test: r => !!r.finalUrl, detail: r => '→ ' + r.finalUrl },
-  { id: 'canonical', sev: 'info', label: 'Canonical wijst naar andere pagina', tip: 'Google zal waarschijnlijk de andere pagina tonen in plaats van deze.',
-    test: r => isPage(r) && r.canonical && r.canonical !== (r.finalUrl || r.url), detail: r => '→ ' + r.canonical },
-  { id: 'noog', sev: 'info', label: 'Geen social-media voorbeeld (Open Graph)', tip: 'Zonder og:title en og:image ziet een gedeelde link op Facebook/WhatsApp er kaal uit.',
-    test: r => isPage(r) && (!r.ogTitle || !r.ogImage) },
-  { id: 'nostruct', sev: 'info', label: 'Geen gestructureerde data', tip: 'Schema.org-gegevens (JSON-LD) kunnen sterren, prijzen of FAQ\'s in Google tonen.',
-    test: r => isPage(r) && !r.structuredData },
-  { id: 'heavy', sev: 'info', label: 'Grote HTML (meer dan 500 KB)', tip: 'Grote pagina\'s laden trager, vooral op mobiel.',
-    test: r => isPage(r) && r.size > 500 * 1024, detail: r => Math.round(r.size / 1024) + ' KB' },
-  { id: 'deep', sev: 'info', label: 'Diep verstopt (meer dan 3 klikken)', tip: 'Pagina\'s die veel klikken diep zitten, worden minder vaak gevonden door bezoekers en Google.',
-    test: r => r.depth > 3, detail: r => r.depth + ' klikken' },
-  { id: 'orphan', sev: 'info', label: 'Alleen via sitemap te vinden', tip: 'Geen enkele pagina linkt hiernaartoe. Voeg interne links toe.', orphan: true },
-];
+const indexable = r => isPage(r) && !/noindex/.test(r.robotsMeta || '') && !r.finalUrl && (!r.canonical || r.canonical === r.url);
 const BLOCKED = [401, 403, 429, 999];
 const isBroken = l => !l.status || (l.status >= 400 && !BLOCKED.includes(l.status));
+const CAT = { seo: 'SEO', speed: 'Snelheid', tech: 'Techniek', a11y: 'Toegankelijkheid', content: 'Inhoud', security: 'Beveiliging' };
+
+const RULES = [
+  { id: 'http', sev: 'error', cat: 'tech', label: 'Pagina geeft een fout', tip: 'Deze pagina\'s zijn niet bereikbaar (404, 500, time-out…). Herstel ze of pas de links ernaartoe aan.',
+    test: r => !r.status || r.status >= 400, detail: r => r.error || 'HTTP ' + r.status },
+  { id: 'mixed', sev: 'error', cat: 'security', label: 'Onveilige inhoud (http op https-pagina)', tip: 'Afbeeldingen of scripts worden via http geladen. Browsers blokkeren dit of tonen een waarschuwing.',
+    test: r => isPage(r) && r.mixedContent > 0, detail: r => r.mixedContent + ' onveilige bronnen' },
+  { id: 'notitle', sev: 'error', cat: 'seo', label: 'Geen paginatitel', tip: 'De titel is wat Google als blauwe link toont. Elke pagina heeft er één nodig.',
+    test: r => isPage(r) && !r.title },
+  { id: 'noviewport', sev: 'warn', cat: 'tech', label: 'Niet geschikt voor mobiel (geen viewport)', tip: 'Zonder <meta name="viewport"> ziet de pagina er op telefoons klein en onleesbaar uit.',
+    test: r => isPage(r) && !r.viewport },
+  { id: 'slow', sev: 'warn', cat: 'speed', label: 'Trage pagina (meer dan 2 seconden)', tip: 'Trage pagina\'s zorgen dat bezoekers afhaken en scoren lager in Google. Gebruik caching, kleinere afbeeldingen en minder plugins/scripts.',
+    test: r => isPage(r) && r.timeMs > 2000, detail: r => ms(r.timeMs) },
+  { id: 'ttfb', sev: 'warn', cat: 'speed', label: 'Server reageert traag (meer dan 0,8 s)', tip: 'De server doet er lang over voordat de pagina begint te laden. Oplossing: pagina-caching (bijv. WP Rocket, LiteSpeed Cache) of betere hosting.',
+    test: r => isPage(r) && r.ttfb > 800, detail: r => 'Reactietijd ' + ms(r.ttfb) },
+  { id: 'dupTitle', sev: 'warn', cat: 'seo', label: 'Dubbele titel', tip: 'Meerdere pagina\'s hebben dezelfde titel. Geef elke pagina een unieke titel (met Yoast of Rank Math).', dup: 'title' },
+  { id: 'nodesc', sev: 'warn', cat: 'seo', label: 'Geen meta description', tip: 'De omschrijving die Google onder de titel toont. Schrijf per pagina 1-2 zinnen die uitnodigen om te klikken.',
+    test: r => isPage(r) && !r.description },
+  { id: 'noh1', sev: 'warn', cat: 'seo', label: 'Geen H1-kop', tip: 'Elke pagina hoort één hoofdkop (H1) te hebben die zegt waar de pagina over gaat.',
+    test: r => isPage(r) && !(r.h1 || []).length },
+  { id: 'dupContent', sev: 'warn', cat: 'seo', label: 'Dubbele inhoud', tip: 'Deze pagina\'s hebben precies dezelfde tekst. Gebruik een canonical-tag, voeg ze samen of herschrijf ze.', dup: 'contentHash' },
+  { id: 'noindex', sev: 'warn', cat: 'seo', label: 'Verborgen voor Google (noindex)', tip: 'Deze pagina\'s vragen Google om ze niet te tonen. Controleer of dat de bedoeling is.',
+    test: r => isPage(r) && /noindex/.test(r.robotsMeta || '') },
+  { id: 'httpLinks', sev: 'warn', cat: 'security', label: 'Interne links naar http:// (niet https)', tip: 'Links naar je eigen site via http:// zorgen voor extra doorverwijzingen. Vervang ze door https://.',
+    test: r => isPage(r) && r.httpLinks > 0, detail: r => r.httpLinks + ' links' },
+  { id: 'alt', sev: 'warn', cat: 'a11y', label: 'Afbeeldingen zonder alt-tekst', tip: 'Alt-tekst helpt blinden/slechtzienden en Google begrijpen wat er op een afbeelding staat.',
+    test: r => isPage(r) && r.imagesNoAlt > 0, detail: r => `${r.imagesNoAlt} van ${r.images} afbeeldingen` },
+  { id: 'emptyLinks', sev: 'warn', cat: 'a11y', label: 'Links zonder tekst', tip: 'Links met alleen een icoon of afbeelding zonder beschrijving. Schermlezers lezen dan alleen "link" voor. Voeg een aria-label of alt-tekst toe.',
+    test: r => isPage(r) && r.emptyLinks > 0, detail: r => r.emptyLinks + ' links' },
+  { id: 'formNoLabel', sev: 'warn', cat: 'a11y', label: 'Formuliervelden zonder label', tip: 'Invulvelden zonder label zijn lastig voor schermlezers. Een placeholder is géén vervanging voor een label.',
+    test: r => isPage(r) && r.formNoLabel > 0, detail: r => r.formNoLabel + ' velden' },
+  { id: 'buttonNoText', sev: 'warn', cat: 'a11y', label: 'Knoppen zonder tekst', tip: 'Knoppen met alleen een icoon hebben een aria-label nodig zodat duidelijk is wat ze doen.',
+    test: r => isPage(r) && r.buttonNoText > 0, detail: r => r.buttonNoText + ' knoppen' },
+  { id: 'thin', sev: 'warn', cat: 'content', label: 'Weinig tekst (minder dan 200 woorden)', tip: 'Pagina\'s met weinig inhoud worden door Google vaak als minder waardevol gezien.',
+    test: r => isPage(r) && r.wordCount < 200, detail: r => r.wordCount + ' woorden' },
+  { id: 'sitemapBad', sev: 'warn', cat: 'seo', label: 'Foute pagina in sitemap', tip: 'De sitemap bevat pagina\'s die een fout geven, doorverwijzen of noindex hebben. Een sitemap hoort alleen goede, indexeerbare pagina\'s te bevatten.', sitemap: 'bad' },
+  { id: 'renderBlocking', sev: 'info', cat: 'speed', label: 'Scripts die het laden blokkeren', tip: 'Scripts in de <head> zonder async/defer houden het tonen van de pagina tegen. Gebruik defer of een optimalisatieplugin.',
+    test: r => isPage(r) && r.renderBlocking > 2, detail: r => r.renderBlocking + ' scripts' },
+  { id: 'manyFiles', sev: 'info', cat: 'speed', label: 'Veel scripts en stylesheets (meer dan 40)', tip: 'Elk bestand is een extra verzoek. Combineer bestanden of schakel ongebruikte plugins uit.',
+    test: r => isPage(r) && (r.scripts + r.stylesheets) > 40, detail: r => `${r.scripts} scripts, ${r.stylesheets} stylesheets` },
+  { id: 'heavy', sev: 'info', cat: 'speed', label: 'Grote HTML (meer dan 500 KB)', tip: 'Grote pagina\'s laden trager, vooral op mobiel. Vaak door page builders of ingebakken code.',
+    test: r => isPage(r) && r.size > 500 * 1024, detail: r => kb(r.size) },
+  { id: 'nocompress', sev: 'info', cat: 'speed', label: 'Pagina niet gecomprimeerd', tip: 'Zet gzip- of brotli-compressie aan op de server. Dat maakt pagina\'s tot 70% kleiner.',
+    test: r => isPage(r) && r.compressed === false && r.size > 20000 },
+  { id: 'titlelong', sev: 'info', cat: 'seo', label: 'Titel te lang (meer dan 60 tekens)', tip: 'Google kapt lange titels af met "…".',
+    test: r => isPage(r) && r.title && r.title.length > 60, detail: r => r.title.length + ' tekens' },
+  { id: 'titleshort', sev: 'info', cat: 'seo', label: 'Titel erg kort (minder dan 15 tekens)', tip: 'Een korte titel zegt weinig. Gebruik 30–60 tekens met je belangrijkste zoekwoord.',
+    test: r => isPage(r) && r.title && r.title.length < 15, detail: r => `"${r.title}"` },
+  { id: 'desclong', sev: 'info', cat: 'seo', label: 'Omschrijving te lang (meer dan 160 tekens)', tip: 'Google kapt lange omschrijvingen af.',
+    test: r => isPage(r) && r.description && r.description.length > 160, detail: r => r.description.length + ' tekens' },
+  { id: 'descshort', sev: 'info', cat: 'seo', label: 'Omschrijving erg kort (minder dan 70 tekens)', tip: 'Benut de ruimte: 120–155 tekens werkt het best.',
+    test: r => isPage(r) && r.description && r.description.length < 70, detail: r => r.description.length + ' tekens' },
+  { id: 'dupDesc', sev: 'info', cat: 'seo', label: 'Dubbele omschrijving', tip: 'Meerdere pagina\'s hebben dezelfde meta description.', dup: 'description' },
+  { id: 'multih1', sev: 'info', cat: 'seo', label: 'Meerdere H1-koppen', tip: 'Gebruik bij voorkeur één H1 per pagina en H2/H3 voor tussenkoppen.',
+    test: r => isPage(r) && (r.h1 || []).length > 1, detail: r => r.h1.length + ' H1-koppen' },
+  { id: 'headingSkip', sev: 'info', cat: 'a11y', label: 'Kopniveau overgeslagen', tip: 'Koppen horen op volgorde te staan (H1 → H2 → H3). Een sprong maakt de structuur onduidelijk voor schermlezers en Google.',
+    test: r => isPage(r) && r.headingSkip, detail: r => r.headingSkip },
+  { id: 'genericLinks', sev: 'info', cat: 'a11y', label: 'Vage linkteksten ("klik hier", "lees meer")', tip: 'Gebruik beschrijvende linkteksten, bijv. "Bekijk onze tarieven" in plaats van "klik hier".',
+    test: r => isPage(r) && (r.genericLinks || []).length > 0, detail: r => r.genericLinks.map(t => `"${t}"`).join(', ') },
+  { id: 'readability', sev: 'info', cat: 'content', label: 'Moeilijk leesbare tekst', tip: 'Lange zinnen en lange woorden. Schrijf kortere zinnen (max. ~20 woorden) en gebruik eenvoudige woorden.',
+    test: r => isPage(r) && r.readability != null && r.readability < 35, detail: r => 'Leesbaarheid ' + r.readability + '/100' },
+  { id: 'nolang', sev: 'info', cat: 'a11y', label: 'Taal niet ingesteld', tip: 'Voeg lang="nl" toe aan de <html>-tag zodat browsers, schermlezers en Google de taal kennen.',
+    test: r => isPage(r) && !r.lang },
+  { id: 'redirect', sev: 'info', cat: 'tech', label: 'Doorverwijzing', tip: 'Deze links sturen door naar een ander adres. Link liever direct naar het eindadres.',
+    test: r => !!r.finalUrl, detail: r => '→ ' + r.finalUrl },
+  { id: 'canonical', sev: 'info', cat: 'seo', label: 'Canonical wijst naar andere pagina', tip: 'Google zal waarschijnlijk de andere pagina tonen in plaats van deze.',
+    test: r => isPage(r) && r.canonical && r.canonical !== (r.finalUrl || r.url), detail: r => '→ ' + r.canonical },
+  { id: 'nocanonical', sev: 'info', cat: 'seo', label: 'Geen canonical-tag', tip: 'Een canonical-tag vertelt Google wat het "echte" adres van een pagina is en voorkomt dubbele inhoud.',
+    test: r => isPage(r) && !r.canonical },
+  { id: 'noog', sev: 'info', cat: 'seo', label: 'Geen social-media voorbeeld (Open Graph)', tip: 'Zonder og:title en og:image ziet een gedeelde link op Facebook, LinkedIn of WhatsApp er kaal uit.',
+    test: r => isPage(r) && (!r.ogTitle || !r.ogImage) },
+  { id: 'nostruct', sev: 'info', cat: 'seo', label: 'Geen gestructureerde data', tip: 'Schema.org-gegevens (JSON-LD) kunnen sterren, prijzen of FAQ\'s in Google tonen.',
+    test: r => isPage(r) && !r.structuredData },
+  { id: 'urlStyle', sev: 'info', cat: 'seo', label: 'Onhandige URL', tip: 'Gebruik korte URL\'s met kleine letters en streepjes (-), zonder hoofdletters, underscores (_) of spaties.',
+    test: r => isPage(r) && (/[A-Z_]|%20/.test(pathOf(r.url)) || r.url.length > 115), detail: r => r.url.length > 115 ? r.url.length + ' tekens' : 'hoofdletters/underscores' },
+  { id: 'deep', sev: 'info', cat: 'seo', label: 'Diep verstopt (meer dan 3 klikken)', tip: 'Pagina\'s die veel klikken diep zitten worden minder vaak gevonden door bezoekers en Google.',
+    test: r => r.depth > 3 && !r.viaSitemap, detail: r => r.depth + ' klikken' },
+  { id: 'orphan', sev: 'info', cat: 'seo', label: 'Alleen via sitemap te vinden', tip: 'Geen enkele gescande pagina linkt hiernaartoe. Voeg interne links toe.', orphan: true },
+  { id: 'notInSitemap', sev: 'info', cat: 'seo', label: 'Ontbreekt in sitemap', tip: 'Deze pagina staat niet in je sitemap.xml. Voeg hem toe zodat Google hem sneller vindt.', sitemap: 'missing' },
+];
 const SEV_W = { error: 30, warn: 10, info: 2 };
 const SEV_NL = { error: 'fout', warn: 'waarschuwing', info: 'tip' };
+const SEV_COLOR = { error: 'var(--err)', warn: 'var(--warn)', info: 'var(--info)' };
 
+// ---------- Website-checks ----------
+function siteCheckList() {
+  const s = S.site;
+  if (!s) return [];
+  const h = s.headers || {};
+  const list = [];
+  const add = (group, id, ok, sev, w, label, tip) => list.push({ group, id, ok, sev, w, label, tip });
+  add('Verbinding', 'https', s.https, 'error', 15, 'Beveiligde verbinding (HTTPS)', s.https ? 'De site gebruikt https.' : 'De site gebruikt geen https. Bezoekers krijgen een "Niet veilig"-melding.');
+  if (s.ssl) {
+    const okSsl = s.ssl.authorized && s.ssl.daysLeft >= 14;
+    add('Verbinding', 'ssl', okSsl, s.ssl.authorized && s.ssl.daysLeft >= 0 ? 'warn' : 'error', s.ssl.authorized && s.ssl.daysLeft >= 0 ? 5 : 15, 'SSL-certificaat',
+      !s.ssl.authorized ? 'Certificaat is ongeldig: ' + s.ssl.error : s.ssl.daysLeft < 0 ? 'Certificaat is VERLOPEN!' :
+      `Geldig tot ${new Date(s.ssl.validTo).toLocaleDateString('nl')} (nog ${s.ssl.daysLeft} dagen) · uitgegeven door ${s.ssl.issuer}${s.ssl.daysLeft < 14 ? ' · Verloopt binnenkort!' : ''}`);
+  }
+  add('Verbinding', 'httpRedirect', s.httpRedirect, 'warn', 4, 'http:// stuurt door naar https://', s.httpRedirect == null ? 'Kon niet gecontroleerd worden.' : s.httpRedirect ? 'Goed ingesteld.' : 'Bezoekers op http:// worden niet automatisch naar de veilige versie gestuurd.');
+  add('Verbinding', 'wwwRedirect', s.wwwRedirect, 'warn', 3, 'www en zonder www leiden naar één adres', s.wwwRedirect == null ? `${s.wwwVariant || 'De andere variant'} is niet bereikbaar.` : s.wwwRedirect ? `${s.wwwVariant} stuurt netjes door.` : `${s.wwwVariant} stuurt niet door. Google ziet dan twee versies van je site (dubbele inhoud).`);
+  add('Verbinding', 'compression', !!s.compression, 'warn', 3, 'Compressie (gzip/brotli)', s.compression ? 'Ingeschakeld: ' + s.compression : 'Niet ingeschakeld. Compressie maakt pagina\'s tot 70% kleiner en sneller.');
+
+  add('Google & SEO', 'robotsAll', !s.robotsBlocksAll, 'error', 25, 'Google mag de site bekijken', s.robotsBlocksAll ? 'robots.txt blokkeert de HELE site voor zoekmachines (Disallow: /). Je site is dan niet vindbaar!' : 'robots.txt blokkeert de site niet.');
+  add('Google & SEO', 'robots', s.robots, 'info', 1, 'robots.txt aanwezig', s.robots ? 'Gevonden.' : 'Geen robots.txt gevonden. Niet verplicht, maar wel aan te raden.');
+  add('Google & SEO', 'sitemap', (s.sitemaps || []).length > 0, 'warn', 4, 'sitemap.xml aanwezig', (s.sitemaps || []).length ? s.sitemaps.join(', ') + (S.sitemap ? ` (${S.sitemap.count} URL's)` : '') : 'Geen sitemap gevonden. Een sitemap helpt Google alle pagina\'s te vinden. Je kunt er een downloaden bij Overzicht.');
+  add('Google & SEO', 'soft404', s.notFoundStatus == null ? null : [404, 410].includes(s.notFoundStatus), 'warn', 4, 'Niet-bestaande pagina geeft 404',
+    s.notFoundStatus == null ? 'Kon niet gecontroleerd worden.' : [404, 410].includes(s.notFoundStatus) ? 'Goed: een onbekende pagina geeft een echte 404.' : `Een niet-bestaande pagina geeft code ${s.notFoundStatus} in plaats van 404 ("soft 404"). Google kan dan nep-pagina's indexeren.`);
+  add('Google & SEO', 'favicon', s.favicon, 'info', 1, 'Favicon (icoontje in tabblad)', s.favicon ? 'Aanwezig.' : 'Geen favicon gevonden. Wordt ook in Google-zoekresultaten op mobiel getoond.');
+
+  add('Beveiligingsheaders', 'hsts', h.hsts, 'warn', 2, 'HSTS', h.hsts ? 'Ingesteld.' : 'Strict-Transport-Security ontbreekt. Dit dwingt browsers altijd https te gebruiken.');
+  add('Beveiligingsheaders', 'csp', h.csp, 'info', 1, 'Content-Security-Policy', h.csp ? 'Ingesteld.' : 'Ontbreekt. Beschermt tegen het injecteren van kwaadaardige scripts (XSS).');
+  add('Beveiligingsheaders', 'xfo', h.xfo, 'info', 1, 'Bescherming tegen clickjacking', h.xfo ? 'Ingesteld.' : 'X-Frame-Options ontbreekt. Andere sites kunnen jouw site in een frame laden.');
+  add('Beveiligingsheaders', 'xcto', h.xcto, 'info', 1, 'X-Content-Type-Options', h.xcto ? 'Ingesteld.' : 'Ontbreekt (nosniff).');
+  add('Beveiligingsheaders', 'referrer', h.referrer, 'info', 1, 'Referrer-Policy', h.referrer ? 'Ingesteld.' : 'Ontbreekt. Bepaalt welke info naar andere sites wordt gestuurd.');
+  add('Beveiligingsheaders', 'serverLeak', !s.serverVersionLeak, 'info', 1, 'Serverversie verborgen', s.serverVersionLeak ? `De server verraadt zijn versie (${s.server}). Handig voor hackers om bekende lekken te zoeken.` : 'Geen versienummers zichtbaar.');
+  const badCookies = (s.cookies || []).filter(c => s.https && (!c.secure || !c.httpOnly));
+  if ((s.cookies || []).length) add('Beveiligingsheaders', 'cookies', !badCookies.length, 'info', 1, 'Veilige cookies', badCookies.length ? `${badCookies.length} cookie(s) zonder Secure/HttpOnly: ${badCookies.map(c => c.name).join(', ')}` : 'Cookies zijn goed beveiligd.');
+  add('Beveiligingsheaders', 'securityTxt', s.securityTxt, 'info', 0, 'security.txt', s.securityTxt ? 'Aanwezig: onderzoekers weten hoe ze lekken kunnen melden.' : 'Ontbreekt (optioneel). Vertelt onderzoekers hoe ze beveiligingsproblemen kunnen melden.');
+
+  if (s.securityChecked) {
+    if (!(s.exposures || []).length) add('Lekken', 'exposures', true, 'info', 0, 'Geen gelekte bestanden gevonden', '16 bekende lekken gecontroleerd (.env, .git, back-ups, debug.log, phpinfo…).');
+    for (const x of s.exposures || []) add('Lekken', 'exp' + x.path, false, x.sev, x.sev === 'error' ? 20 : x.sev === 'warn' ? 5 : 1, x.label, 'Gevonden op ' + S.startUrl.replace(/\/$/, '') + x.path + ' · Blokkeer of verwijder dit zo snel mogelijk.');
+  }
+
+  const tech = allTech();
+  const trackers = tech.filter(t => ['Google Analytics', 'Google Ads', 'Facebook Pixel', 'TikTok Pixel', 'LinkedIn Insight', 'Hotjar', 'Microsoft Clarity', 'Pinterest Tag'].includes(t));
+  const consent = tech.filter(t => ['Cookiebot', 'CookieYes', 'Complianz', 'OneTrust', 'Usercentrics', 'Borlabs Cookie', 'Cookie Notice', 'Iubenda', 'Termly'].includes(t));
+  if (trackers.length) add('Privacy (AVG)', 'consent', consent.length > 0, 'warn', 8, 'Cookiebanner voor trackers',
+    consent.length ? `Trackers (${trackers.join(', ')}) en cookiebanner (${consent.join(', ')}) gevonden. Controleer zelf of trackers pas ná toestemming laden.` : `Trackers gevonden (${trackers.join(', ')}) maar geen bekende cookiebanner. Volgens de AVG/cookiewet heb je toestemming nodig vóór het plaatsen van tracking-cookies.`);
+  const privacyPage = S.results.some(r => /privacy|privacyverklaring|privacybeleid|privacy-policy|gegevensbescherming/i.test(r.url + ' ' + (r.title || '')));
+  if (S.finished || S.results.length > 20) add('Privacy (AVG)', 'privacy', privacyPage, 'warn', 3, 'Privacyverklaring', privacyPage ? 'Gevonden.' : 'Geen privacyverklaring gevonden tussen de gescande pagina\'s. Die is verplicht als je persoonsgegevens verwerkt (bijv. via een contactformulier).');
+  const termsPage = S.results.some(r => /voorwaarden|terms|conditions/i.test(r.url + ' ' + (r.title || '')) && isPage(r));
+  if (tech.includes('WooCommerce') || tech.includes('Shopify') || tech.includes('Magento') || tech.includes('Lightspeed') || tech.includes('PrestaShop')) {
+    add('Privacy (AVG)', 'terms', termsPage, 'warn', 4, 'Algemene voorwaarden (webshop)', termsPage ? 'Werkende pagina gevonden.' : 'Geen werkende pagina met algemene voorwaarden gevonden. Voor webshops is dit wettelijk verplicht.');
+  }
+  return list;
+}
+
+function allTech() {
+  const set = new Set((S.site?.tech?.found) || []);
+  for (const r of S.results) for (const t of r.tech || []) set.add(t);
+  return [...set];
+}
+
+// ---------- Analyse ----------
 function analyze() {
   const pages = S.results;
   const byRule = new Map(RULES.map(r => [r.id, []]));
@@ -269,47 +401,49 @@ function analyze() {
     let a = inlinks.get(l); if (!a) { a = []; inlinks.set(l, a); }
     if (a.length < 50) a.push(p.url);
   }
+  const sitemapSet = S.sitemap?.urls?.length ? new Set(S.sitemap.urls) : null;
   const add = (rule, p, detail) => { byRule.get(rule.id).push({ page: p, detail }); pageIssues.get(p.url)?.push(rule); };
   for (const rule of RULES) {
-    if (rule.test) for (const p of pages) { if (rule.test(p)) add(rule, p, rule.detail ? rule.detail(p) : ''); }
+    if (rule.test) { for (const p of pages) if (rule.test(p)) add(rule, p, rule.detail ? rule.detail(p) : ''); }
     else if (rule.dup) {
       const groups = new Map();
-      for (const p of pages) { const v = isPage(p) && p[rule.dup]; if (v) { const g = groups.get(v) || []; g.push(p); groups.set(v, g); } }
+      for (const p of pages) { const v = indexable(p) && p[rule.dup]; if (v) { const g = groups.get(v) || []; g.push(p); groups.set(v, g); } }
       for (const [v, g] of groups) if (g.length > 1) for (const p of g) add(rule, p, `${g.length}× ${rule.dup === 'contentHash' ? 'zelfde tekst' : '"' + String(v).slice(0, 70) + '"'}`);
     } else if (rule.orphan) {
       for (const p of pages) if (p.viaSitemap && !inlinks.has(p.url) && !inlinks.has(p.finalUrl)) add(rule, p, '');
+    } else if (rule.sitemap && sitemapSet && S.finished) {
+      for (const p of pages) {
+        if (rule.sitemap === 'bad' && sitemapSet.has(p.url) && (!isPage(p) || p.finalUrl || /noindex/.test(p.robotsMeta || '')))
+          add(rule, p, p.finalUrl ? 'doorverwijzing' : !isPage(p) ? (p.error || 'HTTP ' + p.status) : 'noindex');
+        if (rule.sitemap === 'missing' && indexable(p) && !sitemapSet.has(p.url) && !sitemapSet.has(p.url.replace(/\/$/, '')) && !sitemapSet.has(p.url + '/')) add(rule, p, '');
+      }
     }
   }
   const broken = S.links.filter(isBroken);
-  const htmlCount = Math.max(1, pages.length);
-  let penalty = 0;
-  for (const rule of RULES) penalty += (byRule.get(rule.id).length / htmlCount) * SEV_W[rule.sev];
-  if (S.links.length) penalty += (broken.length / S.links.length) * 25;
-  const sc = siteCheckList();
-  for (const c of sc) if (c.ok === false) penalty += c.w;
-  const score = pages.length ? Math.max(0, Math.min(100, Math.round(100 - penalty))) : null;
+  const brokenImages = S.images.filter(isBroken);
+  const heavyImages = S.images.filter(i => i.status >= 200 && i.status < 300 && i.bytes > 300 * 1024).sort((a, b) => b.bytes - a.bytes);
+  const n = Math.max(1, pages.length);
+  const siteChecks = siteCheckList();
+
+  // Score per categorie
+  const catPen = { seo: 0, speed: 0, tech: 0, a11y: 0, content: 0, security: 0 };
+  for (const rule of RULES) catPen[rule.cat] += (byRule.get(rule.id).length / n) * SEV_W[rule.sev];
+  if (S.links.length) catPen.tech += (broken.length / S.links.length) * 40;
+  if (S.images.length) { catPen.tech += (brokenImages.length / S.images.length) * 30; catPen.speed += (heavyImages.length / S.images.length) * 30; }
+  for (const c of siteChecks) if (c.ok === false) {
+    const cat = /Beveilig|Lekken|Verbinding/.test(c.group) ? 'security' : c.group === 'Google & SEO' ? 'seo' : c.group === 'Privacy (AVG)' ? 'security' : 'tech';
+    catPen[cat] += c.w * 2;
+  }
+  const cats = Object.fromEntries(Object.entries(catPen).map(([k, v]) => [k, Math.max(0, Math.min(100, Math.round(100 - v)))]));
+  const weights = { seo: 3, speed: 2, tech: 2, security: 2, a11y: 1, content: 1 };
+  const score = pages.length ? Math.round(Object.entries(weights).reduce((s, [k, w]) => s + cats[k] * w, 0) / Object.values(weights).reduce((a, b) => a + b, 0)) : null;
+
   const counts = { error: 0, warn: 0, info: 0 };
   for (const rule of RULES) counts[rule.sev] += byRule.get(rule.id).length;
-  counts.error += broken.length;
-  return { byRule, pageIssues, inlinks, broken, score, counts };
-}
-
-function siteCheckList() {
-  const s = S.site;
-  if (!s) return [];
-  const h = s.headers || {};
-  return [
-    { ok: s.https, w: 15, label: 'Beveiligde verbinding (HTTPS)', tip: s.https ? 'De site gebruikt https.' : 'De site gebruikt geen https. Bezoekers krijgen een "Niet veilig"-melding.' },
-    { ok: s.httpRedirect, w: 4, label: 'http:// stuurt door naar https://', tip: s.httpRedirect === null ? 'Kon niet gecontroleerd worden.' : s.httpRedirect ? 'Goed ingesteld.' : 'Bezoekers op http:// worden niet automatisch naar de veilige versie gestuurd.' },
-    { ok: s.robots, w: 2, label: 'robots.txt aanwezig', tip: s.robots ? 'Gevonden.' : 'Geen robots.txt gevonden. Niet verplicht, maar wel aan te raden.' },
-    { ok: (s.sitemaps || []).length > 0, w: 4, label: 'sitemap.xml aanwezig', tip: (s.sitemaps || []).length ? s.sitemaps.join(', ') + (S.sitemap ? ` (${S.sitemap.count} URL's)` : '') : 'Geen sitemap gevonden. Een sitemap helpt Google alle pagina\'s te vinden. Je kunt er hieronder een downloaden.' },
-    { ok: h.hsts, w: 2, label: 'HSTS-beveiliging', tip: h.hsts ? 'Ingesteld.' : 'Strict-Transport-Security ontbreekt. Dit dwingt browsers altijd https te gebruiken.' },
-    { ok: h.csp, w: 1, label: 'Content-Security-Policy', tip: h.csp ? 'Ingesteld.' : 'Ontbreekt. Beschermt tegen het injecteren van kwaadaardige scripts.' },
-    { ok: h.xfo, w: 1, label: 'Bescherming tegen clickjacking', tip: h.xfo ? 'Ingesteld.' : 'X-Frame-Options ontbreekt. Andere sites kunnen jouw site in een frame laden.' },
-    { ok: h.xcto, w: 1, label: 'X-Content-Type-Options', tip: h.xcto ? 'Ingesteld.' : 'Ontbreekt (nosniff).' },
-    { ok: h.referrer, w: 1, label: 'Referrer-Policy', tip: h.referrer ? 'Ingesteld.' : 'Ontbreekt. Bepaalt welke info naar andere sites wordt gestuurd.' },
-    { ok: !!s.compression, w: 2, label: 'Compressie (gzip/brotli)', tip: s.compression ? 'Ingeschakeld: ' + s.compression : 'Niet ingeschakeld. Compressie maakt pagina\'s tot 70% kleiner en sneller.' },
-  ];
+  counts.error += broken.length + brokenImages.length;
+  counts.warn += heavyImages.length;
+  for (const c of siteChecks) if (c.ok === false) counts[c.sev]++;
+  return { byRule, pageIssues, inlinks, broken, brokenImages, heavyImages, score, cats, counts, siteChecks };
 }
 
 // ---------- Weergave ----------
@@ -318,12 +452,12 @@ let renderQueued = false;
 function scheduleRender() {
   if (renderQueued) return;
   renderQueued = true;
-  setTimeout(() => { renderQueued = false; A = analyze(); render(); }, S.running ? 400 : 0);
+  setTimeout(() => { renderQueued = false; A = analyze(); render(); }, S.running ? 500 : 0);
 }
 
 function render() {
   const n = S.results.length;
-  $('counter').textContent = n ? `${n} pagina's${S.links.length ? ' · ' + S.links.length + ' links' : ''}` : '';
+  $('counter').textContent = n ? `${n} pagina's${S.images.length ? ' · ' + S.images.length + ' afb.' : ''}${S.links.length ? ' · ' + S.links.length + ' links' : ''}` : '';
   $('phase').textContent = S.phase || (S.finished ? 'Scan voltooid' : 'Klaar om te scannen');
   $('bar').style.width = (S.finished ? 100 : Math.min(98, n / S.maxPages * 100)) + '%';
   $('progress').classList.toggle('busy', S.running);
@@ -331,81 +465,104 @@ function render() {
   $('startBtn').textContent = S.running ? 'Bezig…' : 'Scan starten';
   $('cIssues').textContent = n ? A.counts.error + A.counts.warn : '';
   $('cPages').textContent = n || '';
-  $('cLinks').textContent = A.broken.length ? '⚠ ' + A.broken.length : (S.links.length || '');
-  const kwHits = S.keywords.length ? S.results.filter(r => r.matches && Object.keys(r.matches).length).length : 0;
-  $('cSearch').textContent = kwHits || '';
-  ({ overview: renderOverview, issues: renderIssues, pages: renderPages, links: renderLinks, search: renderSearch, site: renderSite })[tab]();
+  const brokenTotal = A.broken.length + A.brokenImages.length + S.results.filter(r => !r.status || r.status >= 400).length;
+  $('cLinks').textContent = brokenTotal ? '⚠ ' + brokenTotal : '';
+  $('cSearch').textContent = S.keywords.length ? S.results.filter(r => r.matches && Object.keys(r.matches).length).length || '' : '';
+  ({ overview: renderOverview, issues: renderIssues, pages: renderPages, speed: renderSpeed, links: renderLinks, site: renderSite, content: renderContent, search: renderSearch, history: renderHistory })[tab]();
 }
 
 function scoreColor(s) { return s >= 80 ? 'var(--ok)' : s >= 55 ? 'var(--warn)' : 'var(--err)'; }
+function verdict(s) { return s >= 90 ? 'Uitstekend!' : s >= 80 ? 'Goed' : s >= 65 ? 'Redelijk' : s >= 45 ? 'Kan beter' : 'Veel verbeterpunten'; }
+
+// Alle "probleemregels" in één lijst (pagina-regels + links/afbeeldingen + website-checks)
+function allProblems() {
+  const out = [];
+  for (const r of RULES) { const c = A.byRule.get(r.id).length; if (c) out.push({ key: r.id, sev: r.sev, label: r.label, count: c, goto: 'issues', cat: CAT[r.cat] }); }
+  if (A.broken.length) out.push({ key: 'broken', sev: 'error', label: 'Kapotte links', count: A.broken.length, goto: 'links', cat: 'Techniek' });
+  if (A.brokenImages.length) out.push({ key: 'brokenImg', sev: 'error', label: 'Kapotte afbeeldingen', count: A.brokenImages.length, goto: 'links', cat: 'Techniek' });
+  if (A.heavyImages.length) out.push({ key: 'heavyImg', sev: 'warn', label: 'Te zware afbeeldingen (meer dan 300 KB)', count: A.heavyImages.length, goto: 'speed', cat: 'Snelheid' });
+  for (const c of A.siteChecks) if (c.ok === false) out.push({ key: 'site-' + c.id, sev: c.sev, label: c.label, count: '!', goto: 'site', cat: c.group, w: c.w });
+  const n = Math.max(1, S.results.length);
+  const weight = p => SEV_W[p.sev] * (p.count === '!' ? (p.w || 2) / 2 : Math.min(1, p.count / n) * 10 + 1);
+  return out.sort((a, b) => weight(b) - weight(a));
+}
 
 function renderOverview() {
   const el = $('p-overview');
   if (!S.results.length) {
-    el.innerHTML = `<div class="card empty">${S.running ? 'Scan is bezig, de eerste resultaten komen zo…' : 'Vul een website in en tik op <b>Scan starten</b>.<br><br>Je krijgt een score, een lijst met problemen en tips om ze op te lossen.'}</div>`;
+    el.innerHTML = `<div class="card empty">${S.running ? 'Scan is bezig, de eerste resultaten komen zo…' : 'Vul een website in en tik op <b>Scan starten</b>.<br><br>Je krijgt een score, een lijst met problemen en tips om ze op te lossen: SEO, snelheid, beveiliging, privacy en toegankelijkheid.'}</div>`;
     return;
   }
   const s = A.score;
   const ok = S.results.filter(r => r.status >= 200 && r.status < 300).length;
-  const avg = Math.round(S.results.reduce((a, r) => a + (r.timeMs || 0), 0) / S.results.length);
+  const html = S.results.filter(isPage);
+  const avg = html.length ? html.reduce((a, r) => a + (r.timeMs || 0), 0) / html.length : 0;
   const words = S.results.reduce((a, r) => a + (r.wordCount || 0), 0);
-  const emails = new Set(S.results.flatMap(r => r.emails || []));
-  const verdict = s >= 90 ? 'Uitstekend!' : s >= 80 ? 'Goed' : s >= 65 ? 'Redelijk' : s >= 45 ? 'Kan beter' : 'Veel verbeterpunten';
-  const top = RULES.filter(r => A.byRule.get(r.id).length).sort((a, b) => SEV_W[b.sev] * A.byRule.get(b.id).length - SEV_W[a.sev] * A.byRule.get(a.id).length).slice(0, 6);
+  const prev = history.find(h => h.host === hostOf(S.startUrl) && h.file !== S.savedAs);
+  const delta = prev && prev.score != null ? s - prev.score : null;
+  const top = allProblems().slice(0, 8);
+  const catHtml = Object.entries(A.cats).map(([k, v]) => `<div class="sub">${CAT[k]}<b style="color:${scoreColor(v)}">${v}</b><div class="bar"><i style="width:${v}%;background:${scoreColor(v)}"></i></div></div>`).join('');
   el.innerHTML = `
     <div class="card">
       <div class="score-wrap">
         <div class="score" style="background: conic-gradient(${scoreColor(s)} ${s * 3.6}deg, var(--border) 0)"><div><span><b>${s}</b><small>van 100</small></span></div></div>
         <div class="score-text">
-          <h2>${verdict}</h2>
+          <h2>${verdict(s)}${delta != null ? ` <span class="${delta >= 0 ? 'delta-up' : 'delta-down'}" style="font-size:14px">${delta >= 0 ? '▲ +' : '▼ '}${delta} t.o.v. vorige scan</span>` : ''}</h2>
           <p>${esc(S.startUrl)}</p>
           <p style="margin-top:6px"><span style="color:var(--err)">● ${A.counts.error} fouten</span> &nbsp; <span style="color:var(--warn)">● ${A.counts.warn} waarschuwingen</span> &nbsp; <span style="color:var(--info)">● ${A.counts.info} tips</span></p>
           ${S.running ? '<p style="margin-top:4px">⏳ Scan loopt nog, de score kan veranderen.</p>' : ''}
+          ${S.fromHistory ? `<p style="margin-top:4px">📂 Opgeslagen scan van ${new Date(S.fromHistory).toLocaleString('nl')}</p>` : ''}
         </div>
       </div>
+      <div class="subscores">${catHtml}</div>
       <div class="stats">
         <div class="stat"><b>${S.results.length}</b><small>Pagina's gescand</small></div>
         <div class="stat"><b style="color:var(--ok)">${ok}</b><small>Werkende pagina's</small></div>
-        <div class="stat"><b style="color:${A.broken.length ? 'var(--err)' : 'inherit'}">${A.broken.length}</b><small>Kapotte links</small></div>
-        <div class="stat"><b>${avg < 1000 ? avg + ' ms' : (avg / 1000).toFixed(1) + ' s'}</b><small>Gem. laadtijd</small></div>
+        <div class="stat"><b style="color:${A.broken.length + A.brokenImages.length ? 'var(--err)' : 'inherit'}">${A.broken.length + A.brokenImages.length}</b><small>Kapotte links/afb.</small></div>
+        <div class="stat"><b>${ms(avg)}</b><small>Gem. laadtijd</small></div>
         <div class="stat"><b>${words.toLocaleString('nl')}</b><small>Woorden totaal</small></div>
-        <div class="stat"><b>${emails.size}</b><small>E-mailadressen</small></div>
+        <div class="stat"><b>${allTech().length}</b><small>Technologieën</small></div>
       </div>
     </div>
-    ${top.length || A.broken.length ? `<div class="card"><h3>Belangrijkste verbeterpunten</h3>
-      ${A.broken.length ? `<div class="issue"><div class="head" data-goto="links"><span class="dot error"></span><span class="lbl">Kapotte links<small>Bekijk in het tabblad Links</small></span><span class="num">${A.broken.length}</span></div></div>` : ''}
-      ${top.map(r => `<div class="issue"><div class="head" data-goto="issues" data-issue="${r.id}"><span class="dot ${r.sev}"></span><span class="lbl">${esc(r.label)}<small>${SEV_NL[r.sev]}</small></span><span class="num">${A.byRule.get(r.id).length}</span></div></div>`).join('')}
+    ${top.length ? `<div class="card"><h3>Belangrijkste verbeterpunten</h3>
+      ${top.map(p => `<div class="issue"><div class="head" data-goto="${p.goto}" data-issue="${p.key}"><span class="dot ${p.sev}"></span><span class="lbl">${esc(p.label)}<small>${SEV_NL[p.sev]} · ${esc(p.cat)}</small></span><span class="num">${p.count}</span></div></div>`).join('')}
+      <p class="muted" style="font-size:12px;margin:8px 0 0">Alle problemen staan in het tabblad <b>Problemen</b>.</p>
     </div>` : ''}
-    <div class="card"><h3>Downloaden</h3>
+    <div class="card"><h3>Downloaden en delen</h3>
       <div class="exports">
-        <button class="secondary small" data-exp="pages">📄 Pagina's (CSV)</button>
+        <button class="small" data-exp="report">📑 Rapport (PDF)</button>
         <button class="secondary small" data-exp="issues">⚠️ Problemen (CSV)</button>
+        <button class="secondary small" data-exp="pages">📄 Pagina's (CSV)</button>
         <button class="secondary small" data-exp="links">🔗 Links (CSV)</button>
+        <button class="secondary small" data-exp="images">🖼️ Afbeeldingen (CSV)</button>
         <button class="secondary small" data-exp="sitemap">🗺️ sitemap.xml</button>
-        <button class="secondary small" data-exp="emails">✉️ E-mails (${emails.size})</button>
+        <button class="secondary small" data-exp="contacts">✉️ Contactgegevens</button>
         <button class="secondary small" data-exp="json">💾 Alles (JSON)</button>
       </div>
-      <p class="muted" style="font-size:12px;margin:10px 0 0">CSV-bestanden openen in Excel of Google Spreadsheets.</p>
+      <p class="muted" style="font-size:12px;margin:10px 0 0">📑 Rapport: kies daarna "Opslaan als PDF" om het te bewaren of te delen. CSV-bestanden openen in Excel of Google Spreadsheets.</p>
     </div>`;
+}
+
+function issueBlock(r) {
+  const list = A.byRule.get(r.id);
+  return `<div class="issue ${openIssues.has(r.id) ? 'open' : ''}" id="issue-${r.id}">
+    <div class="head" data-toggle="${r.id}"><span class="dot ${r.sev}"></span><span class="lbl">${esc(r.label)}<small>${CAT[r.cat]}</small></span><span class="num">${list.length}</span></div>
+    <div class="body"><p class="tip">💡 ${esc(r.tip)}</p><ul>${list.slice(0, 300).map(x => `<li><a class="plain" href="${esc(x.page.url)}" target="_blank" rel="noopener">${esc(x.page.url)}</a>${x.detail ? `<div class="muted">${esc(x.detail)}</div>` : ''}${r.id === 'http' && A.inlinks.get(x.page.url) ? `<div class="muted">Gelinkt vanaf: ${esc(A.inlinks.get(x.page.url)[0])}${A.inlinks.get(x.page.url).length > 1 ? ' (+' + (A.inlinks.get(x.page.url).length - 1) + ')' : ''}</div>` : ''}</li>`).join('')}${list.length > 300 ? `<li class="muted">…en nog ${list.length - 300}</li>` : ''}</ul></div>
+  </div>`;
 }
 
 function renderIssues() {
   const el = $('p-issues');
   if (!S.results.length) { el.innerHTML = '<div class="card empty">Nog geen scan uitgevoerd.</div>'; return; }
+  const extra = allProblems().filter(p => !RULES.some(r => r.id === p.key));
   const groups = ['error', 'warn', 'info'].map(sev => {
     const rules = RULES.filter(r => r.sev === sev && A.byRule.get(r.id).length);
-    const extra = sev === 'error' && A.broken.length;
-    if (!rules.length && !extra) return '';
+    const ex = extra.filter(p => p.sev === sev);
+    if (!rules.length && !ex.length) return '';
     const title = { error: '🔴 Fouten: los deze eerst op', warn: '🟠 Waarschuwingen', info: '🔵 Tips' }[sev];
     return `<div class="card"><h3>${title}</h3>
-      ${extra ? `<div class="issue"><div class="head" data-goto="links"><span class="dot error"></span><span class="lbl">Kapotte links<small>Bekijk in het tabblad Links</small></span><span class="num">${A.broken.length}</span></div></div>` : ''}
-      ${rules.map(r => {
-        const list = A.byRule.get(r.id);
-        return `<div class="issue ${openIssues.has(r.id) ? 'open' : ''}" id="issue-${r.id}">
-          <div class="head" data-toggle="${r.id}"><span class="dot ${r.sev}"></span><span class="lbl">${esc(r.label)}</span><span class="num">${list.length}</span></div>
-          <div class="body"><p class="tip">💡 ${esc(r.tip)}</p><ul>${list.slice(0, 300).map(x => `<li><a class="plain" href="${esc(x.page.url)}" target="_blank" rel="noopener">${esc(x.page.url)}</a>${x.detail ? `<div class="muted">${esc(x.detail)}</div>` : ''}${r.id === 'http' && A.inlinks.get(x.page.url) ? `<div class="muted">Gelinkt vanaf: ${esc(A.inlinks.get(x.page.url)[0])}${A.inlinks.get(x.page.url).length > 1 ? ' (+' + (A.inlinks.get(x.page.url).length - 1) + ')' : ''}</div>` : ''}</li>`).join('')}${list.length > 300 ? `<li class="muted">…en nog ${list.length - 300}</li>` : ''}</ul></div>
-        </div>`;
-      }).join('')}</div>`;
+      ${ex.map(p => `<div class="issue"><div class="head" data-goto="${p.goto}"><span class="dot ${p.sev}"></span><span class="lbl">${esc(p.label)}<small>${esc(p.cat)} · tik voor details</small></span><span class="num">${p.count}</span></div></div>`).join('')}
+      ${rules.map(issueBlock).join('')}</div>`;
   }).join('');
   el.innerHTML = groups || '<div class="card empty">🎉 Geen problemen gevonden!</div>';
 }
@@ -417,24 +574,24 @@ function renderPages() {
   if (pageFilter === 'error') list = list.filter(r => iss(r).some(i => i.sev === 'error'));
   if (pageFilter === 'warn') list = list.filter(r => iss(r).some(i => i.sev === 'warn'));
   if (pageFilter === 'ok') list = list.filter(r => !iss(r).some(i => i.sev !== 'info'));
-  const sort = $('pageSort').value;
   const sorters = {
     issues: (a, b) => iss(b).reduce((s, i) => s + SEV_W[i.sev], 0) - iss(a).reduce((s, i) => s + SEV_W[i.sev], 0),
     slow: (a, b) => (b.timeMs || 0) - (a.timeMs || 0),
     words: (a, b) => (a.wordCount ?? 1e9) - (b.wordCount ?? 1e9),
+    size: (a, b) => (b.size || 0) - (a.size || 0),
     depth: (a, b) => a.depth - b.depth,
     url: (a, b) => a.url.localeCompare(b.url),
   };
+  const sort = $('pageSort').value;
   if (sorters[sort]) list = [...list].sort(sorters[sort]);
   if (!list.length) { $('pageList').innerHTML = `<div class="empty">${S.results.length ? 'Geen pagina\'s voor dit filter.' : 'Nog geen resultaten.'}</div>`; return; }
   $('pageList').innerHTML = list.slice(0, pageLimit).map(r => {
     const is = iss(r);
     const e = is.filter(i => i.sev === 'error').length, w = is.filter(i => i.sev === 'warn').length;
-    const path = (() => { try { const u = new URL(r.url); return u.pathname + u.search; } catch { return r.url; } })();
     let html = `<div class="item" data-page="${esc(r.url)}">
-      <div class="top"><span class="badge s${String(r.status || 0)[0]}">${r.status || 'FOUT'}</span><span class="t">${esc(r.title || path)}</span></div>
+      <div class="top"><span class="badge s${String(r.status || 0)[0]}">${r.status || 'FOUT'}</span><span class="t">${esc(r.title || pathOf(r.url))}</span></div>
       <div class="u">${esc(r.url)}</div>
-      <div class="m">${r.wordCount != null ? r.wordCount + ' woorden · ' : ''}${r.timeMs} ms${e ? ` · <span class="e">${e} fout${e > 1 ? 'en' : ''}</span>` : ''}${w ? ` · <span class="w">${w} waarschuwing${w > 1 ? 'en' : ''}</span>` : ''}${!e && !w && isPage(r) ? ' · ✅' : ''}</div>`;
+      <div class="m">${r.wordCount != null ? r.wordCount + ' woorden · ' : ''}${ms(r.timeMs)}${e ? ` · <span class="e">${e} fout${e > 1 ? 'en' : ''}</span>` : ''}${w ? ` · <span class="w">${w} waarschuwing${w > 1 ? 'en' : ''}</span>` : ''}${!e && !w && isPage(r) ? ' · ✅' : ''}</div>`;
     if (openPage === r.url) {
       const inl = A.inlinks.get(r.url) || [];
       html += `<div class="details" data-stop>
@@ -444,42 +601,147 @@ function renderPages() {
         <div><b>Titel:</b> ${esc(r.title) || '<span class="muted">ontbreekt</span>'} ${r.title ? `<span class="muted">(${r.title.length} tekens)</span>` : ''}</div>
         <div><b>Omschrijving:</b> ${esc(r.description) || '<span class="muted">ontbreekt</span>'} ${r.description ? `<span class="muted">(${r.description.length} tekens)</span>` : ''}</div>
         <div><b>H1:</b> ${r.h1?.length ? esc(r.h1.join(' | ')) : '<span class="muted">ontbreekt</span>'} · <b>H2's:</b> ${r.h2Count ?? 0}</div>
+        <div><b>Snelheid:</b> server ${ms(r.ttfb)} · totaal ${ms(r.timeMs)} · ${kb(r.size)} · ${r.scripts ?? 0} scripts · ${r.stylesheets ?? 0} CSS${r.compressed ? ' · gecomprimeerd' : ''}</div>
         <div><b>Links:</b> ${r.linkCount ?? 0} (${r.externalCount ?? 0} extern) · <b>Inkomende links:</b> ${inl.length}${r.viaSitemap ? ' · gevonden via sitemap' : ''}</div>
-        <div><b>Afbeeldingen:</b> ${r.images ?? 0}${r.imagesNoAlt ? ` (${r.imagesNoAlt} zonder alt)` : ''} · <b>Grootte:</b> ${r.size ? (r.size / 1024).toFixed(0) + ' KB' : '—'} · <b>Diepte:</b> ${r.depth}</div>
+        <div><b>Afbeeldingen:</b> ${r.images ?? 0}${r.imagesNoAlt ? ` (${r.imagesNoAlt} zonder alt)` : ''} · <b>Diepte:</b> ${r.depth}</div>
+        <div><b>Inhoud:</b> ${r.wordCount ?? 0} woorden${r.readability != null ? ` · leesbaarheid ${r.readability}/100` : ''}${r.topWords?.length ? ` · vaakst: ${r.topWords.slice(0, 5).map(w => esc(w[0])).join(', ')}` : ''}</div>
         <div><b>Taal:</b> ${esc(r.lang) || '—'} · <b>Mobiel:</b> ${r.viewport ? 'ja' : 'nee'} · <b>Robots:</b> ${esc(r.robotsMeta) || 'standaard'}</div>
+        ${r.schemaTypes?.length ? `<div><b>Gestructureerde data:</b> ${r.schemaTypes.map(esc).join(', ')}</div>` : ''}
         ${r.canonical ? `<div><b>Canonical:</b> ${esc(r.canonical)}</div>` : ''}
         ${r.from ? `<div><b>Gevonden via:</b> ${esc(r.from)}</div>` : ''}
-        ${r.emails?.length ? `<div><b>E-mail:</b> ${r.emails.map(esc).join(', ')}</div>` : ''}
-        ${is.length ? `<div style="margin-top:6px"><b>Problemen:</b><ul class="iss">${is.map(i => `<li><span style="color:var(--${i.sev === 'warn' ? 'warn' : i.sev === 'error' ? 'err' : 'info'})">●</span> ${esc(i.label)}</li>`).join('')}</ul></div>` : '<div style="margin-top:6px">✅ Geen problemen op deze pagina.</div>'}
+        ${is.length ? `<div style="margin-top:6px"><b>Problemen:</b><ul class="iss">${is.map(i => `<li><span style="color:${SEV_COLOR[i.sev]}">●</span> ${esc(i.label)}</li>`).join('')}</ul></div>` : '<div style="margin-top:6px">✅ Geen problemen op deze pagina.</div>'}
       </div>`;
     }
     return html + '</div>';
   }).join('') + (list.length > pageLimit ? `<div style="text-align:center;padding-top:12px"><button class="secondary small" id="moreBtn">Meer tonen (${list.length - pageLimit} over)</button></div>` : '');
 }
 
+function bars(items, valueFn, labelFn, fmt, link = true) {
+  const max = Math.max(1, ...items.map(valueFn));
+  return items.map(x => `<div class="hbar"><span>${link ? `<a class="plain" href="${esc(x.url)}" target="_blank" rel="noopener">${esc(labelFn(x))}</a>` : esc(labelFn(x))}</span><span class="track"><i style="width:${valueFn(x) / max * 100}%;background:${valueFn(x) / max > .66 ? 'var(--err)' : valueFn(x) / max > .33 ? 'var(--warn)' : 'var(--accent)'}"></i></span><b>${fmt(valueFn(x))}</b></div>`).join('');
+}
+
+function renderSpeed() {
+  const el = $('p-speed');
+  const pages = S.results.filter(isPage);
+  if (!pages.length) { el.innerHTML = '<div class="card empty">Nog geen scan uitgevoerd.</div>'; return; }
+  const avg = f => pages.reduce((s, r) => s + (f(r) || 0), 0) / pages.length;
+  const avgT = avg(r => r.timeMs), avgTtfb = avg(r => r.ttfb), avgSize = avg(r => r.size);
+  const imgOk = S.images.filter(i => i.bytes);
+  const imgTotal = imgOk.reduce((s, i) => s + i.bytes, 0);
+  const rating = avgT < 1000 ? ['🟢 Snel', 'var(--ok)'] : avgT < 2500 ? ['🟠 Gemiddeld', 'var(--warn)'] : ['🔴 Traag', 'var(--err)'];
+  const tech = allTech();
+  const tips = [];
+  if (avgTtfb > 600) tips.push('<b>Pagina-caching</b> aanzetten: de server doet er gemiddeld ' + ms(avgTtfb) + ' over om te reageren.' + (tech.includes('WordPress') ? ' Voor WordPress: WP Rocket, LiteSpeed Cache of W3 Total Cache.' : ''));
+  if (A.heavyImages.length) tips.push(`<b>${A.heavyImages.length} afbeeldingen verkleinen</b> (samen ${kb(A.heavyImages.reduce((s, i) => s + i.bytes, 0))}). Gebruik WebP-formaat en max. ~1600 px breed.` + (tech.includes('WordPress') ? ' Plugin: ShortPixel, Imagify of Smush.' : ' Gratis tool: squoosh.app'));
+  if (pages.some(r => r.renderBlocking > 2)) tips.push('<b>Scripts uitstellen</b> (defer): er staan scripts in de &lt;head&gt; die het tonen van de pagina tegenhouden.');
+  if (S.site && !S.site.compression) tips.push('<b>Compressie (gzip/brotli)</b> aanzetten op de server. Vraag je hostingprovider.');
+  if (avg(r => r.scripts + r.stylesheets) > 30) tips.push(`<b>Minder plugins/scripts</b>: gemiddeld ${Math.round(avg(r => r.scripts + r.stylesheets))} bestanden per pagina.`);
+  el.innerHTML = `
+    <div class="card"><h3>Snelheid <span style="color:${rating[1]}">${rating[0]}</span></h3>
+      <div class="stats" style="margin-top:0">
+        <div class="stat"><b>${ms(avgT)}</b><small>Gem. laadtijd HTML</small></div>
+        <div class="stat"><b>${ms(avgTtfb)}</b><small>Gem. reactietijd server</small></div>
+        <div class="stat"><b>${kb(avgSize)}</b><small>Gem. HTML-grootte</small></div>
+        <div class="stat"><b>${imgOk.length ? kb(imgTotal / imgOk.length) : '—'}</b><small>Gem. afbeelding</small></div>
+      </div>
+      <p class="muted" style="font-size:12px;margin:10px 0 0">Gemeten vanaf jouw apparaat/verbinding. Alleen de HTML wordt gemeten, niet de volledige weergave in een browser. Gebruik Google PageSpeed Insights voor een volledige meting.</p>
+    </div>
+    ${tips.length ? `<div class="card"><h3>💡 Zo maak je de site sneller</h3><ol style="margin:0;padding-left:20px">${tips.map(t => `<li style="margin-bottom:6px">${t}</li>`).join('')}</ol></div>` : ''}
+    <div class="card"><h3>Traagste pagina's</h3>${bars([...pages].sort((a, b) => b.timeMs - a.timeMs).slice(0, 15), r => r.timeMs, r => pathOf(r.url), ms)}</div>
+    ${A.heavyImages.length ? `<div class="card"><h3>Zwaarste afbeeldingen</h3>${bars(A.heavyImages.slice(0, 20), i => i.bytes, i => pathOf(i.url).split('/').pop() || i.url, kb)}
+      <p class="muted" style="font-size:12px;margin:8px 0 0">Afbeeldingen boven 300 KB. Ideaal is onder 150 KB.</p></div>` : (S.images.length ? '<div class="card">✅ Geen te zware afbeeldingen gevonden.</div>' : '')}
+    <div class="card"><h3>Grootste pagina's (HTML)</h3>${bars([...pages].sort((a, b) => b.size - a.size).slice(0, 10), r => r.size, r => pathOf(r.url), kb)}</div>`;
+}
+
 function renderLinks() {
   const el = $('p-links');
   const internalBroken = S.results.filter(r => !r.status || r.status >= 400);
-  if (!S.links.length && !internalBroken.length) {
-    el.innerHTML = `<div class="card empty">${S.running ? 'Externe links worden gecontroleerd nadat alle pagina\'s gescand zijn.' : 'Nog geen links gecontroleerd.'}</div>`;
+  if (!S.links.length && !internalBroken.length && !S.images.length) {
+    el.innerHTML = `<div class="card empty">${S.running ? 'Links en afbeeldingen worden gecontroleerd nadat alle pagina\'s gescand zijn.' : 'Nog geen links gecontroleerd.'}</div>`;
     return;
   }
-  const broken = [...A.broken].sort((a, b) => (a.status || 0) - (b.status || 0));
   const blocked = S.links.filter(l => BLOCKED.includes(l.status));
-  const okCount = S.links.length - broken.length - blocked.length;
-  const linkRow = l => `<li><span class="badge s${String(l.status || 0)[0]}">${l.status || 'FOUT'}</span> <a class="plain" href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.url)}</a>
+  const okCount = S.links.length - A.broken.length - blocked.length;
+  const row = l => `<li><span class="badge s${String(l.status || 0)[0]}">${l.status || 'FOUT'}</span> <a class="plain" href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.url)}</a>
       ${l.error ? `<div class="muted">${esc(l.error)}</div>` : ''}
       <div class="muted">Staat op: ${(l.from || []).slice(0, 3).map(esc).join(', ')}${(l.from || []).length > 3 ? ' …' : ''}</div></li>`;
+  const section = (title, items, sev) => items.length ? `<div class="issue open"><div class="head" style="cursor:auto"><span class="dot ${sev}"></span><span class="lbl">${title}</span><span class="num">${items.length}</span></div><div class="body"><ul>${items.map(row).join('')}</ul></div></div>` : '';
+  const anyBroken = A.broken.length || internalBroken.length || A.brokenImages.length;
   el.innerHTML = `
-    <div class="card"><h3>${broken.length || internalBroken.length ? '🔴 Kapotte links' : '✅ Geen kapotte links gevonden'}</h3>
-      <p class="muted" style="margin:0 0 8px;font-size:13px">${S.links.length} externe links en bestanden gecontroleerd, ${okCount} werken${blocked.length ? `, ${blocked.length} konden niet gecontroleerd worden` : ''}.</p>
-      ${internalBroken.length ? `<p style="margin:10px 0 4px"><b>Interne pagina's</b></p><div class="issue open"><div class="body"><ul>${internalBroken.map(r => `<li><span class="badge s${String(r.status || 0)[0]}">${r.status || 'FOUT'}</span> ${esc(r.url)}<div class="muted">Staat op: ${(A.inlinks.get(r.url) || [r.from]).filter(Boolean).slice(0, 3).map(esc).join(', ') || '—'}</div></li>`).join('')}</ul></div></div>` : ''}
-      ${broken.length ? `<p style="margin:10px 0 4px"><b>Externe links en bestanden</b></p><div class="issue open"><div class="body"><ul>${broken.map(linkRow).join('')}</ul></div></div>` : ''}
+    <div class="card"><h3>${anyBroken ? '🔴 Kapotte links en afbeeldingen' : '✅ Geen kapotte links of afbeeldingen'}</h3>
+      <p class="muted" style="margin:0 0 10px;font-size:13px">${S.links.length} externe links/bestanden en ${S.images.length} afbeeldingen gecontroleerd.</p>
+      ${section('Interne pagina\'s met een fout', internalBroken.map(r => ({ url: r.url, status: r.status, error: r.error, from: A.inlinks.get(r.url) || [r.from].filter(Boolean) })), 'error')}
+      ${section('Kapotte externe links en bestanden', [...A.broken].sort((a, b) => (a.status || 0) - (b.status || 0)), 'error')}
+      ${section('Kapotte afbeeldingen', A.brokenImages, 'error')}
     </div>
     ${blocked.length ? `<div class="card"><div class="issue ${openIssues.has('blocked') ? 'open' : ''}"><div class="head" data-toggle="blocked"><span class="dot warn"></span><span class="lbl">Kon niet gecontroleerd worden<small>Deze sites weigeren bots (code 401/403/429/999). Controleer ze eventueel zelf.</small></span><span class="num">${blocked.length}</span></div>
-      <div class="body"><ul>${blocked.slice(0, 400).map(linkRow).join('')}</ul></div></div></div>` : ''}
-    ${okCount ? `<div class="card"><div class="issue ${openIssues.has('oklinks') ? 'open' : ''}"><div class="head" data-toggle="oklinks"><span class="dot ok"></span><span class="lbl">Werkende links</span><span class="num">${okCount}</span></div>
-      <div class="body"><ul>${S.links.filter(l => l.status && l.status < 400).slice(0, 400).map(linkRow).join('')}</ul></div></div></div>` : ''}`;
+      <div class="body"><ul>${blocked.slice(0, 400).map(row).join('')}</ul></div></div></div>` : ''}
+    ${okCount > 0 ? `<div class="card"><div class="issue ${openIssues.has('oklinks') ? 'open' : ''}"><div class="head" data-toggle="oklinks"><span class="dot ok"></span><span class="lbl">Werkende externe links</span><span class="num">${okCount}</span></div>
+      <div class="body"><ul>${S.links.filter(l => l.status && l.status < 400).slice(0, 400).map(row).join('')}</ul></div></div></div>` : ''}`;
+}
+
+function renderSite() {
+  const el = $('p-site');
+  if (!S.site) { el.innerHTML = `<div class="card empty">${S.running ? 'Bezig met controleren…' : 'Nog geen scan uitgevoerd.'}</div>`; return; }
+  const groups = {};
+  for (const c of A.siteChecks) (groups[c.group] ||= []).push(c);
+  const tech = allTech();
+  const trackers = ['Google Analytics', 'Google Ads', 'Facebook Pixel', 'TikTok Pixel', 'LinkedIn Insight', 'Hotjar', 'Microsoft Clarity', 'Pinterest Tag'];
+  const icon = c => c.ok ? '✅' : c.ok == null ? '➖' : c.sev === 'error' ? '❌' : c.sev === 'warn' ? '⚠️' : 'ℹ️';
+  el.innerHTML = `
+    ${S.site.error ? `<div class="card" style="color:var(--err)">⚠️ Startpagina niet bereikbaar: ${esc(S.site.error)}</div>` : ''}
+    ${Object.entries(groups).map(([g, list]) => `<div class="card"><h3>${{ Verbinding: '🔒', 'Google & SEO': '🔎', Beveiligingsheaders: '🛡️', Lekken: '🕳️', 'Privacy (AVG)': '🍪' }[g] || ''} ${esc(g)}</h3>
+      ${g === 'Lekken' ? '<p class="muted" style="font-size:12px;margin:-4px 0 6px">Alleen gebruiken op je eigen website.</p>' : ''}
+      ${list.map(c => `<div class="check-row"><span class="ic">${icon(c)}</span><div>${esc(c.label)}<small>${esc(c.tip)}</small></div></div>`).join('')}</div>`).join('')}
+    ${!S.site.securityChecked ? '<div class="card muted">🕳️ Lekkencheck staat uit (zie Instellingen).</div>' : ''}
+    <div class="card"><h3>🧩 Gebruikte technologie</h3>
+      ${tech.length ? tech.map(t => `<span class="chip ${trackers.includes(t) ? 'warn' : ''}">${esc(t)}</span>`).join('') : '<span class="muted">Niets herkend.</span>'}
+      ${S.site.tech?.generator ? `<p class="muted" style="font-size:13px;margin:8px 0 0">Generator: ${esc(S.site.tech.generator)}${/\d/.test(S.site.tech.generator) ? ' (versienummer zichtbaar: verberg dit liever)' : ''}</p>` : ''}
+      ${S.site.server ? `<p class="muted" style="font-size:13px;margin:4px 0 0">Server: ${esc(S.site.server)}</p>` : ''}
+      <p class="muted" style="font-size:12px;margin:8px 0 0">Oranje = tracker (verzamelt gegevens van bezoekers).</p>
+    </div>`;
+}
+
+function renderContent() {
+  const el = $('p-content');
+  const pages = S.results.filter(isPage);
+  if (!pages.length) { el.innerHTML = '<div class="card empty">Nog geen scan uitgevoerd.</div>'; return; }
+  const words = new Map();
+  for (const r of pages) for (const [w, c] of r.topWords || []) words.set(w, (words.get(w) || 0) + c);
+  const top = [...words.entries()].sort((a, b) => b[1] - a[1]).slice(0, 25).map(([w, c]) => ({ w, c }));
+  const rd = pages.filter(r => r.readability != null);
+  const avgRd = rd.length ? Math.round(rd.reduce((s, r) => s + r.readability, 0) / rd.length) : null;
+  const rdLabel = v => v >= 70 ? 'Makkelijk' : v >= 50 ? 'Gemiddeld' : v >= 35 ? 'Vrij moeilijk' : 'Moeilijk';
+  const emails = [...new Set(pages.flatMap(r => r.emails || []))];
+  const phones = [...new Set(pages.flatMap(r => r.phones || []))];
+  const socials = [...new Set(pages.flatMap(r => r.socials || []))];
+  const schema = new Map();
+  for (const r of pages) for (const t of r.schemaTypes || []) schema.set(t, (schema.get(t) || 0) + 1);
+  const langs = new Map();
+  for (const r of pages) { const l = (r.lang || '—').toLowerCase(); langs.set(l, (langs.get(l) || 0) + 1); }
+  const totalWords = pages.reduce((s, r) => s + (r.wordCount || 0), 0);
+  el.innerHTML = `
+    <div class="card"><h3>📊 Inhoud in cijfers</h3>
+      <div class="stats" style="margin-top:0">
+        <div class="stat"><b>${totalWords.toLocaleString('nl')}</b><small>Woorden totaal</small></div>
+        <div class="stat"><b>${Math.round(totalWords / pages.length)}</b><small>Gem. woorden per pagina</small></div>
+        <div class="stat"><b>${avgRd ?? '—'}</b><small>Leesbaarheid${avgRd != null ? ' · ' + rdLabel(avgRd) : ''}</small></div>
+        <div class="stat"><b>${pages.filter(r => (r.wordCount || 0) < 200).length}</b><small>Dunne pagina's (&lt;200 w.)</small></div>
+      </div>
+      <p class="muted" style="font-size:12px;margin:10px 0 0">Leesbaarheid (Flesch-Douma, 0-100): hoger = makkelijker. Voor een breed publiek is 60+ ideaal.</p>
+    </div>
+    ${top.length ? `<div class="card"><h3>🔤 Meest gebruikte woorden</h3>${bars(top, x => x.c, x => x.w, v => v + '×', false)}
+      <p class="muted" style="font-size:12px;margin:8px 0 0">Zo "ziet" Google waar je site over gaat. Staan je belangrijkste zoekwoorden er niet tussen? Gebruik ze dan vaker in je teksten.</p></div>` : ''}
+    <div class="card"><h3>📇 Gevonden contactgegevens</h3>
+      <h4>E-mailadressen (${emails.length})</h4>${emails.length ? emails.map(e => `<span class="chip">${esc(e)}</span>`).join('') : '<span class="muted">Geen</span>'}
+      <h4>Telefoonnummers (${phones.length})</h4>${phones.length ? phones.map(p => `<span class="chip">${esc(p)}</span>`).join('') : '<span class="muted">Geen klikbare telefoonnummers (tel:-links) gevonden</span>'}
+      <h4>Social media (${socials.length})</h4>${socials.length ? socials.map(s => `<div style="font-size:13px;word-break:break-all"><a class="plain" href="${esc(s)}" target="_blank" rel="noopener">${esc(s)}</a></div>`).join('') : '<span class="muted">Geen</span>'}
+    </div>
+    <div class="card"><h3>🏷️ Gestructureerde data (schema.org)</h3>
+      ${schema.size ? [...schema.entries()].sort((a, b) => b[1] - a[1]).map(([t, c]) => `<span class="chip">${esc(t)} · ${c}</span>`).join('') : '<span class="muted">Niets gevonden. Met gestructureerde data kan Google bijv. reviews, prijzen of openingstijden tonen.</span>'}
+      <h4>Talen</h4>${[...langs.entries()].map(([l, c]) => `<span class="chip">${esc(l)} · ${c}</span>`).join('')}
+    </div>`;
 }
 
 function renderSearch() {
@@ -498,15 +760,23 @@ function renderSearch() {
   }).join('');
 }
 
-function renderSite() {
-  const el = $('p-site');
-  if (!S.site) { el.innerHTML = `<div class="card empty">${S.running ? 'Bezig met controleren…' : 'Nog geen scan uitgevoerd.'}</div>`; return; }
-  const list = siteCheckList();
-  el.innerHTML = `<div class="card"><h3>Website-instellingen en beveiliging</h3>
-    ${S.site.error ? `<p style="color:var(--err)">⚠️ Startpagina niet bereikbaar: ${esc(S.site.error)}</p>` : ''}
-    ${list.map(c => `<div class="check-row"><span class="ic">${c.ok ? '✅' : c.ok === null || c.ok === undefined ? '➖' : '❌'}</span><div>${esc(c.label)}<small>${esc(c.tip)}</small></div></div>`).join('')}
-    ${S.site.server ? `<div class="check-row"><span class="ic">🖥️</span><div>Server<small>${esc(S.site.server)}</small></div></div>` : ''}
-  </div>`;
+function renderHistory() {
+  const el = $('p-history');
+  if (!history.length) { el.innerHTML = '<div class="card empty">Nog geen opgeslagen scans. Elke voltooide scan wordt automatisch bewaard, zodat je later kunt vergelijken.</div>'; return; }
+  const byHost = {};
+  for (const h of history) (byHost[h.host] ||= []).push(h);
+  el.innerHTML = Object.entries(byHost).map(([host, list]) => `<div class="card"><h3>${esc(host)}</h3>
+    ${list.map((h, i) => {
+      const prev = list[i + 1];
+      const d = prev && h.score != null && prev.score != null ? h.score - prev.score : null;
+      return `<div class="hist">
+        <div class="sc" style="border-color:${scoreColor(h.score)};color:${scoreColor(h.score)}">${h.score ?? '?'}</div>
+        <div class="info"><div>${new Date(h.date).toLocaleString('nl')} ${d != null ? `<span class="${d >= 0 ? 'delta-up' : 'delta-down'}">${d >= 0 ? '▲ +' : '▼ '}${d}</span>` : ''}</div>
+          <div class="muted" style="font-size:12px">${h.pages} pagina's · ${h.counts?.error ?? 0} fouten · ${h.counts?.warn ?? 0} waarsch.</div></div>
+        <button class="secondary small" data-hopen="${esc(h.file)}">Open</button>
+        <button class="danger small" data-hdel="${esc(h.file)}">✕</button>
+      </div>`;
+    }).join('')}</div>`).join('');
 }
 
 // ---------- Scan starten / volgen ----------
@@ -518,50 +788,67 @@ function handle(event, d) {
     case 'start': S.keywords = d.keywords || []; S.maxPages = d.maxPages; S.startUrl = d.url; break;
     case 'page': S.results.push(d); S.phase = `Pagina's scannen… (${d.queued} in de wachtrij)`; break;
     case 'link': S.links.push(d); break;
-    case 'done':
+    case 'image': S.images.push(d); break;
+    case 'done': {
       S.summary = d;
+      const skipped = [d.skippedSmart ? `${d.skippedSmart}× slim overgeslagen` : '', d.skippedRobots ? `${d.skippedRobots}× geblokkeerd door robots.txt` : ''].filter(Boolean).join(', ');
       if (!d.cancelled && d.done === 1 && S.results[0] && isPage(S.results[0])) {
         S.phase = `Maar 1 pagina gevonden: de startpagina heeft geen links naar andere pagina's op dezelfde site (${S.results[0].externalCount || 0} externe links). Mogelijk een site van één pagina of met links via JavaScript.`;
-        finish(); break;
+      } else {
+        S.phase = (d.cancelled ? `Scan gestopt na ${d.done} pagina's` : `Scan voltooid: ${d.done} pagina's${d.remaining ? ` (limiet bereikt, nog ${d.remaining} gevonden; verhoog "Max. pagina's")` : ''}`) + (skipped ? ` · ${skipped}` : '');
       }
-      S.phase = d.cancelled ? `Scan gestopt na ${d.done} pagina's` : `Scan voltooid: ${d.done} pagina's${d.remaining ? ` (limiet bereikt, nog ${d.remaining} gevonden)` : ''}`;
-      finish(); break;
-    case 'failure': S.phase = 'Fout: ' + d.error; finish(); break;
-    case 'closed': if (!S.finished) finish(); break;
+      finish(true); break;
+    }
+    case 'failure': S.phase = 'Fout: ' + d.error; finish(false); break;
+    case 'closed': if (!S.finished) finish(false); break;
   }
   scheduleRender();
 }
 
-function finish() {
+async function finish(save) {
+  if (S.finished) return;
   S.running = false; S.finished = true;
   if (es) { es.close(); es = null; }
   store.del('ghost-job');
-  if (!store.set('ghost-last', S)) {
-    // Te groot voor de opslag: zonder linklijsten proberen
-    store.set('ghost-last', { ...S, results: S.results.map(({ links, ...r }) => r) });
+  if (!store.set('ghost-last', S)) store.set('ghost-last', { ...S, results: S.results.map(({ links, ...r }) => r) });
+  if (save && S.results.length) {
+    A = analyze();
+    try {
+      const res = await fetch('/api/history', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+        host: hostOf(S.startUrl), url: S.startUrl, score: A.score, pages: S.results.length, counts: A.counts,
+        state: { ...S, savedAs: undefined },
+      }) });
+      const d = await res.json();
+      S.savedAs = d.file;
+      store.set('ghost-last', S);
+    } catch {}
+    await loadHistory();
+    scheduleRender();
   }
+}
+
+async function loadHistory() {
+  try { history = await (await fetch('/api/history')).json(); } catch { history = []; }
 }
 
 function connect(id) {
   jobId = id;
   if (es) es.close();
   es = new EventSource('/api/events?id=' + id);
-  ['phase', 'site', 'sitemap', 'start', 'page', 'link', 'done', 'failure', 'closed'].forEach(ev =>
+  ['phase', 'site', 'sitemap', 'start', 'page', 'link', 'image', 'done', 'failure', 'closed'].forEach(ev =>
     es.addEventListener(ev, e => handle(ev, JSON.parse(e.data))));
   es.onerror = async () => {
-    if (!es || es.readyState !== EventSource.CLOSED || S.finished) return; // browser probeert zelf opnieuw
+    if (!es || es.readyState !== EventSource.CLOSED || S.finished) return;
     es = null;
     let exists = null;
     try { exists = (await fetch('/api/job?id=' + id)).ok; } catch {}
     if (exists === null) {
-      // Server (even) niet bereikbaar: later opnieuw proberen
       S.phase = 'Geen verbinding met de server. Draait Termux/node nog? Opnieuw proberen…';
       scheduleRender();
       setTimeout(() => { if (!es && !S.finished && store.get('ghost-job') === id) { S = freshState(); S.running = true; connect(id); } }, 4000);
     } else if (exists) {
       S = freshState(); S.running = true; connect(id);
     } else {
-      // Scan bestaat niet meer (server herstart)
       S.running = false; store.del('ghost-job');
       const last = store.get('ghost-last');
       if (!S.results.length && last) S = last; else S.phase = 'De scan is verloren gegaan doordat de server herstartte. Start opnieuw.';
@@ -572,16 +859,12 @@ function connect(id) {
 
 $('form').addEventListener('submit', async e => {
   e.preventDefault();
-  const opts = {
-    url: $('url').value.trim(), keywords: $('keywords').value,
-    maxPages: $('maxPages').value, maxDepth: $('maxDepth').value, concurrency: $('concurrency').value, delay: $('delay').value,
-    include: $('include').value, exclude: $('exclude').value,
-    sameHost: $('sameHost').checked, respectRobots: $('respectRobots').checked,
-    useSitemap: $('useSitemap').checked, checkLinks: $('checkLinks').checked,
-  };
+  const opts = { url: $('url').value.trim(), keywords: $('keywords').value };
+  for (const k of ['maxPages', 'maxDepth', 'concurrency', 'delay', 'include', 'exclude']) opts[k] = $(k).value;
+  for (const k of ['sameHost', 'respectRobots', 'useSitemap', 'checkLinks', 'checkImages', 'smartSkip', 'securityChecks']) opts[k] = $(k).checked;
   store.set('ghost-opts', opts);
   if (es) { es.close(); es = null; }
-  S = freshState(); S.running = true; S.phase = 'Scan starten…'; S.maxPages = +opts.maxPages || 100;
+  S = freshState(); S.running = true; S.phase = 'Scan starten…'; S.maxPages = +opts.maxPages || 200;
   openPage = null; pageLimit = 150; openIssues.clear();
   setTab('overview');
   try {
@@ -598,7 +881,7 @@ $('form').addEventListener('submit', async e => {
 
 $('stopBtn').addEventListener('click', () => {
   if (jobId) fetch('/api/stop?id=' + jobId, { method: 'POST' }).catch(() => {});
-  S.phase = 'Stoppen…'; render();
+  S.phase = 'Stoppen… (bezig met afronden)'; render();
 });
 
 // ---------- Interactie ----------
@@ -608,20 +891,45 @@ function setTab(t) {
   document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'p-' + t));
   render();
 }
-$('tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.tab); });
+$('tabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  setTab(b.dataset.tab);
+  b.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+});
 
-document.addEventListener('click', e => {
+document.addEventListener('click', async e => {
   const go = e.target.closest('[data-goto]');
   if (go) {
-    if (go.dataset.issue) openIssues.add(go.dataset.issue);
+    const issue = go.dataset.issue;
+    if (issue) openIssues.add(issue);
     setTab(go.dataset.goto);
-    if (go.dataset.issue) $('issue-' + go.dataset.issue)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.querySelector(`#tabs button[data-tab="${go.dataset.goto}"]`)?.scrollIntoView({ inline: 'center', block: 'nearest' });
+    const target = issue && $('issue-' + issue);
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' }); else window.scrollTo({ top: $('tabs').offsetTop - 4, behavior: 'smooth' });
     return;
   }
   const tg = e.target.closest('[data-toggle]');
   if (tg) { const id = tg.dataset.toggle; openIssues.has(id) ? openIssues.delete(id) : openIssues.add(id); tg.parentElement.classList.toggle('open'); return; }
   const exp = e.target.closest('[data-exp]');
   if (exp) { doExport(exp.dataset.exp); return; }
+  const ho = e.target.closest('[data-hopen]');
+  if (ho) {
+    try {
+      const st = await (await fetch('/api/history/' + ho.dataset.hopen)).json();
+      if (es) { es.close(); es = null; }
+      store.del('ghost-job');
+      const meta = history.find(h => h.file === ho.dataset.hopen);
+      S = { ...freshState(), ...st, running: false, finished: true, savedAs: ho.dataset.hopen, fromHistory: meta?.date };
+      openPage = null; A = analyze(); setTab('overview'); window.scrollTo({ top: 0 });
+    } catch { alert('Kon deze scan niet openen.'); }
+    return;
+  }
+  const hd = e.target.closest('[data-hdel]');
+  if (hd) {
+    if (!confirm('Deze opgeslagen scan verwijderen?')) return;
+    await fetch('/api/history/' + hd.dataset.hdel, { method: 'DELETE' }).catch(() => {});
+    await loadHistory(); render(); return;
+  }
   if (e.target.id === 'moreBtn') { pageLimit += 150; render(); return; }
   if (e.target.closest('[data-stop]') || e.target.closest('a')) return;
   const item = e.target.closest('[data-page]');
@@ -644,43 +952,85 @@ function download(name, content, type) {
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
-const host = () => { try { return new URL(S.startUrl).host.replace(/^www\./, ''); } catch { return 'site'; } };
 const stamp = () => new Date().toISOString().slice(0, 10);
 const csv = (cols, rows) => '﻿' + [cols.map(c => c[0]).join(';'), ...rows.map(r => cols.map(c => {
   const v = c[1](r); return '"' + String(Array.isArray(v) ? v.join(' | ') : v ?? '').replace(/"/g, '""') + '"';
 }).join(';'))].join('\r\n');
 
 function doExport(kind) {
-  const base = `${host()}-${stamp()}`;
+  const base = `${hostOf(S.startUrl) || 'site'}-${stamp()}`;
+  if (kind === 'report') return openReport();
   if (kind === 'pages') {
     download(`${base}-paginas.csv`, csv([
       ['Status', r => r.status], ['URL', r => r.url], ['Titel', r => r.title], ['Titel lengte', r => r.title?.length], ['Omschrijving', r => r.description],
-      ['H1', r => r.h1], ['Woorden', r => r.wordCount], ['Laadtijd ms', r => r.timeMs], ['Grootte KB', r => r.size && Math.round(r.size / 1024)],
+      ['H1', r => r.h1], ['Woorden', r => r.wordCount], ['Leesbaarheid', r => r.readability], ['Server ms', r => r.ttfb], ['Laadtijd ms', r => r.timeMs], ['Grootte KB', r => r.size && Math.round(r.size / 1024)],
       ['Diepte', r => r.depth], ['Links', r => r.linkCount], ['Inkomende links', r => (A.inlinks.get(r.url) || []).length],
-      ['Afbeeldingen', r => r.images], ['Zonder alt', r => r.imagesNoAlt], ['Mobiel', r => r.viewport ? 'ja' : 'nee'],
+      ['Afbeeldingen', r => r.images], ['Zonder alt', r => r.imagesNoAlt], ['Mobiel', r => r.viewport ? 'ja' : 'nee'], ['Schema', r => r.schemaTypes],
       ['Canonical', r => r.canonical], ['Robots', r => r.robotsMeta], ['Doorgestuurd naar', r => r.finalUrl], ['Fout', r => r.error],
       ['Problemen', r => (A.pageIssues.get(r.url) || []).map(i => i.label)],
     ], S.results), 'text/csv');
   } else if (kind === 'issues') {
     const rows = [];
-    for (const rule of RULES) for (const x of A.byRule.get(rule.id)) rows.push({ sev: SEV_NL[rule.sev], label: rule.label, url: x.page.url, detail: x.detail, tip: rule.tip });
-    for (const l of A.broken) rows.push({ sev: 'fout', label: 'Kapotte link', url: l.url, detail: (l.error || 'HTTP ' + l.status) + ' · staat op ' + (l.from || []).join(' | '), tip: 'Verwijder of vervang deze link.' });
-    download(`${base}-problemen.csv`, csv([['Ernst', r => r.sev], ['Probleem', r => r.label], ['URL', r => r.url], ['Details', r => r.detail], ['Oplossing', r => r.tip]], rows), 'text/csv');
+    for (const c of A.siteChecks) if (c.ok === false) rows.push({ sev: SEV_NL[c.sev], cat: c.group, label: c.label, url: S.startUrl, detail: c.tip, tip: '' });
+    for (const rule of RULES) for (const x of A.byRule.get(rule.id)) rows.push({ sev: SEV_NL[rule.sev], cat: CAT[rule.cat], label: rule.label, url: x.page.url, detail: x.detail, tip: rule.tip });
+    for (const l of A.broken) rows.push({ sev: 'fout', cat: 'Techniek', label: 'Kapotte link', url: l.url, detail: (l.error || 'HTTP ' + l.status) + ' · staat op ' + (l.from || []).join(' | '), tip: 'Verwijder of vervang deze link.' });
+    for (const l of A.brokenImages) rows.push({ sev: 'fout', cat: 'Techniek', label: 'Kapotte afbeelding', url: l.url, detail: (l.error || 'HTTP ' + l.status) + ' · staat op ' + (l.from || []).join(' | '), tip: 'Upload de afbeelding opnieuw of verwijder hem.' });
+    for (const i of A.heavyImages) rows.push({ sev: 'waarschuwing', cat: 'Snelheid', label: 'Te zware afbeelding', url: i.url, detail: kb(i.bytes), tip: 'Verklein naar max. ~150 KB (WebP).' });
+    const order = { fout: 0, waarschuwing: 1, tip: 2 };
+    rows.sort((a, b) => order[a.sev] - order[b.sev]);
+    download(`${base}-problemen.csv`, csv([['Ernst', r => r.sev], ['Categorie', r => r.cat], ['Probleem', r => r.label], ['URL', r => r.url], ['Details', r => r.detail], ['Oplossing', r => r.tip]], rows), 'text/csv');
   } else if (kind === 'links') {
     download(`${base}-links.csv`, csv([['Status', l => l.status], ['URL', l => l.url], ['Extern', l => l.external ? 'ja' : 'nee'], ['Fout', l => l.error], ['Staat op', l => l.from]], S.links), 'text/csv');
+  } else if (kind === 'images') {
+    download(`${base}-afbeeldingen.csv`, csv([['Status', l => l.status], ['URL', l => l.url], ['Grootte KB', l => l.bytes && Math.round(l.bytes / 1024)], ['Type', l => l.type], ['Fout', l => l.error], ['Staat op', l => l.from]], [...S.images].sort((a, b) => (b.bytes || 0) - (a.bytes || 0))), 'text/csv');
   } else if (kind === 'sitemap') {
-    const urls = S.results.filter(r => isPage(r) && !/noindex/.test(r.robotsMeta || '') && !r.finalUrl && (!r.canonical || r.canonical === r.url)).map(r => r.url);
+    const urls = S.results.filter(indexable).map(r => r.url);
     const xe = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     download('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(u => `  <url><loc>${xe(u)}</loc><lastmod>${stamp()}</lastmod></url>`).join('\n')}\n</urlset>\n`, 'application/xml');
-  } else if (kind === 'emails') {
-    download(`${base}-emails.txt`, [...new Set(S.results.flatMap(r => r.emails || []))].sort().join('\n'), 'text/plain');
+  } else if (kind === 'contacts') {
+    const p = S.results;
+    const lines = ['E-MAILADRESSEN', ...new Set(p.flatMap(r => r.emails || [])), '', 'TELEFOONNUMMERS', ...new Set(p.flatMap(r => r.phones || [])), '', 'SOCIAL MEDIA', ...new Set(p.flatMap(r => r.socials || []))];
+    download(`${base}-contactgegevens.txt`, lines.join('\n'), 'text/plain');
   } else if (kind === 'json') {
-    download(`${base}-scan.json`, JSON.stringify({ ...S, analyse: { score: A.score, counts: A.counts } }, null, 2), 'application/json');
+    download(`${base}-scan.json`, JSON.stringify({ ...S, analyse: { score: A.score, categorieen: A.cats, counts: A.counts } }, null, 2), 'application/json');
   }
 }
 
+function openReport() {
+  const probs = allProblems();
+  const date = new Date(S.fromHistory || Date.now()).toLocaleString('nl');
+  const ruleSection = sev => RULES.filter(r => r.sev === sev && A.byRule.get(r.id).length).map(r => {
+    const list = A.byRule.get(r.id);
+    return `<div class="iss"><h4><span class="d ${sev}"></span>${esc(r.label)} <span class="n">${list.length}×</span></h4><p class="tip">💡 ${esc(r.tip)}</p>
+      <ul>${list.slice(0, 15).map(x => `<li>${esc(x.page.url)}${x.detail ? ` <em>(${esc(x.detail)})</em>` : ''}</li>`).join('')}${list.length > 15 ? `<li><em>…en nog ${list.length - 15} pagina's</em></li>` : ''}</ul></div>`;
+  }).join('');
+  const siteFails = A.siteChecks.filter(c => c.ok === false);
+  const html = `<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Website-audit ${esc(hostOf(S.startUrl))}</title>
+  <style>body{font:14px/1.5 system-ui,sans-serif;color:#1a1d26;max-width:820px;margin:0 auto;padding:24px}h1{margin:0}h2{margin:28px 0 10px;border-bottom:2px solid #eee;padding-bottom:4px}h4{margin:12px 0 2px}
+  .top{display:flex;gap:20px;align-items:center;flex-wrap:wrap}.score{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;font-size:32px;font-weight:800;border:8px solid ${scoreColor(A.score).replace('var(--ok)', '#1f9d63').replace('var(--warn)', '#d98a00').replace('var(--err)', '#d63a3f')}}
+  .cats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}.cat{background:#f4f5f8;border-radius:8px;padding:8px 10px}.cat b{float:right}
+  .d{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}.d.error{background:#d63a3f}.d.warn{background:#d98a00}.d.info{background:#2f7fd1}
+  .n{color:#777;font-weight:400}.tip{color:#555;margin:2px 0 4px}ul{margin:0;padding-left:20px;font-size:12px;color:#444;word-break:break-all}.muted{color:#777}
+  table{width:100%;border-collapse:collapse;font-size:13px}td{padding:5px 6px;border-bottom:1px solid #eee;vertical-align:top}
+  .noprint{background:#8b7bff;color:#fff;border:0;border-radius:8px;padding:10px 16px;font-size:15px;margin-bottom:16px}@media print{.noprint{display:none}h2{break-after:avoid}.iss{break-inside:avoid}}</style></head><body>
+  <button class="noprint" onclick="print()">🖨️ Opslaan als PDF / afdrukken</button>
+  <h1>Website-audit</h1><p class="muted">${esc(S.startUrl)} · ${date} · ${S.results.length} pagina's gescand</p>
+  <div class="top"><div class="score">${A.score}</div><div><h3 style="margin:0">${verdict(A.score)}</h3><p style="margin:4px 0 0">${A.counts.error} fouten · ${A.counts.warn} waarschuwingen · ${A.counts.info} tips</p></div></div>
+  <div class="cats">${Object.entries(A.cats).map(([k, v]) => `<div class="cat">${CAT[k]}<b>${v}</b></div>`).join('')}</div>
+  <h2>Top-verbeterpunten</h2><ol>${probs.slice(0, 10).map(p => `<li><b>${esc(p.label)}</b> <span class="muted">(${SEV_NL[p.sev]}${p.count !== '!' ? ', ' + p.count + '×' : ''})</span></li>`).join('')}</ol>
+  ${siteFails.length ? `<h2>Website & beveiliging</h2><table>${siteFails.map(c => `<tr><td><span class="d ${c.sev}"></span></td><td><b>${esc(c.label)}</b><br><span class="muted">${esc(c.tip)}</span></td></tr>`).join('')}</table>` : ''}
+  ${A.broken.length || A.brokenImages.length ? `<h2>Kapotte links en afbeeldingen</h2><ul>${[...A.broken, ...A.brokenImages].slice(0, 40).map(l => `<li>${esc(l.url)} <em>(${esc(l.error || 'HTTP ' + l.status)})</em> · op ${esc((l.from || [])[0] || '')}</li>`).join('')}</ul>` : ''}
+  ${A.heavyImages.length ? `<h2>Zware afbeeldingen</h2><ul>${A.heavyImages.slice(0, 20).map(i => `<li>${esc(i.url)} <em>(${kb(i.bytes)})</em></li>`).join('')}</ul>` : ''}
+  ${['error', 'warn', 'info'].map(sev => { const s = ruleSection(sev); return s ? `<h2>${{ error: 'Fouten', warn: 'Waarschuwingen', info: 'Tips' }[sev]}</h2>${s}` : ''; }).join('')}
+  <h2>Technologie</h2><p>${allTech().map(esc).join(', ') || '—'}</p>
+  <p class="muted" style="margin-top:30px;font-size:12px">Gemaakt met Ghost Crawler</p></body></html>`;
+  const w = window.open('', '_blank');
+  if (!w) { download(`${hostOf(S.startUrl)}-rapport.html`, html, 'text/html'); return; }
+  w.document.write(html); w.document.close();
+}
+
 // ---------- Opstarten ----------
-(function init() {
+(async function init() {
   const opts = store.get('ghost-opts');
   if (opts) for (const [k, v] of Object.entries(opts)) {
     const el = $(k); if (!el) continue;
@@ -688,8 +1038,9 @@ function doExport(kind) {
   }
   const running = store.get('ghost-job');
   if (running) { S.running = true; S.phase = 'Verbinding herstellen…'; connect(running); }
-  else { const last = store.get('ghost-last'); if (last) { S = last; S.running = false; } }
+  else { const last = store.get('ghost-last'); if (last) { S = { ...freshState(), ...last, running: false }; } }
   A = analyze(); render();
+  await loadHistory(); render();
 })();
 </script>
 </body>
