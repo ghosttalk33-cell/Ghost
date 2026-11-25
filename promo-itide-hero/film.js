@@ -425,7 +425,7 @@ function sArmy(ctx, u, IMG) {            // all eight vials rise in a row, one p
   rows(ctx, [['EVERY VIAL.', C.white], ['ONE STANDARD.', C.blueHi]], W / 2, P ? S.y + 110 : 150, P ? 110 : 100, P ? 112 : 102,
     (i) => springU(u, 1.2 + i * 0.5, SPRING.snappy), 'center', 4);
 }
-function sSpin(ctx, u, IMG, idx, side) { // one vial in the spotlight: flips in, giant name behind, specs on the side
+function sSpin(ctx, u, IMG, idx, side, trio = null) { // one vial in the spotlight: flips in, giant name behind, specs on the side
   bg(ctx, '#070c18');
   const [img, name, mg] = ALL[idx];
   // giant outlined name behind, sliding
@@ -443,13 +443,22 @@ function sSpin(ctx, u, IMG, idx, side) { // one vial in the spotlight: flips in,
   const flip = E.outCubic(prog(u, -0.4, 0.5));
   const vh = P ? 820 : 760, floor = P ? H * 0.66 : H * 0.88;
   const im = IMG['cut_' + img];
+  if (trio) {   // the other doses slide out from behind the centre vial
+    trio.forEach((k2, j) => {
+      const sk = E.outBack(prog(u, 0.7 + j * 0.3, 1.4 + j * 0.3), 1.2); if (sk <= 0) return;
+      const off = (j ? 1 : -1) * (P ? 300 : 250) * sk;
+      ctx.save(); ctx.globalAlpha = clamp(sk) * 0.95;
+      vialOn(ctx, IMG['cut_' + k2], cx + off, floor + 4 * Math.sin(u * 1.2 + j), vh * 0.8);
+      ctx.restore();
+    });
+  }
   ctx.save(); ctx.translate(cx, floor); ctx.scale(Math.max(0.03, Math.abs(Math.cos((1 - flip) * Math.PI / 2))), 1);
   const z = 1.0 * 1.06 ** prog(u, 0, 4); ctx.scale(z, z); ctx.translate(-cx, -floor);
   vialOn(ctx, im, cx, floor + 6 * Math.sin(u * 1.2), vh, clamp(flip * 1.4));
   ctx.restore();
   const tx = P ? S.x + 10 : (side > 0 ? W * 0.58 : W * 0.08), ty = P ? floor + 140 : H * 0.42;
-  const ns = Math.min(P ? 130 : 140, fitSize(ctx, name, 700, DISPLAY, P ? S.w : W * 0.36, 150, 0.02));
-  rows(ctx, [[name, C.white], [mg + ' · 99%', C.blueHi]], tx, ty, ns, ns, (i) => springU(u, 0.4 + i * 0.35, SPRING.snappy), 'left', 2);
+  const ns = Math.min(P ? 130 : 140, fitSize(ctx, name, 700, DISPLAY, P ? S.w : W * 0.36, 150, 0.02), trio ? fitSize(ctx, '15 · 20 · 30MG', 700, DISPLAY, P ? S.w : W * 0.38, 150, 0.02) : 999);
+  rows(ctx, [[name, C.white], [trio ? '15 · 20 · 30MG' : mg + ' · 99%', C.blueHi]], tx, ty, ns, ns, (i) => springU(u, 0.4 + i * 0.35, SPRING.snappy), 'left', 2);
   const ck = springU(u, 1.4, SPRING.snappy);
   if (ck > 0) chip(ctx, 'CERTIFICATE OF ANALYSIS', tx, ty + ns + 40, P ? 36 : 32, { stroke: '#93c5fd', ink: '#93c5fd', scale: ck, f: UI, w8: 700, track: 4, padX: 26 });
 }
@@ -498,7 +507,7 @@ EDITS.hero = [
   [0, sCold, [[-0.3, 'sweep', 'whoosh', { len: 1.2, from: 300, to: 2000 }], [0.2, 'logo', 'impact'], [2.2, 'line', 'tick']]],
   [4, sArmy, [...ALL.slice(0, 15).map((_, i) => [-0.4 + i * 0.2, 'vial', i % 2 ? 'tick' : 'pop', { pitch: ['A5', 'C6', 'E6', 'G6'][i % 4] }]), [1.2, 'l1', 'impact'], [1.7, 'l2', 'thud']]],
   [8, sHeroPhoto, [[0.4, 'r1', 'tick'], [0.8, 'r2', 'tick']]],
-  [12, (c, u, I) => sSpin(c, u, I, 0, 1), [[0, 'flip', 'thud'], [1.4, 'coa', 'pop', { pitch: 'A5' }]]],
+  [12, (c, u, I) => sSpin(c, u, I, 0, 1, ['bigr15', 'bigr30']), [[0, 'flip', 'thud'], [0.7, 'd1', 'pop', { pitch: 'E5' }], [1.0, 'd2', 'pop', { pitch: 'A5' }], [1.4, 'coa', 'pop', { pitch: 'A5' }]]],
   [16, (c, u, I) => sSpin(c, u, I, 1, -1), [[0, 'flip', 'thud'], [1.4, 'coa', 'pop', { pitch: 'C6' }]]],
   [20, (c, u, I) => sSpin(c, u, I, 2, 1), [[0, 'flip', 'thud'], [1.4, 'coa', 'pop', { pitch: 'E6' }]]],
   [24, (c, u, I) => sSpin(c, u, I, ALL.length - 1, -1), [[0, 'flip', 'thud'], [1.4, 'coa', 'pop', { pitch: 'A6' }]]],
@@ -521,7 +530,7 @@ const drawScene = (i, ctx, u, IMG) => SCENES[i][1](ctx, u - SCENES[i][0], IMG);
 
 M.film({
   fonts: [font(100, 700, DISPLAY), font(40, 500, UI), font(40, 700, UI)],
-  images: Object.fromEntries([['hero', 'assets/products/hero.png'], ['v_big', 'assets/products/v_big.png'], ...['c_ipamorelin', 'c_glow', 'c_cagri', 'c_bigt', 'c_klow'].map((k) => [k, `assets/products/${k}.png`]), ...['bigr', 'bigt', 'cagrilintide', 'glow', 'ipamorelin', 'klow', 'nad', 'tb500', 'ace031', 'ss31', 'sermorelin', 'tesamorelin', 'ghkcu', 'bpc157', 'glp2t_hd', 'ss31_hd', 'tesamorelin_hd', 'semax', 'melanotan1', 'bigr_hd', 'wolverine', 'glow_hd'].map((n) => ['cut_' + n, `assets/products/cut/${n}.png`]), ['chip', 'assets/partner_chip.png']]),
+  images: Object.fromEntries([['hero', 'assets/products/hero.png'], ['v_big', 'assets/products/v_big.png'], ...['c_ipamorelin', 'c_glow', 'c_cagri', 'c_bigt', 'c_klow'].map((k) => [k, `assets/products/${k}.png`]), ...['bigr', 'bigt', 'cagrilintide', 'glow', 'ipamorelin', 'klow', 'nad', 'tb500', 'ace031', 'ss31', 'sermorelin', 'tesamorelin', 'ghkcu', 'bpc157', 'glp2t_hd', 'ss31_hd', 'tesamorelin_hd', 'semax', 'melanotan1', 'bigr_hd', 'wolverine', 'glow_hd', 'bigr15', 'bigr30'].map((n) => ['cut_' + n, `assets/products/cut/${n}.png`]), ['chip', 'assets/partner_chip.png']]),
   hits: HITS,
   draw(ctx, u, t, IMG) {
     BGU = u;
