@@ -170,6 +170,41 @@ function sCoa(ctx, u, IMG) {
   (P ? ['stappen om een COA te lezen.'] : ['stappen om een', 'COA te lezen.']).forEach((l, i) => text(ctx, l, tx, ty + 140 + i * 56, font(P ? 52 : 48, 700, D), C.navy));
   ctx.restore();
 }
+function sPartner(ctx, u, IMG) {
+  bg(ctx);
+  const x = P ? S.x + 10 : 150, y0 = P ? S.y + 200 : 260, size = P ? 120 : 116;
+  kicker(ctx, 'SAMENWERKINGEN', x, y0 - size * 1.05, E.outQuint(prog(u, -0.4, 0.3)));
+  lines(ctx, [[['Partner', C.navy], ['van', C.navy]], [['PeptidePraat:', C.navy]]], x, y0, size, size * 1.02, (i) => springU(u, -0.3 + i * 0.3, SPRING.snappy));
+  // the real chip from the site's partner row, scaled up
+  const ck = springU(u, 0.6, SPRING.bouncy);
+  if (ck > 0) {
+    const im = IMG.chip, cw = P ? 760 : 700, ch = cw * im.height / im.width;
+    const cx = x, cy = y0 + size * 1.02 + (P ? 70 : 60);
+    ctx.save(); ctx.translate(cx, cy + ch / 2); ctx.scale(ck, ck);
+    ctx.shadowColor = 'rgba(13,34,56,0.18)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 14;
+    rrect(ctx, 0, -ch / 2, cw, ch, ch * 0.18); ctx.fillStyle = '#fff'; ctx.fill(); ctx.shadowColor = 'transparent';
+    cover(ctx, im, 0, -ch / 2, cw, ch, { radius: ch * 0.18 });
+    ctx.restore();
+  }
+  const uk = E.outQuint(prog(u, 1.2, 1.8));
+  ctx.save(); ctx.globalAlpha = uk;
+  text(ctx, 'itidelabs.com', x, y0 + size * 1.02 + (P ? 70 : 60) + (P ? 290 : 260), font(P ? 60 : 54, 700, D), C.blue);
+  ctx.restore();
+  // three ITide vials (cut out), stepping in on the beat
+  const vials = ['tb500', 'glow', 'klow'];
+  const floor = P ? H * 0.86 : H * 0.8, vh = P ? 470 : 560;
+  vials.forEach((n, i) => {
+    const k = springU(u, 0.4 + i * 0.4, SPRING.bouncy); if (k <= 0) return;
+    const im = IMG['it_' + n], vw = vh * im.width / im.height;
+    const cx = P ? W / 2 + (i - 1) * 300 : W * 0.6 + i * 230;
+    const g = ctx.createRadialGradient(cx, floor, 0, cx, floor, vw * 0.7);
+    g.addColorStop(0, 'rgba(13,34,56,0.25)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.save(); ctx.globalAlpha = clamp(k * 1.5); ctx.fillStyle = g;
+    ctx.save(); ctx.translate(cx, floor); ctx.scale(1, 0.18); ctx.beginPath(); ctx.arc(0, 0, vw * 0.7, 0, TAU); ctx.fill(); ctx.restore();
+    ctx.drawImage(im, cx - vw / 2, floor - vh - (1 - k) * 240, vw, vh);
+    ctx.restore();
+  });
+}
 function sNoHype(ctx, u) {
   bg(ctx, C.navy);
   const cx = W / 2, size = P ? 140 : 140, y0 = H / 2 - size * 1.0;
@@ -230,8 +265,9 @@ const SCENES = [
   [12, sDossiers, [[-0.2, 'title', 'thud']]],
   [16, sCoa, [[0.1, 'n', 'thud'], ...[1, 2, 3, 4, 5, 6].map((i) => [0.2 + i * 3 / 7, 'step', 'tick'])]],
   [20, sArtikelen, [[-0.2, 'title', 'thud']]],
-  [24, sNoHype, [[-0.3, 'g1', 'impact'], [0.6, 'g2', 'impact'], [1.5, 'g3', 'impact']]],
-  [28, sEnd, [[-0.3, 'mark', 'impact'], [0.3, 'word', 'bell', { pitch: 'A5' }], [0.9, 'url', 'pop', { pitch: 'E6' }]]],
+  [24, sPartner, [[-0.3, 'title', 'impact'], [0.4, 'v1', 'pop', { pitch: 'A5' }], [0.6, 'chip', 'thud'], [0.8, 'v2', 'pop', { pitch: 'C6' }], [1.2, 'v3', 'pop', { pitch: 'E6' }]]],
+  [28, sNoHype, [[-0.3, 'g1', 'impact'], [0.6, 'g2', 'impact'], [1.5, 'g3', 'impact']]],
+  [32, sEnd, [[-0.3, 'mark', 'impact'], [0.3, 'word', 'bell', { pitch: 'A5' }], [0.9, 'url', 'pop', { pitch: 'E6' }]]],
 ];
 const DIRS = [[1, 0], [0, 1], [-1, 0]];
 const WHIPS = {};
@@ -245,7 +281,7 @@ const drawScene = (i, ctx, u, IMG) => SCENES[i][1](ctx, u - SCENES[i][0], IMG);
 
 M.film({
   fonts: [font(100, 700, D), font(40, 400, D), font(30, 400, MONO)],
-  images: Object.fromEntries(['ladder', 'dossiers', 'artikelen', 'coa'].map((k) => [k, `assets/${k}.png`])),
+  images: Object.fromEntries([...['ladder', 'dossiers', 'artikelen', 'coa'].map((k) => [k, `assets/${k}.png`]), ['chip', 'assets/partner_chip.png'], ...['tb500', 'glow', 'klow'].map((n) => ['it_' + n, `assets/itide/${n}.png`])]),
   hits: HITS,
   draw(ctx, u, t, IMG) {
     for (const [b, [dx, dy]] of Object.entries(WHIPS).map(([b, v]) => [Number(b), v])) {
