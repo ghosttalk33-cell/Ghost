@@ -78,7 +78,7 @@ termux-wifi-connectioninfo | grep ip
 ```
 Open dan `http://<dat-adres>:3000` op je laptop (bijvoorbeeld `http://192.168.1.23:3000`).
 
-**Melding als je telefoon bijna leeg is** (de server stopt dan):
+**Batterij checken** (bij een lege accu stopt de server):
 ```
 termux-battery-status
 ```
