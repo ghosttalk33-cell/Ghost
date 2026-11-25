@@ -9,6 +9,8 @@
 //   MIN_DROP=10 node scripts/termux-melding.js  alleen dalingen van minstens 10%
 //   REGIO=us node scripts/termux-melding.js     de USA-prijsvolger
 //   ONCE=1 node scripts/termux-melding.js       één keer kijken en stoppen (voor cron)
+//   DAILY_HOUR=8 node scripts/termux-melding.js dagoverzicht om 8 uur (standaard 9, 'uit' = geen)
+//   node scripts/termux-melding.js overzicht    stuur het dagoverzicht nu meteen
 //
 // Wat al gemeld is, staat in data/<regio>/melding-state.json, dus je krijgt niets dubbel.
 
@@ -22,6 +24,8 @@ const INTERVAL = Number(process.env.INTERVAL || 60) * 1000;  // ms
 const DATA = path.join(__dirname, '..', 'data', REGIO);
 const STATE = path.join(DATA, 'melding-state.json');
 const SYM = { EUR: '€', USD: '$', GBP: '£' };
+const DAILY_HOUR = process.env.DAILY_HOUR === 'uit' ? -1 : Number(process.env.DAILY_HOUR ?? 9);
+const BASE = REGIO === 'us' ? 'USD' : 'EUR';
 
 const load = (f, d) => { try { return JSON.parse(fs.readFileSync(path.join(DATA, f), 'utf8')); } catch { return d; } };
 const money = (v, c) => (v == null ? '?' : (SYM[c] || (c ? c + ' ' : '')) + Number(v).toFixed(2).replace('.', REGIO === 'nl' ? ',' : '.'));
@@ -87,5 +91,33 @@ function check() {
   writeState(state);
 }
 
-check();
-if (!process.env.ONCE) setInterval(check, INTERVAL);
+// ---------- Dagoverzicht: goedkoopste prijs per mg per peptide ----------
+function cheapest() {
+  let files = [];
+  try { files = fs.readdirSync(DATA).filter((f) => /^offers-.+\.json$/.test(f)); } catch {}
+  const best = {}, count = {};
+  for (const f of files) for (const o of load(f, [])) {
+    if (!o.peptide || o.peptide.includes(' + ') || /water/i.test(o.peptide) || !o.inStock || !(o.perMg > 0)) continue;
+    count[o.peptide] = (count[o.peptide] || 0) + 1;
+    if (!best[o.peptide] || o.perMg < best[o.peptide].perMg) best[o.peptide] = o;
+  }
+  // eerst de peptiden waar je een alarm op hebt, daarna de meest aangeboden
+  const watched = [...new Set((load('settings.json', {}).alerts || []).map((a) => a.peptide))].filter((p) => best[p]);
+  const popular = Object.keys(best).filter((p) => !watched.includes(p)).sort((a, b) => count[b] - count[a]);
+  return [...watched, ...popular].slice(0, 8).map((p) => best[p]);
+}
+function daily(force) {
+  const now = new Date();
+  const day = now.toISOString().slice(0, 10);
+  const state = readState() || { seen: [] };
+  if (!force && (DAILY_HOUR < 0 || now.getHours() !== DAILY_HOUR || state.lastDaily === day)) return;
+  const list = cheapest();
+  state.lastDaily = day; writeState({ ...state, seen: state.seen || [] });
+  if (!list.length) { if (force) console.log('Nog geen prijzen gescand: open de prijsvolger en scan eerst.'); return; }
+  const lines = list.map((o) => `${o.peptide}: ${money(o.perMg, BASE)}/mg · ${o.shop}`);
+  notify(998, `☀️ Goedkoopste per mg vandaag`, lines.join('\n'), `http://localhost:${process.env.PORT || 3000}/${REGIO === 'us' ? 'prices' : 'prijzen'}.html`);
+}
+
+if (process.argv[2] === 'overzicht') { daily(true); process.exit(0); }
+check(); daily();
+if (!process.env.ONCE) setInterval(() => { check(); daily(); }, INTERVAL);

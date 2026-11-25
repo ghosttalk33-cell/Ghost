@@ -39,6 +39,12 @@ sh ~/Ghost/scripts/termux-start.sh stop
 MIN_DROP=10 sh ~/Ghost/scripts/termux-start.sh
 ```
 
+**☀️ Dagoverzicht:** elke ochtend om 9 uur krijg je één melding met de goedkoopste prijs per mg per peptide (op voorraad) en bij welke shop. De peptiden waar je een prijsalarm op hebt, staan bovenaan. Meteen proberen:
+```
+node ~/Ghost/scripts/termux-melding.js overzicht
+```
+Ander tijdstip, bijvoorbeeld 8 uur: `sh ~/Ghost/scripts/termux-start.sh stop && DAILY_HOUR=8 sh ~/Ghost/scripts/termux-start.sh`. Geen dagoverzicht: `DAILY_HOUR=uit`.
+
 ## 3. Vanzelf starten en scannen ⏰
 
 **Na een herstart van je telefoon vanzelf starten:**
