@@ -16,12 +16,13 @@ running() { pgrep -f "$1" >/dev/null 2>&1; }
 
 case "$1" in
   stop)
-    pkill -f "node server.js" ; pkill -f "termux-melding.js"
+    pkill -f "node server.js" ; pkill -f "termux-melding.js" ; pkill -f "node bot.js"
     command -v termux-wake-unlock >/dev/null && termux-wake-unlock
     echo "⏹  Gestopt."; exit 0 ;;
   status)
     running "node server.js" && echo "✅ Server draait  → http://localhost:3000" || echo "❌ Server draait niet"
     running "termux-melding.js" && echo "✅ Meldingen draaien" || echo "❌ Meldingen draaien niet"
+    [ -f bot/.env ] && { running "node bot.js" && echo "✅ Ghost-bot draait" || echo "❌ Ghost-bot draait niet"; }
     exit 0 ;;
 esac
 
@@ -40,4 +41,15 @@ if running "termux-melding.js"; then
 else
   nohup node scripts/termux-melding.js >> data/melding.log 2>&1 &
   echo "🔔 Meldingen gestart"
+fi
+
+# Ghost-bot (Telegram) alleen als hij is ingesteld (bot/.env)
+if [ -f bot/.env ]; then
+  if running "node bot.js"; then
+    echo "✅ Ghost-bot draaide al"
+  else
+    [ -d bot/node_modules ] || (cd bot && npm install --no-audit --no-fund >/dev/null 2>&1)
+    (cd bot && nohup node bot.js >> ../data/bot.log 2>&1 &)
+    echo "🤖 Ghost-bot gestart"
+  fi
 fi

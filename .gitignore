@@ -3,3 +3,5 @@ data/
 site/
 node_modules/
 out/
+bot/.env
+bot/node_modules/

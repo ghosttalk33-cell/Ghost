@@ -1,0 +1,16 @@
+{
+  "name": "ghost-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Alles-in-1 Telegram-assistent (chat, zoeken, foto's, mail, taken, prijsvolger)",
+  "type": "module",
+  "main": "bot.js",
+  "scripts": { "start": "node bot.js" },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@anthropic-ai/sdk": "latest",
+    "imapflow": "latest",
+    "mailparser": "latest",
+    "nodemailer": "latest"
+  }
+}
