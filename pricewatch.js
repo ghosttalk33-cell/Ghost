@@ -74,9 +74,13 @@ module.exports = function createPriceWatch({ get, readLimited, decodeEntities, s
   // ---------- Peptiden herkennen ----------
   const PEPTIDES = [
     ['BPC-157', /bpc[\s-]?157/i], ['TB-500', /tb[\s-]?500|thymosin[\s-]?beta|\btb[\s-]?4\b/i],
-    ['Semaglutide', /semaglutide|\bsema\b|glp[\s-]?1[\s-]?s\b/i], ['Tirzepatide', /tirzepatide|\btirz(e|ep)?\b|glp[\s-]?2[\s-]?t\b/i],
-    ['Retatrutide', /retatrutide|\breta\b|glp[\s-]?3[\s-]?r?\b/i], ['Cagrilintide', /cagrilintide|\bcagri\b/i], ['Survodutide', /survodutide/i],
-    ['Mazdutide', /mazdutide/i], ['Liraglutide', /liraglutide/i], ['Ipamorelin', /ipamorelin/i], ['CJC-1295', /cjc[\s-]?1295/i],
+    ['Semaglutide', /semaglutide|\bsema\b|glp[\s-]?1[\s-]?s\b|\bbig[\s-]?s\b/i], ['Tirzepatide', /tirzepatide|\btirz(e|ep)?\b|glp[\s-]?2[\s-]?t\b|\bbig[\s-]?t\b|ly[\s-]?3298176/i],
+    ['Retatrutide', /retatrutide|\breta\b|glp[\s-]?3[\s-]?r?\b|\bbig[\s-]?r\b|ly[\s-]?3437943/i], ['Cagrilintide', /cagrilintide|\bcagri\b/i], ['Survodutide', /survodutide|bi[\s-]?456906/i],
+    ['Mazdutide', /mazdutide|ly[\s-]?3305677|ibi[\s-]?362/i], ['Liraglutide', /liraglutide/i], ['Dulaglutide', /dulaglutide/i], ['Exenatide', /exenatide|exendin[\s-]?4/i],
+    ['Lixisenatide', /lixisenatide/i], ['Pramlintide', /pramlintide/i], ['Amycretin', /amycretin/i], ['Pemvidutide', /pemvidutide/i], ['Ecnoglutide', /ecnoglutide/i],
+    ['Efinopegdutide', /efinopegdutide/i], ['Orforglipron', /orforglipron/i], ['Maridebart cafraglutide', /maridebart|maritide/i], ['Teduglutide', /teduglutide/i],
+    ['Glepaglutide', /glepaglutide/i], ['Apraglutide', /apraglutide/i], ['Dapiglutide', /dapiglutide/i], ['Cotadutide', /cotadutide/i], ['5-Amino-1MQ', /5[\s-]?amino[\s-]?1[\s-]?mq/i],
+    ['SLU-PP-332', /slu[\s-]?pp[\s-]?332/i], ['Ipamorelin', /ipamorelin/i], ['CJC-1295', /cjc[\s-]?1295/i],
     ['Sermorelin', /sermorelin/i], ['Tesamorelin', /tesamorelin/i], ['GHRP-2', /ghrp[\s-]?2/i], ['GHRP-6', /ghrp[\s-]?6/i], ['Hexarelin', /hexarelin/i],
     ['GHK-Cu', /ghk[\s-]?cu|copper[\s-]?peptide/i], ['AHK-Cu', /ahk[\s-]?cu/i], ['MOTS-c', /mots[\s-]?c/i], ['SS-31', /ss[\s-]?31|elamipretide/i],
     ['Epitalon', /epitalon|epithalon/i], ['Selank', /selank/i], ['Semax', /semax/i], ['PT-141', /pt[\s-]?141|bremelanotide/i],
@@ -88,8 +92,16 @@ module.exports = function createPriceWatch({ get, readLimited, decodeEntities, s
     ['MGF / PEG-MGF', /\bmgf\b/i], ['Snap-8', /snap[\s-]?8/i], ['Cerebrolysin', /cerebrolysin/i], ['VIP', /\bvip\b/i], ['Glutathione', /glutathione/i],
     ['Bacteriostatic water', /bac(teriostatic|teriostatisch)?[\s-]?water|\bbac\s?h2o\b/i],
   ];
+  // Merk- en blendnamen die shops gebruiken, vertaald naar de echte stoffen
+  const BLENDS = [
+    [/cagri[\s-]?sema/i, ['Cagrilintide', 'Semaglutide']],
+    [/\bklow\b/i, ['BPC-157', 'TB-500', 'GHK-Cu', 'KPV']],
+    [/\bglow\b/i, ['BPC-157', 'TB-500', 'GHK-Cu']],
+    [/wolverine/i, ['BPC-157', 'TB-500']],
+  ];
   function identify(text) {
     const found = PEPTIDES.filter(([, re]) => re.test(text)).map(([n]) => n);
+    for (const [re, names] of BLENDS) if (re.test(text)) for (const n of names) if (!found.includes(n)) found.push(n);
     return found.filter(n => !(n === 'Melanotan I' && found.includes('Melanotan II')));
   }
 
