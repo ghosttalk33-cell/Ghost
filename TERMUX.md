@@ -62,6 +62,17 @@ mkdir -p ~/.termux/boot && printf '#!/data/data/com.termux/files/usr/bin/sh\nsh 
 | Laatste meldingen zien | `tail -20 ~/Ghost/data/melding.log` |
 | Serverlog zien | `tail -20 ~/Ghost/data/server.log` |
 
+## 🔘 "Scan nu"-knop op je startscherm
+
+1. Installeer **Termux:Widget** uit F-Droid: https://f-droid.org/packages/com.termux.widget/
+2. Plak in Termux:
+   ```
+   mkdir -p ~/.shortcuts/tasks && printf '#!/data/data/com.termux/files/usr/bin/sh\nnode ~/Ghost/scripts/scan-nu.js\n' > ~/.shortcuts/tasks/Scan\ nu && chmod +x ~/.shortcuts/tasks/Scan\ nu
+   ```
+3. Houd je startscherm ingedrukt → **Widgets** → **Termux:Widget** → sleep hem op je scherm → kies **Scan nu**.
+
+Tik op de knop: de scan start op de achtergrond, je ziet de voortgang in een melding ("3/22 shops · NL Peptides") en krijgt "✅ Scan klaar" als hij klaar is. Draait de server niet, dan start de knop hem eerst. Prijsdalingen en alarmen uit die scan komen gewoon als melding binnen.
+
 ## 4. Wat is nog meer handig?
 
 **Bestanden van je telefoon gebruiken**
