@@ -56,6 +56,8 @@ De volgende keer:
 cd Ghost && git pull && node server.js
 ```
 
+**Meldingen op je telefoon en automatisch starten:** zie [TERMUX.md](TERMUX.md).
+
 ## Op een computer
 
 Je hebt [Node.js](https://nodejs.org) 18 of nieuwer nodig.
