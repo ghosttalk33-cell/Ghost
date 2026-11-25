@@ -192,11 +192,11 @@ function sPartner(ctx, u, IMG) {
   ctx.restore();
   // three ITide vials (cut out), stepping in on the beat
   const vials = ['tb500', 'glow', 'klow'];
-  const floor = P ? H * 0.86 : H * 0.8, vh = P ? 470 : 560;
+  const floor = P ? H * 0.87 : H * 0.8, vh = P ? 640 : 560;
   vials.forEach((n, i) => {
     const k = springU(u, 0.4 + i * 0.4, SPRING.bouncy); if (k <= 0) return;
     const im = IMG['it_' + n], vw = vh * im.width / im.height;
-    const cx = P ? W / 2 + (i - 1) * 300 : W * 0.6 + i * 230;
+    const cx = P ? W / 2 + (i - 1) * 320 : W * 0.6 + i * 230;
     const g = ctx.createRadialGradient(cx, floor, 0, cx, floor, vw * 0.7);
     g.addColorStop(0, 'rgba(13,34,56,0.25)'); g.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.save(); ctx.globalAlpha = clamp(k * 1.5); ctx.fillStyle = g;
