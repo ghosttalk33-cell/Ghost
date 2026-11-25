@@ -386,8 +386,9 @@ EDITS.quality = [[0, sQuality, [[-0.3, '99', 'impact'], [0.5, 'coa', 'pop', { pi
   [24, sCatalogue, [[0.6, 'shop', 'tick'], [1.0, 'cat', 'tick']]],
   [28, sEnd, [[-0.2, 'logo', 'impact'], [0.6, 'url', 'bell', { pitch: 'A5' }], [1.4, 'chip', 'pop', { pitch: 'E6' }]]]];
 // ================================================================ HERO cut (36 s, 60 beats @100 bpm)
-const ALL = [['bigr', 'GLP-3 R', '20MG'], ['bigt', 'GLP-2 T', '50MG'], ['cagrilintide', 'CAGRILINTIDE', '10MG'], ['ipamorelin', 'IPAMORELIN', '10MG'],
-  ['tb500', 'TB-500', '10MG'], ['nad', 'NAD+', '500MG'], ['glow', 'GLOW', '70MG'], ['klow', 'KLOW', '80MG']];
+const ALL = [['bigr', 'GLP-3 R', '20MG'], ['glp2t_hd', 'GLP-2 T', '30MG'], ['cagrilintide', 'CAGRILINTIDE', '10MG'], ['bpc157', 'BPC-157', '10MG'],
+  ['ghkcu', 'GHK-CU', '100MG'], ['tb500', 'TB-500', '10MG'], ['nad', 'NAD+', '500MG'], ['ss31', 'SS-31', '10MG'],
+  ['tesamorelin', 'TESAMORELIN', '10MG'], ['sermorelin', 'SERMORELIN', '10MG'], ['ace031', 'ACE-031', '1MG'], ['klow', 'KLOW', '80MG']];
 // soft spotlight cone from the top
 function spot(ctx, cx, amt = 1, col = '59,130,246') {
   const g = ctx.createRadialGradient(cx, H * 0.15, 0, cx, H * 0.55, Math.max(W, H) * 0.6);
@@ -411,16 +412,15 @@ function sCold(ctx, u, IMG) {            // black, a light sweep reveals the wor
 function sArmy(ctx, u, IMG) {            // all eight vials rise in a row, one per half beat
   bg(ctx); spot(ctx, W / 2, 1.1);
   const n = ALL.length;
-  const vh = P ? 380 : 470, floor = P ? H * 0.64 : H * 0.8;
-  const span = P ? W - 80 : W - 220, step = span / (n - 1), x0 = (W - span) / 2;
+  const vh = P ? 330 : 380, floor = H * 0.8;
+  const span = W - 230, step = span / (n - 1), x0 = (W - span) / 2;
   ALL.forEach(([img], i) => {
     const k = springU(u, -0.4 + i * 0.25, SPRING.bouncy); if (k <= 0) return;
-    const row = P ? (i % 2) : 0;
-    const cx = P ? W / 2 + ((i % 4) - 1.5) * (W - 120) / 4 + (row ? 0 : 0) : x0 + i * step;
-    const fl = P ? (i < 4 ? H * 0.5 : H * 0.8) : floor;
+    const cx = P ? W / 2 + ((i % 4) - 1.5) * (W - 140) / 4 : x0 + i * step;
+    const fl = P ? H * [0.45, 0.65, 0.85][Math.floor(i / 4)] : floor;
     vialOn(ctx, IMG['cut_' + img], cx, fl + (1 - k) * 300, vh, clamp(k * 1.5));
   });
-  rows(ctx, [['8 COMPOUNDS.', C.white], ['ONE STANDARD.', C.blueHi]], W / 2, P ? S.y + 110 : 150, P ? 110 : 100, P ? 112 : 102,
+  rows(ctx, [['EVERY VIAL.', C.white], ['ONE STANDARD.', C.blueHi]], W / 2, P ? S.y + 110 : 150, P ? 110 : 100, P ? 112 : 102,
     (i) => springU(u, 1.2 + i * 0.5, SPRING.snappy), 'center', 4);
 }
 function sSpin(ctx, u, IMG, idx, side) { // one vial in the spotlight: flips in, giant name behind, specs on the side
@@ -460,7 +460,7 @@ function sOrbit(ctx, u, IMG) {           // the eight vials on a turning carouse
   const k = springU(u, -0.4, SPRING.gentle);
   for (const it of items) {
     const depth = (it.z + 1) / 2;
-    const vh = (P ? 560 : 470) * lerp(0.55, 1.05, depth) * k;
+    const vh = (P ? 500 : 430) * lerp(0.55, 1.05, depth) * k;
     const x = cx + Math.cos(it.a) * rx, fl = cy + it.z * ry + vh * 0.5;
     ctx.save(); ctx.globalAlpha = lerp(0.35, 1, depth);
     vialOn(ctx, IMG['cut_' + it.img], x, fl, vh);
@@ -499,7 +499,7 @@ EDITS.hero = [
   [12, (c, u, I) => sSpin(c, u, I, 0, 1), [[0, 'flip', 'thud'], [1.4, 'coa', 'pop', { pitch: 'A5' }]]],
   [16, (c, u, I) => sSpin(c, u, I, 1, -1), [[0, 'flip', 'thud'], [1.4, 'coa', 'pop', { pitch: 'C6' }]]],
   [20, (c, u, I) => sSpin(c, u, I, 2, 1), [[0, 'flip', 'thud'], [1.4, 'coa', 'pop', { pitch: 'E6' }]]],
-  [24, (c, u, I) => sSpin(c, u, I, 7, -1), [[0, 'flip', 'thud'], [1.4, 'coa', 'pop', { pitch: 'A6' }]]],
+  [24, (c, u, I) => sSpin(c, u, I, 11, -1), [[0, 'flip', 'thud'], [1.4, 'coa', 'pop', { pitch: 'A6' }]]],
   [28, sOrbit, [[-0.4, 'ring', 'impact'], [0.2, 't1', 'tick'], [0.6, 't2', 'tick']]],
   [36, sRollCards, ROLLK.map((_, j) => [j * 2.4 - 0.4, 'card', j ? 'pop' : 'impact', { pitch: ['A5', 'C6', 'E6', 'G6', 'A6'][j] }])],
   [48, sQuality, [[-0.3, '99', 'impact'], [0.5, 'coa', 'pop', { pitch: 'A5' }], [1.3, 'ruo', 'pop', { pitch: 'E6' }]]],
@@ -519,7 +519,7 @@ const drawScene = (i, ctx, u, IMG) => SCENES[i][1](ctx, u - SCENES[i][0], IMG);
 
 M.film({
   fonts: [font(100, 700, DISPLAY), font(40, 500, UI), font(40, 700, UI)],
-  images: Object.fromEntries([['hero', 'assets/products/hero.png'], ['v_big', 'assets/products/v_big.png'], ...['c_ipamorelin', 'c_glow', 'c_cagri', 'c_bigt', 'c_klow'].map((k) => [k, `assets/products/${k}.png`]), ...['bigr', 'bigt', 'cagrilintide', 'glow', 'ipamorelin', 'klow', 'nad', 'tb500'].map((n) => ['cut_' + n, `assets/products/cut/${n}.png`]), ['chip', 'assets/partner_chip.png']]),
+  images: Object.fromEntries([['hero', 'assets/products/hero.png'], ['v_big', 'assets/products/v_big.png'], ...['c_ipamorelin', 'c_glow', 'c_cagri', 'c_bigt', 'c_klow'].map((k) => [k, `assets/products/${k}.png`]), ...['bigr', 'bigt', 'cagrilintide', 'glow', 'ipamorelin', 'klow', 'nad', 'tb500', 'ace031', 'ss31', 'sermorelin', 'tesamorelin', 'ghkcu', 'bpc157', 'glp2t_hd'].map((n) => ['cut_' + n, `assets/products/cut/${n}.png`]), ['chip', 'assets/partner_chip.png']]),
   hits: HITS,
   draw(ctx, u, t, IMG) {
     BGU = u;
