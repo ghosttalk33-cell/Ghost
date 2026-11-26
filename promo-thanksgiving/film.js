@@ -54,35 +54,16 @@ function rowsUp(ctx, list, x, y, lh, appear, align = 'center') {
 }
 
 // ---------------------------------------------------------------- a research vial with a red flip-off cap (drawn)
-function vial(ctx, cx, bottom, h, label = 'RESEARCH', tilt = 0) {
-  const w = h * 0.42;
+let VIMG = [];
+const CLEAR = [0, 2, 3, 4];
+function vial(ctx, cx, bottom, h, label = '', tilt = 0, idx = 0) {
+  const im = VIMG[idx % VIMG.length]; if (!im) return;
+  const w = h * im.width / im.height;
   ctx.save(); ctx.translate(cx, bottom); ctx.rotate(tilt);
-  // shadow
-  ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(0, 4, w * 0.6, w * 0.12, 0, 0, TAU); ctx.fill();
-  const bodyH = h * 0.68, neckH = h * 0.1, capH = h * 0.2;
-  // glass body
-  rrect(ctx, -w / 2, -bodyH, w, bodyH, w * 0.18);
-  const g = ctx.createLinearGradient(-w / 2, 0, w / 2, 0);
-  g.addColorStop(0, 'rgba(255,255,255,0.10)'); g.addColorStop(0.18, 'rgba(255,255,255,0.45)'); g.addColorStop(0.35, 'rgba(255,255,255,0.12)');
-  g.addColorStop(0.85, 'rgba(255,255,255,0.08)'); g.addColorStop(1, 'rgba(255,255,255,0.30)');
-  ctx.fillStyle = g; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = Math.max(1.5, h * 0.008); ctx.stroke();
-  // white powder cake at the bottom
-  rrect(ctx, -w / 2 + w * 0.06, -bodyH * 0.22, w * 0.88, bodyH * 0.18, w * 0.1); ctx.fillStyle = 'rgba(255,250,240,0.9)'; ctx.fill();
-  // label
-  rrect(ctx, -w / 2, -bodyH * 0.78, w, bodyH * 0.42, 3); ctx.fillStyle = C.cream; ctx.fill();
-  ctx.fillStyle = C.red; ctx.fillRect(-w / 2, -bodyH * 0.78, w, bodyH * 0.07);
-  ctx.fillStyle = '#3a1a0c'; ctx.textAlign = 'center'; ctx.font = font(Math.max(8, w * 0.17), 700, D);
-  ctx.fillText(label, 0, -bodyH * 0.53);
-  ctx.font = font(Math.max(6, w * 0.1), 500, UI); ctx.fillText('research use only', 0, -bodyH * 0.43);
-  // neck + crimp
-  ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(-w * 0.28, -bodyH - neckH, w * 0.56, neckH);
-  const cg = ctx.createLinearGradient(-w * 0.36, 0, w * 0.36, 0);
-  cg.addColorStop(0, '#9aa0a6'); cg.addColorStop(0.4, '#eef1f4'); cg.addColorStop(1, '#8a9096');
-  ctx.fillStyle = cg; rrect(ctx, -w * 0.36, -bodyH - neckH - capH * 0.35, w * 0.72, capH * 0.45, 4); ctx.fill();
-  // red flip-off cap
-  const rg = ctx.createLinearGradient(-w * 0.38, 0, w * 0.38, 0);
-  rg.addColorStop(0, '#9e1a1f'); rg.addColorStop(0.35, C.redHi); rg.addColorStop(1, '#8a161b');
-  ctx.fillStyle = rg; rrect(ctx, -w * 0.38, -bodyH - neckH - capH, w * 0.76, capH * 0.7, w * 0.12); ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,0.38)'; ctx.beginPath(); ctx.ellipse(0, 2, w * 0.55, w * 0.1, 0, 0, TAU); ctx.fill();
+  // warm rim light so the clear glass reads against the dark background
+  ctx.shadowColor = 'rgba(255,170,60,0.35)'; ctx.shadowBlur = h * 0.08;
+  ctx.drawImage(im, -w / 2, -h, w, h);
   ctx.restore();
 }
 // clear clamshell kit with 10 vials (like the group photo)
@@ -96,7 +77,7 @@ function kit(ctx, cx, cy, w, k, u, label) {
     const kk = clamp((k - i * 0.06) * 2.2);
     if (kk <= 0) continue;
     const x = -w / 2 + 30 + gap * (i + 0.5), drop = (1 - E.outBack(kk, 1.6)) * -h;
-    vial(ctx, x, h / 2 - 16 + drop, h * 0.84, label);
+    vial(ctx, x, h / 2 - 16 + drop, h * 0.84, label, 0, CLEAR[i % 4]);
   }
   ctx.restore();
 }
@@ -164,7 +145,7 @@ function sHello(ctx, u) {                     // HAPPY THANKSGIVING
   }
   if (P) for (let i = 0; i < 5; i++) {
     const k = springU(u, 3.2 + i * 0.15, SPRING.bouncy); if (k <= 0) continue;
-    vial(ctx, W / 2 + (i - 2) * 190, H * 0.86 + (1 - k) * 300, 300 - Math.abs(i - 2) * 30, 'KIT', (i - 2) * 0.06);
+    vial(ctx, W / 2 + (i - 2) * 190, H * 0.86 + (1 - k) * 300, 300 - Math.abs(i - 2) * 30, '', (i - 2) * 0.06, i === 2 ? 1 : CLEAR[i % 4]);
   }
   leaves(ctx, u, 6, 1, true);
 }
@@ -246,7 +227,7 @@ function sEnd(ctx, u) {                       // From our family to yours
     const k = springU(u, -0.3 + i * 0.12, SPRING.bouncy); if (k <= 0) continue;
     const a = (i - 3) * 0.3, rr = P ? 520 : 400;
     const x = W / 2 + Math.sin(a) * rr, y = cy + (P ? 560 : 400) - (1 - Math.cos(a)) * rr * 0.55;
-    vial(ctx, x, y + (1 - k) * 200, (P ? 260 : 190) * (1 - Math.abs(i - 3) * 0.07), 'KIT', a * 0.25);
+    vial(ctx, x, y + (1 - k) * 200, (P ? 260 : 190) * (1 - Math.abs(i - 3) * 0.07), '', a * 0.25, i === 3 ? 1 : CLEAR[i % 4]);
   }
   const sk = springU(u, 0.4, SPRING.bouncy);
   if (sk > 0) {
@@ -298,7 +279,8 @@ const drawScene = (i, ctx, u) => SCENES[i][1](ctx, u - SCENES[i][0]);
 
 M.film({
   fonts: [font(100, 700, D), font(100, 400, SCRIPT), font(40, 500, UI), font(40, 700, UI)],
-  images: {},
+  images: Object.fromEntries([0, 1, 2, 3, 4].map((i) => ['v' + i, `assets/vials/v${i}.png`])),
+  init(ctx, IMG) { VIMG = [0, 1, 2, 3, 4].map((i) => IMG['v' + i]); },
   hits: HITS,
   draw(ctx, u) {
     for (const [b, [dx, dy]] of Object.entries(WHIPS).map(([b, v]) => [Number(b), v])) {
