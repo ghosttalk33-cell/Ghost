@@ -31,7 +31,10 @@ process.env.TZ ||= 'Europe/Amsterdam';
 const CFG = {
   telegram: process.env.TELEGRAM_TOKEN || '',
   owner: String(process.env.OWNER_ID || ''),
-  model: process.env.MODEL || 'claude-opus-5-5',
+  model: process.env.MODEL_SNEL || process.env.MODEL || 'claude-haiku-5-5',   // gewone vragen: goedkoop
+  modelSlim: process.env.MODEL_SLIM || 'claude-opus-5-5',                     // /denk en /deepsearch
+  limietDag: Number(process.env.LIMIET_DAG ?? 0.5),     // dollar per dag
+  limietMaand: Number(process.env.LIMIET_MAAND ?? 10),  // dollar per maand
   mailUser: process.env.MAIL_USER || '',
   mailPass: (process.env.MAIL_PASS || '').replace(/\s+/g, ''),
   imapHost: process.env.MAIL_IMAP_HOST || 'imap.gmail.com',
@@ -50,7 +53,7 @@ fs.mkdirSync(DATA, { recursive: true });
 const STATE_FILE = path.join(DATA, 'state.json');
 
 // ---------------------------------------------------------------- opslag
-let S = { history: [], persona: 'standaard', deep: false, memory: [], tasks: [] };
+let S = { history: [], persona: 'standaard', deep: false, memory: [], tasks: [], cost: { day: '', dayUsd: 0, month: '', monthUsd: 0, totalUsd: 0 } };
 try { S = { ...S, ...JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')) }; } catch {}
 const save = () => fs.writeFileSync(STATE_FILE, JSON.stringify(S, null, 1));
 const pending = new Map();   // mails die op jouw OK wachten (alleen in het geheugen)
@@ -91,7 +94,6 @@ const PERSONAS = {
 };
 
 function systemPrompt() {
-  const now = new Date();
   const mem = S.memory.length ? '\n\nWat je over de gebruiker onthouden hebt:\n' + S.memory.map((m) => `- [${m.id}] ${m.text}`).join('\n') : '';
   return `Je bent Ghost, een persoonlijke alles-in-1 assistent in Telegram voor één gebruiker. Antwoord in de taal van de gebruiker (meestal Nederlands).
 ${PERSONAS[S.persona] || PERSONAS.standaard}
@@ -107,13 +109,15 @@ Je kunt:
 • dingen onthouden over de gebruiker (onthoud, vergeet) als die dat vraagt of als het duidelijk nuttig is voor later.${CFG.xaiKey ? '\n• afbeeldingen maken (afbeelding_maken).' : ''}
 
 Grenzen: geen medisch advies of doseringen voor peptiden; die zijn "research use only". Help niet met hacken van anderen, spam of iets illegaals.
-Nu is het ${now.toLocaleString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })} (${process.env.TZ}).${mem}`;
+Wees beknopt: kort antwoord tenzij de gebruiker om meer vraagt. De huidige datum en tijd staan bovenaan elk bericht van de gebruiker.${mem}`;
 }
 
 // ---------------------------------------------------------------- tools
+const NEW_WEB = /opus-5|opus-4-[678]|sonnet-5|sonnet-4-6|fable|mythos/;
+const webTools = (model, deep) => NEW_WEB.test(model)
+  ? [{ type: 'web_search_20260209', name: 'web_search', max_uses: deep ? 8 : 3 }, { type: 'web_fetch_20260209', name: 'web_fetch', max_uses: deep ? 8 : 3 }]
+  : [{ type: 'web_search_20250305', name: 'web_search', max_uses: deep ? 8 : 3 }, { type: 'web_fetch_20250910', name: 'web_fetch', max_uses: deep ? 8 : 3 }];
 const TOOLS = [
-  { type: 'web_search_20260209', name: 'web_search', max_uses: 8 },
-  { type: 'web_fetch_20260209', name: 'web_fetch', max_uses: 8 },
   { name: 'prijs_goedkoopste', description: 'Goedkoopste prijs per mg per peptide uit de prijsvolger (alleen producten op voorraad). Optioneel filter op peptide.',
     input_schema: { type: 'object', properties: { peptide: { type: 'string', description: 'bijv. "BPC-157" of "Retatrutide"; leeg = overzicht' } } } },
   { name: 'prijs_dalingen', description: 'Recente prijsdalingen, prijsstijgingen en nieuwe producten uit de prijsvolger.',
@@ -269,23 +273,54 @@ async function runTool(name, input, ctx) {
   return `Onbekende tool ${name}`;
 }
 
+// ---------------------------------------------------------------- kosten (dollar per miljoen tokens)
+const PRICES = { 'claude-haiku-5-5': [0.10, 0.50], 'claude-sonnet-5-5': [2, 10], 'claude-opus-5-5': [4, 20], 'claude-opus-5': [5, 25], 'claude-fable-5-2': [8, 40] };
+function addCost(model, u) {
+  const [pi, po] = PRICES[model] || PRICES['claude-opus-5-5'];
+  const usd = ((u.input_tokens || 0) * pi + (u.cache_creation_input_tokens || 0) * pi * 1.25 + (u.cache_read_input_tokens || 0) * pi * 0.1 + (u.output_tokens || 0) * po) / 1e6
+    + (u.server_tool_use?.web_search_requests || 0) * 0.01;
+  const day = new Date().toISOString().slice(0, 10), month = day.slice(0, 7), c = S.cost;
+  if (c.day !== day) { c.day = day; c.dayUsd = 0; }
+  if (c.month !== month) { c.month = month; c.monthUsd = 0; }
+  c.dayUsd += usd; c.monthUsd += usd; c.totalUsd = (c.totalUsd || 0) + usd;
+  return usd;
+}
+function spent() {
+  const d = new Date().toISOString().slice(0, 10), c = S.cost;
+  return { day: c.day === d ? c.dayUsd : 0, month: c.month === d.slice(0, 7) ? c.monthUsd : 0, total: c.totalUsd || 0 };
+}
+function budgetLeft() {
+  const k = spent();
+  if (CFG.limietDag > 0 && k.day >= CFG.limietDag) return `Daglimiet bereikt ($${k.day.toFixed(2)} van $${CFG.limietDag}). Morgen kan ik weer. (LIMIET_DAG in bot/.env)`;
+  if (CFG.limietMaand > 0 && k.month >= CFG.limietMaand) return `Maandlimiet bereikt ($${k.month.toFixed(2)} van $${CFG.limietMaand}). Volgende maand kan ik weer. (LIMIET_MAAND in bot/.env)`;
+  return null;
+}
+const usd2eur = (v) => '€' + (v * 0.93).toFixed(2).replace('.', ',');
+
 // ---------------------------------------------------------------- het brein (Claude, tool-loop)
 async function ask(userContent, { chatId, deep = S.deep, history = S.history, keep = true } = {}) {
-  const messages = [...history, { role: 'user', content: userContent }];
-  const effort = deep ? 'high' : 'medium';
+  const over = budgetLeft();
+  if (over) return '💸 ' + over;
+  const model = deep ? CFG.modelSlim : CFG.model;
+  const stamp = { type: 'text', text: `[${new Date().toLocaleString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}]` };
+  const content = typeof userContent === 'string' ? [stamp, { type: 'text', text: userContent }] : [stamp, ...userContent];
+  const messages = [...history, { role: 'user', content }];
+  const effort = deep ? 'high' : 'low';
+  const fallbackOk = /opus-5|sonnet-5-5|fable-5/.test(model);
   let finalText = '';
-  for (let step = 0; step < 12; step++) {
+  for (let step = 0; step < (deep ? 12 : 6); step++) {
     const res = await claude.beta.messages.create({
-      model: CFG.model,
-      max_tokens: 16000,
+      model,
+      max_tokens: deep ? 16000 : 4000,
+      cache_control: { type: 'ephemeral' },
       system: systemPrompt(),
       messages,
-      tools: TOOLS,
+      tools: [...webTools(model, deep), ...TOOLS],
       thinking: { type: 'adaptive' },
       output_config: { effort },
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
+      ...(fallbackOk ? { betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' } : {}),
     });
+    addCost(res.model || model, res.usage || {}); save();
     messages.push({ role: 'assistant', content: res.content });
     const text = res.content.filter((b) => b.type === 'text').map((b) => b.text).join('');
     if (text) finalText = text;
@@ -303,7 +338,7 @@ async function ask(userContent, { chatId, deep = S.deep, history = S.history, ke
     const plain = typeof userContent === 'string' ? userContent
       : userContent.map((b) => (b.type === 'text' ? b.text : b.type === 'image' ? '[foto]' : '[document]')).join('\n');
     S.history.push({ role: 'user', content: plain }, { role: 'assistant', content: finalText || '(geen tekst)' });
-    S.history = S.history.slice(-40); save();
+    S.history = S.history.slice(-16); save();
   }
   return finalText;
 }
@@ -319,7 +354,8 @@ const HELP = `👻 Ghost-bot. Stuur gewoon een bericht, foto, screenshot of PDF.
 /geheugen · wat ik over je onthouden heb
 /prijs [peptide] · goedkoopste prijzen uit je prijsvolger
 /scan · nu een prijsscan starten
-/mail · je laatste mails${CFG.xaiKey ? '\n/afbeelding <beschrijving> · afbeelding maken' : ''}
+/mail · je laatste mails
+/kosten · wat de bot je kost${CFG.xaiKey ? '\n/afbeelding <beschrijving> · afbeelding maken' : ''}
 
 Voorbeelden:
 • "Herinner me morgen om 9 uur aan de bestelling"
@@ -340,7 +376,7 @@ async function handle(msg) {
     const [, c, arg] = cmd;
     if (c === 'start' || c === 'help') return send(chatId, HELP);
     if (c === 'nieuw') { S.history = []; save(); return send(chatId, '🧹 Nieuw gesprek. Waar kan ik mee helpen?'); }
-    if (c === 'denk') { S.deep = !S.deep; save(); return send(chatId, S.deep ? '🧠 Denk-modus AAN: ik denk grondiger na (iets trager).' : '⚡ Denk-modus UIT: snelle antwoorden.'); }
+    if (c === 'denk') { S.deep = !S.deep; save(); return send(chatId, S.deep ? '🧠 Denk-modus AAN: slim brein, grondiger (duurder en iets trager).' : '⚡ Denk-modus UIT: snel en goedkoop.'); }
     if (c === 'persona') {
       if (arg && PERSONAS[arg.toLowerCase()]) { S.persona = arg.toLowerCase(); save(); return send(chatId, `🎭 Persona: ${S.persona}`); }
       return send(chatId, `🎭 Huidige persona: ${S.persona}\nKies met /persona <naam>: ${Object.keys(PERSONAS).join(', ')}`);
@@ -349,6 +385,10 @@ async function handle(msg) {
     if (c === 'geheugen') return send(chatId, S.memory.length ? '🧠 Onthouden:\n' + S.memory.map((m) => `[${m.id}] ${m.text}`).join('\n') : 'Ik heb nog niets onthouden. Zeg "onthoud dat …".');
     if (c === 'prijs') return send(chatId, await runTool('prijs_goedkoopste', { peptide: arg || undefined }, { chatId }));
     if (c === 'scan') return send(chatId, await runTool('prijs_scan', {}, { chatId }));
+    if (c === 'kosten') {
+      const k = spent();
+      return send(chatId, `💸 Kosten (schatting)\nVandaag: ${usd2eur(k.day)} (limiet ${usd2eur(CFG.limietDag)})\nDeze maand: ${usd2eur(k.month)} (limiet ${usd2eur(CFG.limietMaand)})\nTotaal: ${usd2eur(k.total)}\n\nGewone vragen: ${CFG.model}\n/denk en /deepsearch: ${CFG.modelSlim}`);
+    }
     if (c === 'mail') text = 'Laat mijn laatste 10 mails zien en vat kort samen wat belangrijk is.';
     else if (c === 'deepsearch') {
       if (!arg) return send(chatId, 'Gebruik: /deepsearch <je vraag>');
@@ -425,11 +465,11 @@ setInterval(async () => {
 
 // ---------------------------------------------------------------- Telegram uitlezen (long polling)
 let offset = 0;
-console.log(`👻 Ghost-bot gestart (${CFG.model}). Stuur je bot een bericht in Telegram.`);
+console.log(`👻 Ghost-bot gestart (gewoon: ${CFG.model}, slim: ${CFG.modelSlim}, limiet $${CFG.limietDag}/dag, $${CFG.limietMaand}/maand).`);
 await tg('setMyCommands', { commands: [
   ['nieuw', 'Nieuw gesprek'], ['denk', 'Denk-modus aan/uit'], ['deepsearch', 'Diep onderzoek met bronnen'], ['persona', 'Stijl kiezen'],
   ['taken', 'Geplande taken'], ['geheugen', 'Wat ik onthouden heb'], ['prijs', 'Goedkoopste prijzen'], ['scan', 'Prijsscan starten'],
-  ['mail', 'Laatste mails'], ...(CFG.xaiKey ? [['afbeelding', 'Afbeelding maken']] : []), ['help', 'Uitleg'],
+  ['mail', 'Laatste mails'], ['kosten', 'Wat kost de bot'], ...(CFG.xaiKey ? [['afbeelding', 'Afbeelding maken']] : []), ['help', 'Uitleg'],
 ].map(([command, description]) => ({ command, description })) }).catch((e) => console.error(e.message));
 
 for (;;) {
